@@ -1,3 +1,4 @@
+// ── 현재 플레이 중인 캐릭터 player_id (로그인+캐릭선택 후 설정) ──
 let PLAYER_ID = null;
 let CURRENT_USER = null;
 let CURRENT_CHAR_SLOT = null;
