@@ -1,3 +1,6 @@
+import { ITEM_DB } from "./data/items.js";
+import { RARITY_TABLE } from "./data/rarity.js";
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // ═══════════════════════════════════════════════════════
@@ -2359,22 +2362,15 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  function createEquipmentItem(rarityOrDigit, d4, isRarityDirect) {
-    const gear = gearCatalog[d4];
-    const rarity = isRarityDirect ? rarityOrDigit : getRarityFromDigit(rarityOrDigit);
-    const rarityLabel = getRarityLabel(rarity);
-    const item = {
-      id: `${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-      name: `${rarityLabel} ${gear.name}`,
-      baseName: gear.name,
-      slot: gear.slot, slotLabel: slotLabels[gear.slot],
-      icon: gear.icon, rarity, rarityLabel,
-      stats: {...gear.stats},
-      score: (gear.stats.atk||0)*2.0 + (gear.stats.def||0)*1.8 + (gear.stats.hp||0)*0.28 + (gear.stats.speed||0)*2.2 + (gear.stats.crit||0)*2.4
-    };
-    item.power = Math.round(item.score * getRarityMultiplier(rarity) * 10);
-    return item;
-  }
+  function createEquipmentItem(){
+
+  const base = getRandomBaseItem(state.heroClass);
+
+  const rarity = rollRarity();
+
+  return createItem(base, rarity);
+
+}
 
   function getSellPrice(item) {
     const base = item.power || 10;
@@ -2413,19 +2409,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
-  function rollMonsterDrop(enemy) {
-    const dropChance = getDropChance(enemy.grade, enemy._entry);
-    if (Math.random() > dropChance) return null;
-    const table = getDropTable(enemy.grade, enemy._entry);
-    // 정규화
-    const total = table.reduce((a,b)=>a+b, 0);
-    const roll  = Math.random() * total;
-    let cum = 0, rarityIdx = 0;
-    for (let i=0; i<table.length; i++) { cum += table[i]; if (roll < cum) { rarityIdx = i; break; } rarityIdx = i; }
-    const rarity = rarityOrder[rarityIdx];
-    const d4 = Math.floor(Math.random() * gearCatalog.length);
-    return createEquipmentItem(rarity, d4, true);
-  }
+function rollMonsterDrop(enemy){
+
+  const dropChance = 0.35;
+
+  if(Math.random() > dropChance) return null;
+
+  return createEquipmentItem();
+
+}
 
   function makeEnemy(name, grade, amount, special, d4) {
     const entry = getMonsterEntry(d4);
@@ -4671,3 +4663,56 @@ ICO['⟨기사투구⟩'] = svg(defs(
   // 초기화 (인증/캐릭터 선택 후 enterGame에서 호출됨)
   // 인증 전까지 게임 화면은 숨겨져 있음
 });
+
+function createItem(base, rarity){
+
+const r = RARITY_TABLE[rarity];
+
+return {
+
+id: base.id + "_" + rarity + "_" + Date.now(),
+
+name: r.name + " " + base.name,
+
+baseName: base.name,
+
+slot: base.slot,
+
+class: base.class,
+
+rarity: rarity,
+
+rarityLabel: r.name,
+
+atk: Math.round((base.atk||0) * r.mult),
+
+def: Math.round((base.def||0) * r.mult),
+
+hp: Math.round((base.hp||0) * r.mult),
+
+icon:"🗡️"
+
+};
+
+}
+function getRandomBaseItem(heroClass){
+
+const list = ITEM_DB.filter(i => 
+  i.class === heroClass || i.class === "all"
+);
+
+return list[Math.floor(Math.random()*list.length)];
+
+}
+function rollRarity(){
+
+const r = Math.random();
+
+if(r < 0.55) return "common";
+if(r < 0.80) return "uncommon";
+if(r < 0.92) return "rare";
+if(r < 0.98) return "epic";
+
+return "legendary";
+
+}
