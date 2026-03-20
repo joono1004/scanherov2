@@ -1,469 +1,910 @@
-import React, { useMemo, useState } from "react"; import { motion } from "framer-motion"; import { Search, UserPlus, Send, Mail, MessageSquare, Pencil, Play, ArrowRight, ArrowLeft, RotateCcw, CircleDollarSign, History, Check, ChevronDown } from "lucide-react"; import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Textarea } from "@/components/ui/textarea"; import { Badge } from "@/components/ui/badge";
+<!DOCTYPE html><html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>치과 상담 · 견적 웹앱 MVP</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    button, input, select, textarea {
+      font: inherit;
+    }
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr 0.85fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 8px 12px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 12px 0 10px;
+      font-size: 38px;
+      line-height: 1.25;
+    }
+    .muted {
+      color: #475569;
+      line-height: 1.7;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .card.pad { padding: 20px; }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stat {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .stat .label { font-size: 12px; color: #64748b; }
+    .stat .value { margin-top: 6px; font-size: 28px; font-weight: 800; }
+    .stepbar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .stepbtn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .stepbtn:hover { border-color: #94a3b8; }
+    .stepbtn.active {
+      background: #eff6ff;
+      border-color: #3b82f6;
+    }
+    .stepno { font-size: 12px; color: #64748b; font-weight: 700; }
+    .steplabel { margin-top: 6px; font-weight: 800; }
+    .content {
+      padding: 20px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+    }
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 14px 14px 14px 42px;
+      background: #fff;
+    }
+    .search-wrap .icon {
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      color: #94a3b8;
+      font-size: 18px;
+    }
+    .list {
+      margin-top: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .patient-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .patient-item:hover { border-color: #94a3b8; }
+    .patient-item.active {
+      background: #eff6ff;
+      border-color: #3b82f6;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .patient-name { font-size: 18px; font-weight: 800; }
+    .badge {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #334155;
+      white-space: nowrap;
+    }
+    .sub { color: #64748b; font-size: 14px; margin-top: 6px; }
+    .btn-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .btn, .btn-outline, .tiny-btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+    .btn { background: #0f172a; color: #fff; }
+    .btn:hover { background: #1e293b; }
+    .btn-outline {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-outline:hover { border-color: #94a3b8; }
+    .info-box {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .info-box .label { color: #64748b; font-size: 13px; }
+    .info-box .big { margin-top: 6px; font-size: 24px; font-weight: 800; }
+    .dashed {
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      padding: 16px;
+      color: #475569;
+      line-height: 1.7;
+      background: #fff;
+    }
+    .preview-wrap {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+    .mode-chip {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(15, 23, 42, 0.88);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    svg { display: block; width: 100%; height: auto; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .tiny-btn {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      padding: 12px 14px;
+    }
+    .tiny-btn.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    .textarea, textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      padding: 14px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .add-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pill-btn {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .pill-btn.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    .estimate-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .estimate-item .title { font-size: 18px; font-weight: 800; }
+    .delete {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .delete:hover { color: #ef4444; }
+    .form-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .label { font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 6px; }
+    select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+    .qty-box {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .qty-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .qty-value {
+      min-width: 56px;
+      text-align: center;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 800;
+    }
+    .subtotal {
+      margin-top: 14px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+    .compare-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .opt-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+    .opt-line.active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+    .total-card {
+      background: #0f172a;
+      color: #fff;
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+    }
+    .total-label { color: #cbd5e1; font-size: 14px; }
+    .total-value { margin-top: 8px; font-size: 44px; font-weight: 900; }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .send-box {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+      line-height: 1.7;
+      color: #475569;
+    }
+    .send-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 14px;
+    }
+    .send-btn {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .send-btn.primary {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    ul { padding-left: 18px; }
+    li { margin-bottom: 8px; color: #475569; }
+    .hidden { display: none; }@media (max-width: 1024px) {
+  .hero, .grid-2 { grid-template-columns: 1fr; }
+  h1 { font-size: 30px; }
+}
+@media (max-width: 760px) {
+  .app { padding: 14px; }
+  .stepbar { grid-template-columns: 1fr; }
+  .btn-row, .form-grid, .send-grid, .stats { grid-template-columns: 1fr; }
+  .total-value { font-size: 34px; }
+}
 
-const patients = [ { id: 1, name: "김민수", phone: "010-2345-6789", note: "임플란트 상담 진행", lastEstimate: "1,800,000원", status: "고민 중", }, { id: 2, name: "이서연", phone: "010-1111-2222", note: "크라운 재상담", lastEstimate: "550,000원", status: "재내원 예정", }, { id: 3, name: "박준호", phone: "010-9876-1234", note: "충치/신경치료 비교", lastEstimate: "420,000원", status: "당일 결정 가능", }, ];
-
-const treatmentCatalog = { implant: { label: "임플란트", baseOptions: [ { key: "국산", price: 1200000, desc: "가성비 중심" }, { key: "수입", price: 1600000, desc: "브랜드 선호" }, ], }, crown: { label: "크라운", baseOptions: [ { key: "지르코니아", price: 600000, desc: "심미성 우수" }, { key: "PFM", price: 400000, desc: "비용 절감" }, { key: "골드", price: 700000, desc: "내구성 우수" }, ], }, filling: { label: "충치치료", baseOptions: [ { key: "레진", price: 120000, desc: "간단 수복" }, { key: "인레이", price: 300000, desc: "중간 크기 수복" }, ], }, root: { label: "신경치료", baseOptions: [ { key: "1관", price: 150000, desc: "기본" }, { key: "복합", price: 250000, desc: "난이도 높음" }, ], }, };
-
-function formatKRW(value) { return ${value.toLocaleString("ko-KR")}원; }
-
-function ToothPreview({ drawMode }) { return ( <div className="relative mx-auto aspect-[4/3] w-full max-w-xl overflow-hidden rounded-3xl border bg-white shadow-sm"> <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_40%)]" /> <svg viewBox="0 0 800 560" className="h-full w-full"> <rect x="0" y="0" width="800" height="560" fill="#ffffff" /> <text x="36" y="48" fill="#64748b" fontSize="24" fontWeight="700">진단 이미지 미리보기</text> <text x="36" y="82" fill="#94a3b8" fontSize="16">복잡한 편집 대신 필요한 부위만 빠르게 표시</text>
-
-<ellipse cx="400" cy="240" rx="245" ry="120" fill="#fee2e2" />
-    <ellipse cx="400" cy="250" rx="215" ry="85" fill="#fff7ed" stroke="#fdba74" strokeWidth="4" />
-
-    {Array.from({ length: 8 }).map((_, i) => (
-      <rect
-        key={`top-${i}`}
-        x={220 + i * 44}
-        y={155}
-        rx="10"
-        ry="10"
-        width="34"
-        height="65"
-        fill="#ffffff"
-        stroke="#cbd5e1"
-        strokeWidth="3"
-      />
-    ))}
-    {Array.from({ length: 8 }).map((_, i) => (
-      <rect
-        key={`bot-${i}`}
-        x={220 + i * 44}
-        y={275}
-        rx="10"
-        ry="10"
-        width="34"
-        height="65"
-        fill="#ffffff"
-        stroke="#cbd5e1"
-        strokeWidth="3"
-      />
-    ))}
-
-    <circle cx="508" cy="186" r="40" fill="rgba(239,68,68,0.14)" stroke="#ef4444" strokeWidth="4" strokeDasharray="8 8" />
-    <path d="M560 152 C620 120, 650 112, 702 128" fill="none" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" />
-    <polygon points="694,118 725,126 701,148" fill="#ef4444" />
-    <text x="590" y="108" fill="#b91c1c" fontSize="22" fontWeight="700">치료 필요 부위</text>
-
-    <rect x="54" y="420" rx="16" ry="16" width="248" height="76" fill="#eff6ff" stroke="#93c5fd" />
-    <text x="76" y="455" fill="#1d4ed8" fontSize="20" fontWeight="700">전후 비교 예시</text>
-    <text x="76" y="482" fill="#475569" fontSize="16">치료 전: 금속 변색 / 치료 후: 밝은 색감</text>
-
-    {drawMode === "pen" && <path d="M175 355 Q230 330 290 345 T415 332" fill="none" stroke="#2563eb" strokeWidth="6" strokeLinecap="round" />}
-    {drawMode === "highlight" && <ellipse cx="330" cy="184" rx="96" ry="34" fill="rgba(250,204,21,0.35)" />}
-    {drawMode === "arrow" && (
-      <>
-        <path d="M280 115 C315 108, 345 105, 390 110" fill="none" stroke="#7c3aed" strokeWidth="5" strokeLinecap="round" />
-        <polygon points="384,98 416,111 384,123" fill="#7c3aed" />
-      </>
-    )}
-  </svg>
-  <div className="absolute right-4 top-4 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-medium text-white">
-    {drawMode === "pen" ? "자유 펜 표시" : drawMode === "highlight" ? "형광 강조" : "화살표 표시"}
-  </div>
-</div>
-
-); }
-
-function EstimateRow({ itemKey, item, onOptionChange, onQtyChange, onRemove }) { return ( <div className="rounded-2xl border bg-slate-50 p-4"> <div className="flex items-start justify-between gap-3"> <div> <div className="font-semibold text-slate-900">{treatmentCatalog[itemKey].label}</div> <div className="mt-1 text-sm text-slate-500">{item.option.desc}</div> </div> <button onClick={onRemove} className="text-sm font-medium text-slate-400 hover:text-red-500">삭제</button> </div>
-
-<div className="mt-4 grid gap-3 md:grid-cols-2">
-    <div>
-      <div className="mb-1 text-xs font-semibold text-slate-500">재료 / 종류</div>
-      <div className="relative">
-        <select
-          className="w-full appearance-none rounded-xl border bg-white px-4 py-3 text-sm outline-none"
-          value={item.option.key}
-          onChange={(e) => onOptionChange(e.target.value)}
-        >
-          {treatmentCatalog[itemKey].baseOptions.map((opt) => (
-            <option key={opt.key} value={opt.key}>{opt.key} · {formatKRW(opt.price)}</option>
-          ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
-      </div>
-    </div>
-
-    <div>
-      <div className="mb-1 text-xs font-semibold text-slate-500">수량</div>
-      <div className="flex items-center gap-2">
-        <button onClick={() => onQtyChange(Math.max(1, item.qty - 1))} className="rounded-xl border bg-white px-4 py-3 text-sm font-semibold">-</button>
-        <div className="min-w-16 rounded-xl border bg-white px-4 py-3 text-center text-sm font-semibold">{item.qty}</div>
-        <button onClick={() => onQtyChange(item.qty + 1)} className="rounded-xl border bg-white px-4 py-3 text-sm font-semibold">+</button>
-      </div>
-    </div>
-  </div>
-
-  <div className="mt-4 flex items-center justify-between rounded-xl bg-white px-4 py-3">
-    <span className="text-sm text-slate-500">소계</span>
-    <span className="text-base font-bold text-slate-900">{formatKRW(item.option.price * item.qty)}</span>
-  </div>
-</div>
-
-); }
-
-export default function DentalConsultMvpPreview() { const [step, setStep] = useState("patient"); const [selectedPatient, setSelectedPatient] = useState(patients[0]); const [search, setSearch] = useState(""); const [drawMode, setDrawMode] = useState("pen"); const [estimateItems, setEstimateItems] = useState({ implant: { option: treatmentCatalog.implant.baseOptions[0], qty: 1 }, crown: { option: treatmentCatalog.crown.baseOptions[0], qty: 1 }, }); const [memo, setMemo] = useState("3개월 치료 예상, 내원 일정 조율 필요");
-
-const filteredPatients = patients.filter((p) => ${p.name} ${p.phone} ${p.note}.includes(search));
-
-const total = useMemo(() => { return Object.entries(estimateItems).reduce((sum, [, item]) => sum + item.option.price * item.qty, 0); }, [estimateItems]);
-
-const addTreatment = (key) => { setEstimateItems((prev) => { if (prev[key]) return prev; return { ...prev, [key]: { option: treatmentCatalog[key].baseOptions[0], qty: 1 }, }; }); };
-
-const updateItem = (key, next) => { setEstimateItems((prev) => ({ ...prev, [key]: { ...prev[key], ...next } })); };
-
-const removeItem = (key) => { setEstimateItems((prev) => { const copy = { ...prev }; delete copy[key]; return copy; }); };
-
-const stepIndex = { patient: 1, diagnosis: 2, estimate: 3, send: 4, history: 5 }; const steps = [ { key: "patient", label: "환자 선택" }, { key: "diagnosis", label: "진단 설명" }, { key: "estimate", label: "빠른 견적" }, { key: "send", label: "전송" }, { key: "history", label: "상담 이력" }, ];
-
-return ( <div className="min-h-screen bg-slate-100 p-4 md:p-8"> <div className="mx-auto max-w-7xl"> <div className="mb-6 grid gap-4 lg:grid-cols-[1.25fr_0.75fr]"> <div> <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700"> 치과 상담 · 견적 웹앱 MVP </div> <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl"> 빠르게 설명하고, 바로 견적 내고, 즉시 전송하는 화면 미리보기 </h1> <p className="mt-3 max-w-3xl text-slate-600"> 복잡한 DB 없이 먼저 실무 흐름만 검증할 수 있도록 만든 데모 화면입니다. 환자 선택 → 진단 설명 → 견적 계산 → 전송 → 재상담 확인 순서로 바로 볼 수 있습니다. </p> </div>
-
-<Card className="rounded-3xl border-0 shadow-sm">
-        <CardContent className="p-5">
-          <div className="text-sm font-semibold text-slate-500">실무 포인트</div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-xs text-slate-500">예상 상담 시간</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">1분 내</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-xs text-slate-500">전송 채널</div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">3종</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-xs text-slate-500">수정 방식</div>
-              <div className="mt-1 text-lg font-bold text-slate-900">선택 중심</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-xs text-slate-500">우선순위</div>
-              <div className="mt-1 text-lg font-bold text-slate-900">속도 · 단순성</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-
-    <Card className="rounded-3xl border-0 shadow-sm">
-      <CardContent className="p-4 md:p-6">
-        <div className="mb-6 grid gap-3 md:grid-cols-5">
-          {steps.map((s) => {
-            const active = s.key === step;
-            const done = stepIndex[s.key] < stepIndex[step];
-            return (
-              <button
-                key={s.key}
-                onClick={() => setStep(s.key)}
-                className={`rounded-2xl border px-4 py-3 text-left transition ${active ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
-              >
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {done ? <Check className="h-4 w-4 text-emerald-500" /> : <span>{stepIndex[s.key]}</span>}
-                  step
-                </div>
-                <div className={`mt-1 font-semibold ${active ? "text-sky-700" : "text-slate-900"}`}>{s.label}</div>
-              </button>
-            );
-          })}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <div>
+        <div class="pill">치과 상담 · 견적 웹앱 MVP</div>
+        <h1>빠르게 설명하고, 바로 견적 내고, 즉시 전송하는 실화면 데모</h1>
+        <div class="muted">
+          DB 없이 먼저 실무 흐름만 검토할 수 있도록 만든 HTML 버전입니다. 환자 선택 → 진단 설명 → 빠른 견적 → 전송 → 상담 이력 순서로 바로 확인할 수 있습니다.
         </div>
+      </div>
+      <div class="card pad">
+        <div style="font-size:14px; font-weight:800; color:#64748b;">실무 포인트</div>
+        <div class="stats">
+          <div class="stat"><div class="label">예상 상담 시간</div><div class="value">1분 내</div></div>
+          <div class="stat"><div class="label">전송 채널</div><div class="value">3종</div></div>
+          <div class="stat"><div class="label">수정 방식</div><div class="value" style="font-size:24px;">선택 중심</div></div>
+          <div class="stat"><div class="label">우선순위</div><div class="value" style="font-size:24px;">속도 · 단순성</div></div>
+        </div>
+      </div>
+    </div><div class="card content">
+  <div class="stepbar">
+    <button class="stepbtn active" data-step-btn="patient"><div class="stepno">1 STEP</div><div class="steplabel">환자 선택</div></button>
+    <button class="stepbtn" data-step-btn="diagnosis"><div class="stepno">2 STEP</div><div class="steplabel">진단 설명</div></button>
+    <button class="stepbtn" data-step-btn="estimate"><div class="stepno">3 STEP</div><div class="steplabel">빠른 견적</div></button>
+    <button class="stepbtn" data-step-btn="send"><div class="stepno">4 STEP</div><div class="steplabel">전송</div></button>
+    <button class="stepbtn" data-step-btn="history"><div class="stepno">5 STEP</div><div class="steplabel">상담 이력</div></button>
+  </div>
 
-        {step === "patient" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl"><Search className="h-5 w-5" />환자 선택</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
-                  <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="이름, 전화번호, 상담 메모 검색" className="rounded-2xl pl-9" />
-                </div>
+  <section id="step-patient" class="step-section">
+    <div class="grid-2">
+      <div class="card pad">
+        <div class="section-title">환자 선택</div>
+        <div class="search-wrap">
+          <div class="icon">🔍</div>
+          <input id="patientSearch" type="text" placeholder="이름, 전화번호, 상담 메모 검색" />
+        </div>
+        <div id="patientList" class="list"></div>
+        <div class="btn-row">
+          <button class="btn-outline">신규 환자</button>
+          <button class="btn" onclick="goStep('estimate')">빠른 견적 바로가기</button>
+        </div>
+      </div>
 
-                <div className="mt-4 space-y-3">
-                  {filteredPatients.map((patient) => (
-                    <button
-                      key={patient.id}
-                      onClick={() => setSelectedPatient(patient)}
-                      className={`w-full rounded-2xl border p-4 text-left transition ${selectedPatient.id === patient.id ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold text-slate-900">{patient.name}</div>
-                          <div className="mt-1 text-sm text-slate-500">{patient.phone}</div>
-                          <div className="mt-2 text-sm text-slate-600">{patient.note}</div>
-                        </div>
-                        <Badge variant="secondary" className="rounded-full bg-white">{patient.status}</Badge>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+      <div class="card pad">
+        <div class="section-title">선택된 환자 요약</div>
+        <div class="info-box">
+          <div class="label">환자명</div>
+          <div class="big" id="summaryName"></div>
+        </div>
+        <div class="btn-row" style="margin-top:0; margin-bottom:12px;">
+          <div class="info-box" style="margin:0;">
+            <div class="label">최근 견적</div>
+            <div class="big" id="summaryEstimate" style="font-size:22px;"></div>
+          </div>
+          <div class="info-box" style="margin:0;">
+            <div class="label">상태</div>
+            <div class="big" id="summaryStatus" style="font-size:22px;"></div>
+          </div>
+        </div>
+        <div class="dashed">
+          첫 화면에서 복잡한 메뉴를 줄이고, 환자 선택 후 바로 <b>빠른 견적</b> 또는 <b>진단 설명</b>으로 이동하도록 구성했습니다.
+        </div>
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep('diagnosis')">진단 설명 보기</button>
+          <button class="btn" onclick="goStep('estimate')">견적 시작</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="h-12 rounded-2xl"><UserPlus className="mr-2 h-4 w-4" />신규 환자</Button>
-                  <Button className="h-12 rounded-2xl" onClick={() => setStep("estimate")}>빠른 견적 바로가기</Button>
-                </div>
-              </CardContent>
-            </Card>
+  <section id="step-diagnosis" class="step-section hidden">
+    <div class="grid-2">
+      <div>
+        <div class="preview-wrap">
+          <div class="mode-chip" id="modeChip">자유 펜 표시</div>
+          <svg viewBox="0 0 800 560">
+            <rect x="0" y="0" width="800" height="560" fill="#ffffff"></rect>
+            <text x="36" y="48" fill="#64748b" font-size="24" font-weight="700">진단 이미지 미리보기</text>
+            <text x="36" y="82" fill="#94a3b8" font-size="16">복잡한 편집 대신 필요한 부위만 빠르게 표시</text>
+            <ellipse cx="400" cy="240" rx="245" ry="120" fill="#fee2e2"></ellipse>
+            <ellipse cx="400" cy="250" rx="215" ry="85" fill="#fff7ed" stroke="#fdba74" stroke-width="4"></ellipse>
+            <g fill="#fff" stroke="#cbd5e1" stroke-width="3">
+              <rect x="220" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="264" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="308" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="352" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="396" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="440" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="484" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="528" y="155" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="220" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="264" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="308" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="352" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="396" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="440" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="484" y="275" rx="10" ry="10" width="34" height="65"></rect>
+              <rect x="528" y="275" rx="10" ry="10" width="34" height="65"></rect>
+            </g>
+            <circle cx="508" cy="186" r="40" fill="rgba(239,68,68,0.14)" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 8"></circle>
+            <path d="M560 152 C620 120, 650 112, 702 128" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round"></path>
+            <polygon points="694,118 725,126 701,148" fill="#ef4444"></polygon>
+            <text x="590" y="108" fill="#b91c1c" font-size="22" font-weight="700">치료 필요 부위</text>
+            <rect x="54" y="420" rx="16" ry="16" width="248" height="76" fill="#eff6ff" stroke="#93c5fd"></rect>
+            <text x="76" y="455" fill="#1d4ed8" font-size="20" font-weight="700">전후 비교 예시</text>
+            <text x="76" y="482" fill="#475569" font-size="16">치료 전: 금속 변색 / 치료 후: 밝은 색감</text>
+            <path id="drawPen" d="M175 355 Q230 330 290 345 T415 332" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round"></path>
+            <ellipse id="drawHighlight" cx="330" cy="184" rx="96" ry="34" fill="rgba(250,204,21,0.35)" style="display:none;"></ellipse>
+            <g id="drawArrow" style="display:none;">
+              <path d="M280 115 C315 108, 345 105, 390 110" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"></path>
+              <polygon points="384,98 416,111 384,123" fill="#7c3aed"></polygon>
+            </g>
+          </svg>
+        </div>
+        <div class="toolbar">
+          <button class="tiny-btn active" data-mode="pen">펜 표시</button>
+          <button class="tiny-btn" data-mode="highlight">형광 강조</button>
+          <button class="tiny-btn" data-mode="arrow">화살표</button>
+          <button class="tiny-btn" onclick="setMode('pen')">초기화</button>
+        </div>
+      </div>
 
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="text-xl">선택된 환자 요약</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">환자명</div>
-                  <div className="mt-1 text-lg font-bold text-slate-900">{selectedPatient.name}</div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">최근 견적</div>
-                    <div className="mt-1 text-lg font-bold text-slate-900">{selectedPatient.lastEstimate}</div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">상태</div>
-                    <div className="mt-1 text-lg font-bold text-slate-900">{selectedPatient.status}</div>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-dashed p-4 text-sm text-slate-600">
-                  첫 화면에서 복잡한 메뉴를 줄이고, 환자 선택 후 바로 <span className="font-semibold">빠른 견적</span> 또는 <span className="font-semibold">진단 설명</span>으로 이동하도록 구성했습니다.
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="h-12 rounded-2xl" onClick={() => setStep("diagnosis")}>진단 설명 보기</Button>
-                  <Button className="h-12 rounded-2xl" onClick={() => setStep("estimate")}>견적 시작 <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+      <div class="card pad">
+        <div class="section-title">간단 설명 패널</div>
+        <div class="info-box">
+          <div style="font-weight:800;">영상/이미지 설명</div>
+          <div class="sub" style="margin-top:8px; line-height:1.7;">실제 MVP에서는 영상 재생보다 정지 화면 캡처와 부위 표시 위주로 단순화하는 것이 더 빠릅니다.</div>
+        </div>
+        <div class="info-box">
+          <div style="font-weight:800;">전후 비교 예시</div>
+          <div class="sub" style="margin-top:8px; line-height:1.7;">치료 전/후 참고 이미지를 작은 카드형으로 제시해 설득력을 높일 수 있습니다.</div>
+        </div>
+        <textarea>현재 어금니 부위 손상이 진행되어 크라운 또는 임플란트 상담이 필요합니다. 비용 차이는 재료와 방식에 따라 바로 비교 가능합니다.</textarea>
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep('patient')">이전</button>
+          <button class="btn" onclick="goStep('estimate')">견적 보기</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        {step === "diagnosis" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+  <section id="step-estimate" class="step-section hidden">
+    <div class="grid-2">
+      <div class="card pad">
+        <div class="section-title">빠른 견적</div>
+        <div style="font-size:14px; font-weight:800; color:#64748b; margin-bottom:8px;">치료 추가</div>
+        <div class="add-buttons" id="addButtons"></div>
+        <div id="estimateList"></div>
+      </div>
+
+      <div>
+        <div class="card pad" style="margin-bottom:16px;">
+          <div class="section-title">옵션 비교 요약</div>
+          <div id="compareWrap"></div>
+        </div>
+        <div class="total-card">
+          <div class="total-label">예상 총 금액</div>
+          <div class="total-value" id="totalValue">0원</div>
+          <div style="margin-top:10px; color:#cbd5e1; line-height:1.7; font-size:14px;">
+            재료나 술식을 바꾸면 금액이 즉시 반영됩니다. 복잡한 진단 설명보다 가격 비교와 빠른 수정에 초점을 둔 화면입니다.
+          </div>
+          <div class="btn-row">
+            <button class="btn-outline" onclick="goStep('diagnosis')">설명으로</button>
+            <button class="btn" style="background:#fff; color:#0f172a;" onclick="goStep('send')">견적 확정</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step-send" class="step-section hidden">
+    <div class="grid-2">
+      <div class="card pad">
+        <div class="section-title">견적서 요약</div>
+        <div id="summaryList"></div>
+        <div class="info-box" style="background:#fff; border:1px solid #e2e8f0; margin-top:12px;">
+          <div class="row">
+            <div class="label" style="margin:0;">총 금액</div>
+            <div class="big" id="sendTotal" style="font-size:32px; margin:0;"></div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div class="label">상담 메모</div>
+          <textarea id="memoInput">3개월 치료 예상, 내원 일정 조율 필요</textarea>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="section-title">빠른 전송</div>
+        <div class="send-box" id="sendText"></div>
+        <div class="send-grid">
+          <button class="send-btn primary">문자</button>
+          <button class="send-btn">카톡</button>
+          <button class="send-btn">이메일</button>
+        </div>
+        <div class="dashed">
+          환자 요청으로 내용이 바뀌면 다시 이전 단계로 돌아가 수정 후 바로 재전송할 수 있도록 구성했습니다.
+        </div>
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep('estimate')">수정하기</button>
+          <button class="btn" onclick="goStep('history')">저장 후 이력 보기</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step-history" class="step-section hidden">
+    <div class="grid-2">
+      <div class="card pad">
+        <div class="section-title">상담 이력 요약</div>
+        <div class="info-box">
+          <div class="label">환자</div>
+          <div class="big" id="historyName"></div>
+        </div>
+        <div class="btn-row" style="margin-top:0; margin-bottom:12px;">
+          <div class="info-box" style="margin:0;">
+            <div class="label">최근 상담일</div>
+            <div class="big" style="font-size:22px;">2026-03-20</div>
+          </div>
+          <div class="info-box" style="margin:0;">
+            <div class="label">최근 상태</div>
+            <div class="big" style="font-size:22px;">고민 후 재내원</div>
+          </div>
+        </div>
+        <div class="info-box" style="background:#fff; border:1px solid #e2e8f0;">
+          <div class="label">마지막 안내 금액</div>
+          <div class="big" id="historyTotal"></div>
+          <div class="sub">임플란트 + 크라운 조합, 문자 전송 완료</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep('estimate')">이어서 수정</button>
+          <button class="btn" onclick="goStep('send')">다시 전송</button>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="section-title">재상담 시 바로 보이는 요약 카드</div>
+        <div class="info-box">
+          <div style="font-weight:800;">고민했던 옵션</div>
+          <div class="sub" style="margin-top:8px; line-height:1.7;">국산 임플란트와 수입 임플란트를 비교했고, 크라운은 지르코니아 기준으로 설명했습니다.</div>
+        </div>
+        <div class="info-box">
+          <div style="font-weight:800;">최근 변경 이력</div>
+          <ul>
+            <li>임플란트 수입형 → 국산형으로 변경</li>
+            <li>크라운 재료 PFM → 지르코니아로 변경</li>
+            <li>상담 메모 수정 후 문자 발송</li>
+          </ul>
+        </div>
+        <div class="dashed">
+          다음 방문 시 긴 기록을 다시 읽지 않고, <b>최근 견적·옵션·전송 이력</b>만 먼저 보여주면 상담 연결이 빨라집니다.
+        </div>
+        <div style="margin-top:14px;">
+          <button class="btn" style="width:100%;" onclick="goStep('patient')">처음 화면으로</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+  </div>  <script>
+    const patients = [
+      { id: 1, name: '김민수', phone: '010-2345-6789', note: '임플란트 상담 진행', lastEstimate: '1,800,000원', status: '고민 중' },
+      { id: 2, name: '이서연', phone: '010-1111-2222', note: '크라운 재상담', lastEstimate: '550,000원', status: '재내원 예정' },
+      { id: 3, name: '박준호', phone: '010-9876-1234', note: '충치/신경치료 비교', lastEstimate: '420,000원', status: '당일 결정 가능' }
+    ];
+
+    const treatmentCatalog = {
+      implant: {
+        label: '임플란트',
+        baseOptions: [
+          { key: '국산', price: 1200000, desc: '가성비 중심' },
+          { key: '수입', price: 1600000, desc: '브랜드 선호' }
+        ]
+      },
+      crown: {
+        label: '크라운',
+        baseOptions: [
+          { key: '지르코니아', price: 600000, desc: '심미성 우수' },
+          { key: 'PFM', price: 400000, desc: '비용 절감' },
+          { key: '골드', price: 700000, desc: '내구성 우수' }
+        ]
+      },
+      filling: {
+        label: '충치치료',
+        baseOptions: [
+          { key: '레진', price: 120000, desc: '간단 수복' },
+          { key: '인레이', price: 300000, desc: '중간 크기 수복' }
+        ]
+      },
+      root: {
+        label: '신경치료',
+        baseOptions: [
+          { key: '1관', price: 150000, desc: '기본' },
+          { key: '복합', price: 250000, desc: '난이도 높음' }
+        ]
+      }
+    };
+
+    let currentStep = 'patient';
+    let selectedPatient = patients[0];
+    let drawMode = 'pen';
+    let estimateItems = {
+      implant: { option: treatmentCatalog.implant.baseOptions[0], qty: 1 },
+      crown: { option: treatmentCatalog.crown.baseOptions[0], qty: 1 }
+    };
+
+    function formatKRW(value) {
+      return value.toLocaleString('ko-KR') + '원';
+    }
+
+    function getTotal() {
+      return Object.values(estimateItems).reduce((sum, item) => sum + item.option.price * item.qty, 0);
+    }
+
+    function goStep(step) {
+      currentStep = step;
+      document.querySelectorAll('.step-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('step-' + step).classList.remove('hidden');
+      document.querySelectorAll('[data-step-btn]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.stepBtn === step);
+      });
+      renderDynamic();
+    }
+
+    function renderPatients(keyword = '') {
+      const list = document.getElementById('patientList');
+      const filtered = patients.filter(p => (p.name + ' ' + p.phone + ' ' + p.note).includes(keyword));
+      list.innerHTML = filtered.map(patient => `
+        <div class="patient-item ${selectedPatient.id === patient.id ? 'active' : ''}" onclick="selectPatient(${patient.id})">
+          <div class="row">
             <div>
-              <ToothPreview drawMode={drawMode} />
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button variant={drawMode === "pen" ? "default" : "outline"} className="rounded-2xl" onClick={() => setDrawMode("pen")}><Pencil className="mr-2 h-4 w-4" />펜 표시</Button>
-                <Button variant={drawMode === "highlight" ? "default" : "outline"} className="rounded-2xl" onClick={() => setDrawMode("highlight")}>형광 강조</Button>
-                <Button variant={drawMode === "arrow" ? "default" : "outline"} className="rounded-2xl" onClick={() => setDrawMode("arrow")}>화살표</Button>
-                <Button variant="outline" className="rounded-2xl"><RotateCcw className="mr-2 h-4 w-4" />초기화</Button>
+              <div class="patient-name">${patient.name}</div>
+              <div class="sub">${patient.phone}</div>
+              <div class="sub" style="color:#475569; margin-top:8px;">${patient.note}</div>
+            </div>
+            <div class="badge">${patient.status}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectPatient(id) {
+      selectedPatient = patients.find(p => p.id === id);
+      renderPatients(document.getElementById('patientSearch').value);
+      renderDynamic();
+    }
+
+    function setMode(mode) {
+      drawMode = mode;
+      document.querySelectorAll('[data-mode]').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+      document.getElementById('drawPen').style.display = mode === 'pen' ? 'block' : 'none';
+      document.getElementById('drawHighlight').style.display = mode === 'highlight' ? 'block' : 'none';
+      document.getElementById('drawArrow').style.display = mode === 'arrow' ? 'block' : 'none';
+      document.getElementById('modeChip').textContent = mode === 'pen' ? '자유 펜 표시' : mode === 'highlight' ? '형광 강조' : '화살표 표시';
+    }
+
+    function addTreatment(key) {
+      if (!estimateItems[key]) {
+        estimateItems[key] = { option: treatmentCatalog[key].baseOptions[0], qty: 1 };
+        renderEstimate();
+      }
+    }
+
+    function removeTreatment(key) {
+      delete estimateItems[key];
+      renderEstimate();
+    }
+
+    function changeQty(key, diff) {
+      const next = Math.max(1, estimateItems[key].qty + diff);
+      estimateItems[key].qty = next;
+      renderEstimate();
+    }
+
+    function changeOption(key, optionKey) {
+      estimateItems[key].option = treatmentCatalog[key].baseOptions.find(opt => opt.key === optionKey);
+      renderEstimate();
+    }
+
+    function renderAddButtons() {
+      const wrap = document.getElementById('addButtons');
+      wrap.innerHTML = Object.keys(treatmentCatalog).map(key => `
+        <button class="pill-btn ${estimateItems[key] ? 'active' : ''}" onclick="addTreatment('${key}')">+ ${treatmentCatalog[key].label}</button>
+      `).join('');
+    }
+
+    function renderEstimate() {
+      renderAddButtons();
+
+      const estimateList = document.getElementById('estimateList');
+      estimateList.innerHTML = Object.keys(estimateItems).map(key => {
+        const item = estimateItems[key];
+        const options = treatmentCatalog[key].baseOptions.map(opt => `
+          <option value="${opt.key}" ${opt.key === item.option.key ? 'selected' : ''}>${opt.key} · ${formatKRW(opt.price)}</option>
+        `).join('');
+
+        return `
+          <div class="estimate-item">
+            <div class="row">
+              <div>
+                <div class="title">${treatmentCatalog[key].label}</div>
+                <div class="sub">${item.option.desc}</div>
+              </div>
+              <button class="delete" onclick="removeTreatment('${key}')">삭제</button>
+            </div>
+            <div class="form-grid">
+              <div>
+                <div class="label">재료 / 종류</div>
+                <select onchange="changeOption('${key}', this.value)">${options}</select>
+              </div>
+              <div>
+                <div class="label">수량</div>
+                <div class="qty-box">
+                  <button class="qty-btn" onclick="changeQty('${key}', -1)">-</button>
+                  <div class="qty-value">${item.qty}</div>
+                  <button class="qty-btn" onclick="changeQty('${key}', 1)">+</button>
+                </div>
               </div>
             </div>
-
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="text-xl">간단 설명 패널</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="flex items-center gap-2 font-semibold text-slate-900"><Play className="h-4 w-4" />영상/이미지 설명</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">실제 MVP에서는 영상 재생보다는 정지 화면 캡처와 부위 표시 위주로 단순화하는 것이 더 빠릅니다.</p>
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="font-semibold text-slate-900">전후 비교 예시</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">치료 전/후 참고 이미지를 작은 카드형으로 제시해 설득력을 높일 수 있습니다.</p>
-                </div>
-                <Textarea className="min-h-[140px] rounded-2xl" defaultValue={"현재 어금니 부위 손상이 진행되어 크라운 또는 임플란트 상담이 필요합니다. 비용 차이는 재료와 방식에 따라 바로 비교 가능합니다."} />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="h-12 rounded-2xl" onClick={() => setStep("patient")}><ArrowLeft className="mr-2 h-4 w-4" />이전</Button>
-                  <Button className="h-12 rounded-2xl" onClick={() => setStep("estimate")}>견적 보기 <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {step === "estimate" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl"><CircleDollarSign className="h-5 w-5" />빠른 견적</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <div className="text-sm font-semibold text-slate-500">치료 추가</div>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {Object.entries(treatmentCatalog).map(([key, item]) => (
-                      <Button key={key} variant={estimateItems[key] ? "default" : "outline"} className="rounded-2xl" onClick={() => addTreatment(key)}>
-                        + {item.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  {Object.entries(estimateItems).map(([key, item]) => (
-                    <EstimateRow
-                      key={key}
-                      itemKey={key}
-                      item={item}
-                      onRemove={() => removeItem(key)}
-                      onQtyChange={(qty) => updateItem(key, { qty })}
-                      onOptionChange={(optionKey) => {
-                        const opt = treatmentCatalog[key].baseOptions.find((v) => v.key === optionKey);
-                        updateItem(key, { option: opt });
-                      }}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="rounded-3xl border shadow-none">
-                <CardHeader>
-                  <CardTitle className="text-xl">옵션 비교 요약</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {Object.entries(estimateItems).map(([key, item]) => (
-                    <div key={key} className="rounded-2xl bg-slate-50 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="font-semibold text-slate-900">{treatmentCatalog[key].label}</div>
-                        <Badge className="rounded-full bg-white text-slate-700">현재: {item.option.key}</Badge>
-                      </div>
-                      <div className="mt-3 space-y-2 text-sm text-slate-600">
-                        {treatmentCatalog[key].baseOptions.map((opt) => (
-                          <div key={opt.key} className={`flex items-center justify-between rounded-xl px-3 py-2 ${opt.key === item.option.key ? "bg-sky-50 text-sky-700" : "bg-white"}`}>
-                            <span>{opt.key}</span>
-                            <span>{formatKRW(opt.price)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-3xl border-0 bg-slate-900 text-white shadow-sm">
-                <CardContent className="p-6">
-                  <div className="text-sm text-slate-300">예상 총 금액</div>
-                  <div className="mt-2 text-4xl font-bold">{formatKRW(total)}</div>
-                  <div className="mt-3 text-sm leading-6 text-slate-300">재료나 술식을 바꾸면 금액이 즉시 반영됩니다. 복잡한 진단 설명보다 가격 비교와 빠른 수정에 초점을 둔 화면입니다.</div>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <Button variant="secondary" className="h-12 rounded-2xl" onClick={() => setStep("diagnosis")}><ArrowLeft className="mr-2 h-4 w-4" />설명으로</Button>
-                    <Button className="h-12 rounded-2xl bg-white text-slate-900 hover:bg-slate-100" onClick={() => setStep("send")}>견적 확정 <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div class="subtotal">
+              <span class="sub" style="margin:0;">소계</span>
+              <b>${formatKRW(item.option.price * item.qty)}</b>
             </div>
-          </motion.div>
-        )}
+          </div>
+        `;
+      }).join('');
 
-        {step === "send" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="text-xl">견적서 요약</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.entries(estimateItems).map(([key, item]) => (
-                    <div key={key} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4">
-                      <div>
-                        <div className="font-semibold text-slate-900">{treatmentCatalog[key].label}</div>
-                        <div className="mt-1 text-sm text-slate-500">{item.option.key} · 수량 {item.qty}</div>
-                      </div>
-                      <div className="text-base font-bold text-slate-900">{formatKRW(item.option.price * item.qty)}</div>
-                    </div>
-                  ))}
-                </div>
+      const compareWrap = document.getElementById('compareWrap');
+      compareWrap.innerHTML = Object.keys(estimateItems).map(key => {
+        const item = estimateItems[key];
+        const lines = treatmentCatalog[key].baseOptions.map(opt => `
+          <div class="opt-line ${opt.key === item.option.key ? 'active' : ''}">
+            <span>${opt.key}</span>
+            <span>${formatKRW(opt.price)}</span>
+          </div>
+        `).join('');
 
-                <div className="mt-4 rounded-2xl border p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">총 금액</span>
-                    <span className="text-2xl font-bold text-slate-900">{formatKRW(total)}</span>
-                  </div>
-                </div>
+        return `
+          <div class="compare-card">
+            <div class="row" style="align-items:center;">
+              <div style="font-weight:800;">${treatmentCatalog[key].label}</div>
+              <div class="badge">현재: ${item.option.key}</div>
+            </div>
+            <div style="margin-top:10px;">${lines}</div>
+          </div>
+        `;
+      }).join('');
 
-                <div className="mt-4">
-                  <div className="mb-2 text-sm font-semibold text-slate-500">상담 메모</div>
-                  <Textarea value={memo} onChange={(e) => setMemo(e.target.value)} className="min-h-[120px] rounded-2xl" />
-                </div>
-              </CardContent>
-            </Card>
+      document.getElementById('totalValue').textContent = formatKRW(getTotal());
+      renderSummary();
+      renderHistory();
+      renderSendText();
+    }
 
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl"><Send className="h-5 w-5" />빠른 전송</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                  김민수님, 상담 견적 안내드립니다. 총 예상 금액은 <span className="font-semibold text-slate-900">{formatKRW(total)}</span>이며, 선택 재료 및 술식에 따라 변동 가능합니다.
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Button className="h-14 rounded-2xl"><MessageSquare className="mr-2 h-4 w-4" />문자</Button>
-                  <Button variant="outline" className="h-14 rounded-2xl"><MessageSquare className="mr-2 h-4 w-4" />카톡</Button>
-                  <Button variant="outline" className="h-14 rounded-2xl"><Mail className="mr-2 h-4 w-4" />이메일</Button>
-                </div>
-                <div className="rounded-2xl border border-dashed p-4 text-sm text-slate-600">
-                  환자 요청으로 내용이 바뀌면 다시 이전 단계로 돌아가 수정 후 바로 재전송할 수 있도록 구성했습니다.
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="h-12 rounded-2xl" onClick={() => setStep("estimate")}>수정하기</Button>
-                  <Button className="h-12 rounded-2xl" onClick={() => setStep("history")}>저장 후 이력 보기</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+    function renderSummary() {
+      const summaryList = document.getElementById('summaryList');
+      summaryList.innerHTML = Object.keys(estimateItems).map(key => {
+        const item = estimateItems[key];
+        return `
+          <div class="summary-item">
+            <div>
+              <div style="font-weight:800;">${treatmentCatalog[key].label}</div>
+              <div class="sub">${item.option.key} · 수량 ${item.qty}</div>
+            </div>
+            <div style="font-weight:800;">${formatKRW(item.option.price * item.qty)}</div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('sendTotal').textContent = formatKRW(getTotal());
+    }
 
-        {step === "history" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5" />상담 이력 요약</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">환자</div>
-                  <div className="mt-1 text-xl font-bold text-slate-900">{selectedPatient.name}</div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">최근 상담일</div>
-                    <div className="mt-1 font-bold text-slate-900">2026-03-20</div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">최근 상태</div>
-                    <div className="mt-1 font-bold text-slate-900">고민 후 재내원</div>
-                  </div>
-                </div>
-                <div className="rounded-2xl border p-4">
-                  <div className="text-sm text-slate-500">마지막 안내 금액</div>
-                  <div className="mt-1 text-2xl font-bold text-slate-900">{formatKRW(total)}</div>
-                  <div className="mt-2 text-sm text-slate-600">임플란트 + 크라운 조합, 문자 전송 완료</div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="h-12 rounded-2xl" onClick={() => setStep("estimate")}>이어서 수정</Button>
-                  <Button className="h-12 rounded-2xl" onClick={() => setStep("send")}>다시 전송</Button>
-                </div>
-              </CardContent>
-            </Card>
+    function renderSendText() {
+      const text = `${selectedPatient.name}님, 상담 견적 안내드립니다. 총 예상 금액은 ${formatKRW(getTotal())}이며, 선택 재료 및 술식에 따라 변동 가능합니다.`;
+      document.getElementById('sendText').textContent = text;
+    }
 
-            <Card className="rounded-3xl border shadow-none">
-              <CardHeader>
-                <CardTitle className="text-xl">재상담 시 바로 보이는 요약 카드</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="font-semibold text-slate-900">고민했던 옵션</div>
-                  <div className="mt-2 text-sm text-slate-600">국산 임플란트와 수입 임플란트를 비교했고, 크라운은 지르코니아 기준으로 설명했습니다.</div>
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <div className="font-semibold text-slate-900">최근 변경 이력</div>
-                  <ul className="mt-2 space-y-2 text-sm text-slate-600">
-                    <li>• 임플란트 수입형 → 국산형으로 변경</li>
-                    <li>• 크라운 재료 PFM → 지르코니아로 변경</li>
-                    <li>• 상담 메모 수정 후 문자 발송</li>
-                  </ul>
-                </div>
-                <div className="rounded-2xl border border-dashed p-4 text-sm leading-6 text-slate-600">
-                  다음 방문 시 긴 기록을 다시 읽지 않고, <span className="font-semibold">최근 견적·옵션·전송 이력</span>만 먼저 보여주면 상담 연결이 빨라집니다.
-                </div>
-                <Button className="h-12 w-full rounded-2xl" onClick={() => setStep("patient")}>처음 화면으로</Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </CardContent>
-    </Card>
-  </div>
-</div>
+    function renderHistory() {
+      document.getElementById('historyName').textContent = selectedPatient.name;
+      document.getElementById('historyTotal').textContent = formatKRW(getTotal());
+    }
 
-); }
+    function renderDynamic() {
+      document.getElementById('summaryName').textContent = selectedPatient.name;
+      document.getElementById('summaryEstimate').textContent = selectedPatient.lastEstimate;
+      document.getElementById('summaryStatus').textContent = selectedPatient.status;
+      renderEstimate();
+    }
+
+    document.querySelectorAll('[data-step-btn]').forEach(btn => {
+      btn.addEventListener('click', () => goStep(btn.dataset.stepBtn));
+    });
+
+    document.getElementById('patientSearch').addEventListener('input', (e) => {
+      renderPatients(e.target.value.trim());
+    });
+
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => setMode(btn.dataset.mode));
+    });
+
+    renderPatients();
+    renderDynamic();
+    setMode('pen');
+    goStep('patient');
+  </script></body>
+</html>
