@@ -589,6 +589,7 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
 
     const AppState = {
+      sttRawFinal: '',
       supabase: null,
       connected: false,
       patients: [],
@@ -833,14 +834,26 @@
       AppState.recognition = recognition;
       AppState.isRecording = true;
       AppState.sttRaw = '';
+      AppState.sttRawFinal = '';
       renderSttState();
 
       recognition.onresult = (event) => {
         let transcript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript + ' ';
+        let finalTranscript = AppState.sttRawFinal || '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const chunk = event.results[i][0].transcript.trim();
+          if (!chunk) continue;
+
+          if (event.results[i].isFinal) {
+            finalTranscript += (finalTranscript ? ' ' : '') + chunk;
+          } else {
+            transcript += (transcript ? ' ' : '') + chunk;
+          }
         }
-        AppState.sttRaw = transcript.trim();
+
+        AppState.sttRawFinal = finalTranscript.trim();
+        AppState.sttRaw = [AppState.sttRawFinal, transcript.trim()].filter(Boolean).join(' ').trim();
         renderSttState();
       };
 
