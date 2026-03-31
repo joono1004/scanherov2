@@ -1,684 +1,1313 @@
-<!DOCTYPE html><html lang="ko">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>치과 상담 · 견적 웹앱 MVP</title>
+  <title>OneClick Dental Consult</title>
   <style>
+    :root {
+      --bg: #f3f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f8fbff;
+      --line: #d9e4ef;
+      --text: #122236;
+      --sub: #61758a;
+      --primary: #246bff;
+      --primary-soft: #ebf2ff;
+      --dark: #102033;
+      --success: #0f9d58;
+      --warning: #c97a00;
+      --danger: #d83b3b;
+      --shadow: 0 12px 32px rgba(18, 34, 54, 0.08);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --header-h: 76px;
+      --fab-h: 70px;
+    }
+
     * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      margin: 0;
       font-family: Arial, "Noto Sans KR", sans-serif;
-      background: #f1f5f9;
-      color: #0f172a;
+      background: var(--bg);
+      color: var(--text);
     }
-    button, input, select, textarea {
-      font: inherit;
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .app {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .hero {
-      display: grid;
-      grid-template-columns: 1.35fr 0.85fr;
+
+    .topbar {
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 16px;
-      margin-bottom: 16px;
+      padding: 14px 22px;
+      background: rgba(255,255,255,0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .pill {
-      display: inline-block;
-      padding: 8px 12px;
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      border-radius: 999px;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #d9e7ff, #ffffff);
+      border: 1px solid #bfd3fb;
+      font-size: 20px;
+      flex: 0 0 auto;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--sub);
       font-size: 13px;
-      font-weight: 700;
+      white-space: nowrap;
     }
-    h1 {
-      margin: 12px 0 10px;
-      font-size: 38px;
-      line-height: 1.25;
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .muted {
-      color: #475569;
-      line-height: 1.7;
-    }
-    .card {
+
+    .chip,
+    .ghost-btn,
+    .dark-btn,
+    .primary-btn,
+    .soft-btn,
+    .mini-btn,
+    .seg-btn,
+    .icon-btn,
+    .action-card,
+    .tab-btn,
+    .filter-btn,
+    .quick-link,
+    .patient-inline-btn,
+    .qty-btn,
+    .drawer-btn,
+    .mode-chip {
+      border: 1px solid var(--line);
       background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 24px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-    }
-    .card.pad { padding: 20px; }
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    .stat {
-      background: #f8fafc;
-      border-radius: 18px;
-      padding: 16px;
-    }
-    .stat .label { font-size: 12px; color: #64748b; }
-    .stat .value { margin-top: 6px; font-size: 28px; font-weight: 800; }
-    .stepbar {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-    .stepbtn {
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      border-radius: 18px;
-      padding: 14px;
-      text-align: left;
-      cursor: pointer;
+      color: var(--text);
+      border-radius: 14px;
       transition: 0.2s;
     }
-    .stepbtn:hover { border-color: #94a3b8; }
-    .stepbtn.active {
-      background: #eff6ff;
-      border-color: #3b82f6;
+
+    .chip { padding: 10px 12px; font-weight: 700; color: var(--sub); border-radius: 999px; }
+    .ghost-btn, .soft-btn, .primary-btn, .dark-btn { padding: 12px 16px; font-weight: 800; }
+    .primary-btn { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .dark-btn { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .soft-btn { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+    .ghost-btn:hover, .soft-btn:hover, .primary-btn:hover, .dark-btn:hover, .seg-btn:hover, .icon-btn:hover, .tab-btn:hover, .filter-btn:hover, .quick-link:hover, .action-card:hover, .patient-inline-btn:hover, .qty-btn:hover, .drawer-btn:hover, .mode-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(18, 34, 54, 0.08);
     }
-    .stepno { font-size: 12px; color: #64748b; font-weight: 700; }
-    .steplabel { margin-top: 6px; font-weight: 800; }
-    .content {
-      padding: 20px;
+
+    .mode-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
     }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 18px;
-    }
-    .section-title {
-      font-size: 24px;
+    .mode-chip {
+      border-radius: 999px;
+      padding: 9px 12px;
       font-weight: 800;
-      margin-bottom: 16px;
+      background: #fff;
     }
-    .search-wrap {
-      position: relative;
+    .mode-chip.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
     }
-    .search-wrap input {
+
+    .main-area {
+      padding: 18px;
+      flex: 1;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* home */
+    .home-layout {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 290px minmax(420px, 1fr) 360px;
+      min-height: calc(100vh - var(--header-h) - 36px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .panel-inner { padding: 18px; }
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .panel-title h2,
+    .panel-title h3 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+    .panel-title p {
+      margin: 6px 0 0;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .count-badge {
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .search-box { position: relative; margin-bottom: 14px; }
+    .search-box input {
       width: 100%;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--line);
       border-radius: 16px;
       padding: 14px 14px 14px 42px;
       background: #fff;
     }
-    .search-wrap .icon {
+    .search-icon {
       position: absolute;
       left: 14px;
-      top: 12px;
-      color: #94a3b8;
+      top: 13px;
+      color: #97a6b6;
       font-size: 18px;
     }
-    .list {
-      margin-top: 14px;
+
+    .filter-list, .quick-actions { display: grid; gap: 10px; }
+    .filter-btn, .quick-link {
+      text-align: left;
+      padding: 13px 14px;
+      font-weight: 800;
+    }
+    .filter-btn.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: #bfd3ff;
+    }
+    .quick-actions { margin-top: 18px; }
+    .quick-link.primary {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .metric-strip {
       display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
+      margin-bottom: 16px;
     }
-    .patient-item {
-      border: 1px solid #e2e8f0;
+    .metric-card {
+      background: var(--panel-soft);
+      border: 1px solid #e2ecf6;
       border-radius: 18px;
-      background: #fff;
+      padding: 14px;
+    }
+    .metric-card .label { color: var(--sub); font-size: 12px; margin-bottom: 8px; }
+    .metric-card .value { font-size: 24px; font-weight: 900; }
+
+    .patient-list { display: grid; gap: 12px; }
+    .patient-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
       padding: 16px;
+      background: #fff;
       cursor: pointer;
-      transition: 0.2s;
     }
-    .patient-item:hover { border-color: #94a3b8; }
-    .patient-item.active {
-      background: #eff6ff;
-      border-color: #3b82f6;
+    .patient-card.active {
+      background: var(--primary-soft);
+      border-color: #bfd3ff;
     }
-    .row {
+    .patient-card-top {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       align-items: flex-start;
     }
-    .patient-name { font-size: 18px; font-weight: 800; }
-    .badge {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+    .patient-name { font-size: 19px; font-weight: 900; margin-bottom: 4px; }
+    .patient-meta { color: var(--sub); font-size: 13px; line-height: 1.55; }
+    .status-badge {
       border-radius: 999px;
-      padding: 6px 10px;
+      padding: 7px 10px;
       font-size: 12px;
-      color: #334155;
+      font-weight: 900;
       white-space: nowrap;
     }
-    .sub { color: #64748b; font-size: 14px; margin-top: 6px; }
-    .btn-row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+    .status-pending { background: #fff7e8; color: var(--warning); }
+    .status-revisit { background: #edf4ff; color: #1853d7; }
+    .status-fast { background: #ecfdf3; color: var(--success); }
+    .patient-card-bottom {
+      display: flex;
+      justify-content: space-between;
       gap: 12px;
-      margin-top: 16px;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
     }
-    .btn, .btn-outline, .tiny-btn {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 16px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: 0.2s;
-    }
-    .btn { background: #0f172a; color: #fff; }
-    .btn:hover { background: #1e293b; }
-    .btn-outline {
+    .patient-estimate { font-size: 18px; font-weight: 900; }
+    .patient-inline-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .patient-inline-btn {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
       background: #fff;
-      color: #0f172a;
-      border: 1px solid #cbd5e1;
     }
-    .btn-outline:hover { border-color: #94a3b8; }
-    .info-box {
-      background: #f8fafc;
+
+    .patient-summary-top {
+      padding: 20px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border-bottom: 1px solid var(--line);
+    }
+    .summary-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-name { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
+    .summary-sub { color: var(--sub); line-height: 1.6; font-size: 14px; }
+    .summary-status {
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .summary-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 16px;
+    }
+    .summary-item {
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 18px;
+      padding: 14px;
+    }
+    .summary-item .label { font-size: 12px; color: var(--sub); margin-bottom: 7px; }
+    .summary-item .value { font-size: 18px; font-weight: 900; }
+    .summary-note {
+      border: 1px dashed #c0d0df;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.9);
+      padding: 15px;
+      line-height: 1.7;
+      color: #45586b;
+      font-size: 14px;
+    }
+    .summary-actions {
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+    }
+    .action-card {
+      width: 100%;
       padding: 16px;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      border-radius: 18px;
+    }
+    .action-card.dark { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .action-card.soft { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+    .action-card.white { background: #fff; color: var(--text); }
+    .sub-section {
+      margin: 0 18px 18px;
+      padding: 16px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .sub-section h4 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+    .timeline { display: grid; gap: 10px; }
+    .timeline-item {
+      border-radius: 16px;
+      background: var(--panel-soft);
+      padding: 12px;
+      color: #43576b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* consult */
+    .consult-layout {
+      display: grid;
+      grid-template-columns: 320px minmax(420px, 1fr) 380px;
+      gap: 18px;
+      min-height: calc(100vh - var(--header-h) - 36px);
+    }
+
+    .patient-header-card {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .header-summary {
+      background: linear-gradient(135deg, #ffffff, #f6faff);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+    }
+    .header-summary .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
       margin-bottom: 12px;
     }
-    .info-box .label { color: #64748b; font-size: 13px; }
-    .info-box .big { margin-top: 6px; font-size: 24px; font-weight: 800; }
-    .dashed {
-      border: 1px dashed #cbd5e1;
-      border-radius: 18px;
-      padding: 16px;
-      color: #475569;
-      line-height: 1.7;
+    .header-summary .name { font-size: 24px; font-weight: 900; }
+    .header-summary .meta { font-size: 13px; color: var(--sub); line-height: 1.6; }
+    .header-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .header-grid .box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .header-grid .box .label { font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+    .header-grid .box .value { font-size: 16px; font-weight: 900; }
+
+    .seg-tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .seg-btn {
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
       background: #fff;
     }
-    .preview-wrap {
+    .seg-btn.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .toolbar-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .icon-btn {
+      padding: 10px 12px;
+      font-weight: 800;
+      border-radius: 14px;
       background: #fff;
-      border: 1px solid #e2e8f0;
+    }
+    .icon-btn.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .image-stage {
+      border: 1px solid var(--line);
       border-radius: 24px;
       overflow: hidden;
+      background: #fff;
       position: relative;
     }
-    .mode-chip {
+    .mode-tag {
       position: absolute;
       top: 14px;
       right: 14px;
-      background: rgba(15, 23, 42, 0.88);
+      z-index: 5;
+      background: rgba(16, 32, 51, 0.9);
       color: #fff;
-      border-radius: 999px;
       padding: 8px 12px;
+      border-radius: 999px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 900;
     }
     svg { display: block; width: 100%; height: auto; }
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-    .tiny-btn {
+
+    .info-card,
+    .note-card,
+    .estimate-card,
+    .send-card,
+    .history-card,
+    .accordion-item {
+      border: 1px solid var(--line);
+      border-radius: 20px;
       background: #fff;
-      color: #0f172a;
-      border: 1px solid #cbd5e1;
-      padding: 12px 14px;
     }
-    .tiny-btn.active {
-      background: #0f172a;
-      color: #fff;
-      border-color: #0f172a;
-    }
-    .textarea, textarea {
+    .info-card, .note-card, .estimate-card, .send-card, .history-card { padding: 16px; }
+    .info-card h3, .note-card h3, .estimate-card h3, .send-card h3, .history-card h3 { margin: 0 0 12px; font-size: 18px; }
+
+    .diagnosis-wrap { display: grid; gap: 14px; }
+
+    .text-area,
+    textarea {
       width: 100%;
-      min-height: 120px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      line-height: 1.6;
+      min-height: 110px;
+      resize: vertical;
+      background: #fff;
+    }
+
+    .template-list { display: grid; gap: 10px; }
+    .template-chip {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      border-radius: 14px;
+      padding: 12px;
+      color: #405467;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .estimate-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn {
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-weight: 800;
+      background: #fff;
+    }
+    .tab-btn.active {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .estimate-list { display: grid; gap: 12px; }
+    .estimate-item {
+      background: var(--panel-soft);
+      border: 1px solid #e2ebf5;
       border-radius: 18px;
       padding: 14px;
-      resize: vertical;
-      line-height: 1.6;
     }
-    .add-buttons {
+    .estimate-item-top {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: space-between;
       gap: 10px;
-      margin-bottom: 16px;
+      align-items: flex-start;
+      margin-bottom: 12px;
     }
-    .pill-btn {
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .pill-btn.active {
-      background: #0f172a;
-      color: #fff;
-      border-color: #0f172a;
-    }
-    .estimate-item {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-    .estimate-item .title { font-size: 18px; font-weight: 800; }
-    .delete {
+    .estimate-item .title { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .estimate-item .desc { color: var(--sub); font-size: 13px; }
+    .delete-btn {
       border: 0;
       background: transparent;
-      color: #94a3b8;
-      font-weight: 700;
-      cursor: pointer;
+      color: #8ea0b1;
+      font-weight: 900;
+      padding: 0;
     }
-    .delete:hover { color: #ef4444; }
     .form-grid {
-      margin-top: 14px;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
+      margin-bottom: 12px;
     }
-    .label { font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 6px; }
+    .label { font-size: 12px; color: var(--sub); font-weight: 800; margin-bottom: 6px; }
     select {
       width: 100%;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--line);
       border-radius: 14px;
       padding: 12px;
       background: #fff;
     }
-    .qty-box {
-      display: flex;
-      gap: 8px;
+    .qty-wrap {
+      display: inline-flex;
       align-items: center;
+      gap: 8px;
     }
     .qty-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
       font-size: 18px;
-      cursor: pointer;
+      font-weight: 900;
     }
     .qty-value {
-      min-width: 56px;
+      min-width: 54px;
       text-align: center;
+      border: 1px solid var(--line);
       background: #fff;
-      border: 1px solid #cbd5e1;
-      border-radius: 14px;
-      padding: 12px;
-      font-weight: 800;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 900;
     }
     .subtotal {
-      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
       background: #fff;
-      border: 1px solid #e2e8f0;
       border-radius: 14px;
       padding: 12px 14px;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
     }
+
+    .compare-list { display: grid; gap: 12px; }
     .compare-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
       background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 14px;
     }
-    .opt-line {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-      padding: 10px 12px;
-      background: #f8fafc;
-      border-radius: 14px;
-      font-size: 14px;
-    }
-    .opt-line.active {
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-weight: 700;
-    }
-    .total-card {
-      background: #0f172a;
-      color: #fff;
-      border-radius: 24px;
-      padding: 22px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
-    }
-    .total-label { color: #cbd5e1; font-size: 14px; }
-    .total-value { margin-top: 8px; font-size: 44px; font-weight: 900; }
-    .summary-item {
+    .compare-card-head {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       align-items: center;
-      background: #f8fafc;
-      border-radius: 18px;
-      padding: 16px;
       margin-bottom: 10px;
     }
-    .send-box {
-      background: #f8fafc;
-      border-radius: 18px;
-      padding: 16px;
-      line-height: 1.7;
-      color: #475569;
-    }
-    .send-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    .compare-option {
+      display: flex;
+      justify-content: space-between;
       gap: 10px;
-      margin-top: 14px;
-      margin-bottom: 14px;
+      align-items: center;
+      background: var(--panel-soft);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      margin-top: 8px;
     }
-    .send-btn {
-      border-radius: 18px;
-      padding: 16px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      cursor: pointer;
-      font-weight: 800;
+    .compare-option.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 900;
     }
-    .send-btn.primary {
-      background: #0f172a;
-      color: #fff;
-      border-color: #0f172a;
-    }
-    ul { padding-left: 18px; }
-    li { margin-bottom: 8px; color: #475569; }
-    .hidden { display: none; }@media (max-width: 1024px) {
-  .hero, .grid-2 { grid-template-columns: 1fr; }
-  h1 { font-size: 30px; }
-}
-@media (max-width: 760px) {
-  .app { padding: 14px; }
-  .stepbar { grid-template-columns: 1fr; }
-  .btn-row, .form-grid, .send-grid, .stats { grid-template-columns: 1fr; }
-  .total-value { font-size: 34px; }
-}
 
+    .total-card {
+      border-radius: 24px;
+      background: var(--dark);
+      color: #fff;
+      padding: 20px;
+      box-shadow: 0 12px 32px rgba(16, 32, 51, 0.18);
+      margin-top: 14px;
+    }
+    .total-card .label { color: #c2d0dd; }
+    .total-card .value { font-size: 40px; font-weight: 900; margin-top: 8px; }
+    .total-card .subtext { color: #d2dce6; font-size: 14px; line-height: 1.7; margin-top: 10px; }
+    .total-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .total-actions .ghost-btn { background: #fff; }
+
+    .summary-list { display: grid; gap: 10px; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-radius: 16px;
+      background: var(--panel-soft);
+      padding: 14px;
+    }
+
+    .send-box {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      border-radius: 18px;
+      padding: 14px;
+      line-height: 1.7;
+      color: #44576b;
+      margin-bottom: 12px;
+    }
+    .send-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .send-actions button {
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 900;
+    }
+
+    .accordion-list { display: grid; gap: 12px; }
+    .accordion-head {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-weight: 900;
+      font-size: 17px;
+      color: var(--text);
+    }
+    .accordion-item { padding: 14px 16px; }
+    .accordion-body { margin-top: 12px; }
+
+    .history-items { display: grid; gap: 10px; }
+    .history-row {
+      background: var(--panel-soft);
+      border-radius: 16px;
+      padding: 12px;
+      line-height: 1.6;
+      color: #43576b;
+      font-size: 14px;
+    }
+
+    .floating-bar {
+      position: sticky;
+      bottom: 12px;
+      margin-top: 14px;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      z-index: 20;
+    }
+    .floating-total .label { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+    .floating-total .value { font-size: 24px; font-weight: 900; }
+    .floating-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .presentation-only { display: none; }
+    .mobile-only { display: none; }
+
+    /* tablet mode */
+    body.mode-tablet .home-layout,
+    body.mode-tablet .consult-layout {
+      grid-template-columns: 1fr;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    body.mode-tablet .home-sidebar,
+    body.mode-tablet .consult-sidebar,
+    body.mode-tablet .consult-right .internal-only,
+    body.mode-tablet .home-right .internal-only {
+      display: none !important;
+    }
+    body.mode-tablet .metric-strip { grid-template-columns: repeat(2, 1fr); }
+    body.mode-tablet .home-right,
+    body.mode-tablet .consult-right {
+      order: 2;
+    }
+    body.mode-tablet .consult-center {
+      order: 1;
+    }
+    body.mode-tablet .presentation-only { display: block; }
+    body.mode-tablet .send-actions { grid-template-columns: repeat(2, 1fr); }
+    body.mode-tablet .header-grid { grid-template-columns: repeat(2, 1fr); }
+    body.mode-tablet .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    body.mode-tablet .floating-bar {
+      max-width: 980px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* mobile mode */
+    body.mode-mobile .topbar {
+      height: auto;
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 12px 14px;
+      gap: 12px;
+    }
+    body.mode-mobile .topbar-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+    body.mode-mobile .mode-switcher {
+      width: 100%;
+      justify-content: space-between;
+    }
+    body.mode-mobile .mode-chip {
+      flex: 1;
+      text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    body.mode-mobile .main-area {
+      padding: 14px;
+      padding-bottom: calc(var(--fab-h) + 20px);
+    }
+    body.mode-mobile .home-layout,
+    body.mode-mobile .consult-layout {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    body.mode-mobile .home-sidebar,
+    body.mode-mobile .consult-sidebar,
+    body.mode-mobile .home-right,
+    body.mode-mobile .internal-only,
+    body.mode-mobile .desktop-only {
+      display: none !important;
+    }
+    body.mode-mobile .metric-strip,
+    body.mode-mobile .summary-grid,
+    body.mode-mobile .header-grid,
+    body.mode-mobile .form-grid,
+    body.mode-mobile .send-actions,
+    body.mode-mobile .total-actions {
+      grid-template-columns: 1fr;
+    }
+    body.mode-mobile .patient-card-bottom,
+    body.mode-mobile .summary-head,
+    body.mode-mobile .header-summary .top,
+    body.mode-mobile .patient-card-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    body.mode-mobile .summary-name,
+    body.mode-mobile .header-summary .name { font-size: 24px; }
+    body.mode-mobile .floating-bar {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      border-radius: 18px;
+      padding: 12px;
+    }
+    body.mode-mobile .floating-total .value { font-size: 20px; }
+    body.mode-mobile .floating-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+    body.mode-mobile .mobile-only { display: block; }
+    body.mode-mobile .presentation-only { display: none; }
+    body.mode-mobile .drawer-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 900;
+      margin-top: 10px;
+      background: #fff;
+    }
+
+    @media (max-width: 1280px) {
+      body.mode-pc .home-layout,
+      body.mode-pc .consult-layout {
+        grid-template-columns: 260px 1fr 340px;
+      }
+    }
   </style>
 </head>
-<body>
-  <div class="app">
-    <div class="hero">
-      <div>
-        <div class="pill">치과 상담 · 견적 웹앱 MVP</div>
-        <h1>빠르게 설명하고, 바로 견적 내고, 즉시 전송하는 실화면 데모</h1>
-        <div class="muted">
-          DB 없이 먼저 실무 흐름만 검토할 수 있도록 만든 HTML 버전입니다. 환자 선택 → 진단 설명 → 빠른 견적 → 전송 → 상담 이력 순서로 바로 확인할 수 있습니다.
+<body class="mode-pc">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">🦷</div>
+        <div>
+          <h1>OneClick Dental Consult</h1>
+          <p>실사용 버전 · 환자 선택 + 상담 메인 화면</p>
         </div>
       </div>
-      <div class="card pad">
-        <div style="font-size:14px; font-weight:800; color:#64748b;">실무 포인트</div>
-        <div class="stats">
-          <div class="stat"><div class="label">예상 상담 시간</div><div class="value">1분 내</div></div>
-          <div class="stat"><div class="label">전송 채널</div><div class="value">3종</div></div>
-          <div class="stat"><div class="label">수정 방식</div><div class="value" style="font-size:24px;">선택 중심</div></div>
-          <div class="stat"><div class="label">우선순위</div><div class="value" style="font-size:24px;">속도 · 단순성</div></div>
+
+      <div class="topbar-right">
+        <div class="chip" id="todaySummaryChip">오늘 상담 12건 · 미결정 4건</div>
+        <div class="mode-switcher">
+          <button class="mode-chip active" data-mode="pc">PC</button>
+          <button class="mode-chip" data-mode="tablet">태블릿</button>
+          <button class="mode-chip" data-mode="mobile">핸드폰</button>
         </div>
+        <button class="ghost-btn" id="goHomeBtn">첫 화면</button>
+        <button class="primary-btn" id="newPatientBtn">신규 환자 등록</button>
       </div>
-    </div><div class="card content">
-  <div class="stepbar">
-    <button class="stepbtn active" data-step-btn="patient"><div class="stepno">1 STEP</div><div class="steplabel">환자 선택</div></button>
-    <button class="stepbtn" data-step-btn="diagnosis"><div class="stepno">2 STEP</div><div class="steplabel">진단 설명</div></button>
-    <button class="stepbtn" data-step-btn="estimate"><div class="stepno">3 STEP</div><div class="steplabel">빠른 견적</div></button>
-    <button class="stepbtn" data-step-btn="send"><div class="stepno">4 STEP</div><div class="steplabel">전송</div></button>
-    <button class="stepbtn" data-step-btn="history"><div class="stepno">5 STEP</div><div class="steplabel">상담 이력</div></button>
+    </header>
+
+    <main class="main-area">
+      <!-- Home Screen -->
+      <section class="screen active" id="homeScreen">
+        <div class="home-layout">
+          <aside class="panel home-sidebar">
+            <div class="panel-inner">
+              <div class="panel-title">
+                <div>
+                  <h2>환자 찾기</h2>
+                  <p>이름, 연락처, 상담 메모 기준으로 빠르게 검색</p>
+                </div>
+              </div>
+
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input id="patientSearch" type="text" placeholder="환자명 / 전화번호 / 상담 메모 검색" />
+              </div>
+
+              <div class="filter-list" id="filterList">
+                <button class="filter-btn active" data-filter="all">전체 환자</button>
+                <button class="filter-btn" data-filter="today">오늘 상담 예정</button>
+                <button class="filter-btn" data-filter="revisit">재상담 환자</button>
+                <button class="filter-btn" data-filter="pending">미결정 환자</button>
+                <button class="filter-btn" data-filter="sent">전송 완료 환자</button>
+              </div>
+
+              <div class="quick-actions">
+                <button class="quick-link primary" id="quickAddPatient">+ 신규 환자 등록</button>
+                <button class="quick-link">오늘 일정 보기</button>
+                <button class="quick-link">전송 후 미회신</button>
+                <button class="quick-link">상담 대기 환자</button>
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel home-center">
+            <div class="panel-inner">
+              <div class="panel-title">
+                <div>
+                  <h2>환자 목록</h2>
+                  <p>지금 상담할 환자를 선택하고 바로 시작</p>
+                </div>
+                <div class="count-badge" id="patientCountBadge">0명</div>
+              </div>
+
+              <div class="metric-strip">
+                <div class="metric-card">
+                  <div class="label">오늘 상담 예정</div>
+                  <div class="value" id="metricToday">0</div>
+                </div>
+                <div class="metric-card">
+                  <div class="label">미결정 환자</div>
+                  <div class="value" id="metricPending">0</div>
+                </div>
+                <div class="metric-card desktop-only">
+                  <div class="label">재상담 환자</div>
+                  <div class="value" id="metricRevisit">0</div>
+                </div>
+              </div>
+
+              <div class="patient-list" id="patientList"></div>
+            </div>
+          </section>
+
+          <aside class="panel home-right">
+            <div class="patient-summary-top">
+              <div class="summary-head">
+                <div>
+                  <div class="summary-name" id="homeSelectedName">-</div>
+                  <div class="summary-sub" id="homeSelectedSub">-</div>
+                </div>
+                <div class="summary-status" id="homeSelectedStatus">-</div>
+              </div>
+
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <div class="label">최근 견적</div>
+                  <div class="value" id="homeSelectedEstimate">-</div>
+                </div>
+                <div class="summary-item">
+                  <div class="label">마지막 전송</div>
+                  <div class="value" id="homeSelectedSend">-</div>
+                </div>
+                <div class="summary-item">
+                  <div class="label">오늘 상담 목적</div>
+                  <div class="value" id="homeSelectedPurpose">-</div>
+                </div>
+                <div class="summary-item internal-only">
+                  <div class="label">권장 액션</div>
+                  <div class="value" id="homeSelectedAction">-</div>
+                </div>
+              </div>
+
+              <div class="summary-note" id="homeSelectedNote">-</div>
+            </div>
+
+            <div class="summary-actions">
+              <button class="action-card dark" id="homeStartConsultBtn">상담 시작 <span>→</span></button>
+              <button class="action-card soft" id="homeTabletBtn">태블릿 설명 모드 <span>↗</span></button>
+              <button class="action-card white internal-only" id="homeMobileBtn">핸드폰 확인 모드 <span>↗</span></button>
+              <button class="action-card white">최근 상담 이력 보기 <span>＋</span></button>
+            </div>
+
+            <div class="sub-section internal-only">
+              <h4>최근 변경 이력</h4>
+              <div class="timeline" id="homeTimeline"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- Consult Screen -->
+      <section class="screen" id="consultScreen">
+        <div class="consult-layout">
+          <aside class="consult-sidebar">
+            <div class="patient-header-card">
+              <div class="header-summary">
+                <div class="top">
+                  <div>
+                    <div class="name" id="consultPatientName">-</div>
+                    <div class="meta" id="consultPatientMeta">-</div>
+                  </div>
+                  <div class="summary-status" id="consultPatientStatus">-</div>
+                </div>
+                <div class="header-grid">
+                  <div class="box">
+                    <div class="label">최근 견적</div>
+                    <div class="value" id="consultRecentEstimate">-</div>
+                  </div>
+                  <div class="box">
+                    <div class="label">최근 상담일</div>
+                    <div class="value" id="consultRecentDate">-</div>
+                  </div>
+                  <div class="box">
+                    <div class="label">상담 목적</div>
+                    <div class="value" id="consultPurpose">-</div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="ghost-btn" id="backToHomeBtn">← 환자 목록으로</button>
+            </div>
+
+            <div class="info-card">
+              <h3>자주 쓰는 설명 문구</h3>
+              <div class="template-list" id="templateList"></div>
+            </div>
+
+            <div class="history-card internal-only">
+              <h3>상담 이력 요약</h3>
+              <div class="history-items" id="historyList"></div>
+            </div>
+          </aside>
+
+          <section class="panel consult-center">
+            <div class="panel-inner">
+              <div class="panel-title">
+                <div>
+                  <h2>상담 메인 화면</h2>
+                  <p>진단 설명, 견적 계산, 저장/전송을 한 화면에서 처리</p>
+                </div>
+                <div class="count-badge" id="consultModeLabel">PC 운영 모드</div>
+              </div>
+
+              <div class="seg-tabs">
+                <button class="seg-btn active" data-consult-tab="diagnosis">진단 설명</button>
+                <button class="seg-btn" data-consult-tab="estimate">빠른 견적</button>
+                <button class="seg-btn" data-consult-tab="send">전송/저장</button>
+              </div>
+
+              <section class="consult-tab active" id="tab-diagnosis">
+                <div class="diagnosis-wrap">
+                  <div class="toolbar-row">
+                    <button class="icon-btn active" data-draw-mode="pen">펜 표시</button>
+                    <button class="icon-btn" data-draw-mode="highlight">형광 강조</button>
+                    <button class="icon-btn" data-draw-mode="arrow">화살표</button>
+                    <button class="icon-btn" id="resetDrawModeBtn">초기화</button>
+                  </div>
+
+                  <div class="image-stage">
+                    <div class="mode-tag" id="drawModeTag">자유 펜 표시</div>
+                    <svg viewBox="0 0 800 560" aria-label="진단 이미지 미리보기">
+                      <rect x="0" y="0" width="800" height="560" fill="#ffffff"></rect>
+                      <text x="36" y="48" fill="#64748b" font-size="24" font-weight="700">진단 이미지 미리보기</text>
+                      <text x="36" y="82" fill="#94a3b8" font-size="16">복잡한 편집 대신 필요한 부위만 빠르게 표시</text>
+                      <ellipse cx="400" cy="240" rx="245" ry="120" fill="#fee2e2"></ellipse>
+                      <ellipse cx="400" cy="250" rx="215" ry="85" fill="#fff7ed" stroke="#fdba74" stroke-width="4"></ellipse>
+                      <g fill="#fff" stroke="#cbd5e1" stroke-width="3">
+                        <rect x="220" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="264" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="308" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="352" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="396" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="440" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="484" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="528" y="155" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="220" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="264" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="308" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="352" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="396" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="440" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="484" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                        <rect x="528" y="275" rx="10" ry="10" width="34" height="65"></rect>
+                      </g>
+                      <circle cx="508" cy="186" r="40" fill="rgba(239,68,68,0.14)" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 8"></circle>
+                      <path d="M560 152 C620 120, 650 112, 702 128" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round"></path>
+                      <polygon points="694,118 725,126 701,148" fill="#ef4444"></polygon>
+                      <text x="590" y="108" fill="#b91c1c" font-size="22" font-weight="700">치료 필요 부위</text>
+                      <rect x="54" y="420" rx="16" ry="16" width="248" height="76" fill="#eff6ff" stroke="#93c5fd"></rect>
+                      <text x="76" y="455" fill="#1d4ed8" font-size="20" font-weight="700">전후 비교 예시</text>
+                      <text x="76" y="482" fill="#475569" font-size="16">치료 전: 금속 변색 / 치료 후: 밝은 색감</text>
+                      <path id="drawPen" d="M175 355 Q230 330 290 345 T415 332" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round"></path>
+                      <ellipse id="drawHighlight" cx="330" cy="184" rx="96" ry="34" fill="rgba(250,204,21,0.35)" style="display:none;"></ellipse>
+                      <g id="drawArrow" style="display:none;">
+                        <path d="M280 115 C315 108, 345 105, 390 110" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"></path>
+                        <polygon points="384,98 416,111 384,123" fill="#7c3aed"></polygon>
+                      </g>
+                    </svg>
+                  </div>
+
+                  <div class="info-card presentation-only">
+                    <h3>환자 설명용 요약</h3>
+                    <div id="tabletPresentationText" class="summary-note"></div>
+                  </div>
+
+                  <div class="note-card">
+                    <h3>설명 메모</h3>
+                    <textarea id="diagnosisMemoInput"></textarea>
+                  </div>
+                </div>
+              </section>
+
+              <section class="consult-tab hidden" id="tab-estimate">
+                <div class="estimate-tabs" id="estimateAddButtons"></div>
+
+                <div class="estimate-list" id="estimateList"></div>
+              </section>
+
+              <section class="consult-tab hidden" id="tab-send">
+                <div class="send-card">
+                  <h3>견적 요약</h3>
+                  <div class="summary-list" id="sendSummaryList"></div>
+                </div>
+
+                <div class="send-card" style="margin-top:14px;">
+                  <h3>상담 메모</h3>
+                  <textarea id="sendMemoInput"></textarea>
+                </div>
+
+                <div class="send-card" style="margin-top:14px;">
+                  <h3>전송 문구</h3>
+                  <div class="send-box" id="sendTextBox"></div>
+                  <div class="send-actions">
+                    <button class="dark-btn">문자</button>
+                    <button class="ghost-btn">카톡</button>
+                    <button class="ghost-btn">이메일</button>
+                    <button class="soft-btn" id="copySendTextBtn">문구 복사</button>
+                  </div>
+                </div>
+              </section>
+
+              <div class="floating-bar">
+                <div class="floating-total">
+                  <div class="label">현재 총 금액</div>
+                  <div class="value" id="floatingTotal">0원</div>
+                </div>
+                <div class="floating-actions">
+                  <button class="ghost-btn" id="goEstimateTabBtn">견적 보기</button>
+                  <button class="primary-btn" id="goSendTabBtn">저장/전송</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="consult-right">
+            <div class="estimate-card">
+              <h3>옵션 비교 요약</h3>
+              <div class="compare-list" id="compareList"></div>
+
+              <div class="total-card">
+                <div class="label">예상 총 금액</div>
+                <div class="value" id="estimateTotalValue">0원</div>
+                <div class="subtext">재료나 술식을 바꾸면 금액이 즉시 반영됩니다. 복잡한 설명보다 빠른 비교와 수정에 초점을 둔 화면입니다.</div>
+                <div class="total-actions internal-only">
+                  <button class="ghost-btn" id="openDiagnosisTabBtn">설명 보기</button>
+                  <button class="soft-btn" id="openSendTabBtn">전송 준비</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-list" style="margin-top:14px;">
+              <div class="accordion-item">
+                <button class="accordion-head" data-accordion="historyAccordion">최근 상담 이력 <span>▾</span></button>
+                <div class="accordion-body" id="historyAccordion">
+                  <div class="history-items" id="consultHistoryList"></div>
+                </div>
+              </div>
+
+              <div class="accordion-item internal-only">
+                <button class="accordion-head" data-accordion="noteAccordion">내부 참고 메모 <span>▾</span></button>
+                <div class="accordion-body" id="noteAccordion">
+                  <div class="summary-note" id="internalMemoBox"></div>
+                </div>
+              </div>
+            </div>
+
+            <button class="drawer-btn mobile-only" id="mobileHistoryToggleBtn">최근 이력 보기</button>
+          </aside>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <section id="step-patient" class="step-section">
-    <div class="grid-2">
-      <div class="card pad">
-        <div class="section-title">환자 선택</div>
-        <div class="search-wrap">
-          <div class="icon">🔍</div>
-          <input id="patientSearch" type="text" placeholder="이름, 전화번호, 상담 메모 검색" />
-        </div>
-        <div id="patientList" class="list"></div>
-        <div class="btn-row">
-          <button class="btn-outline">신규 환자</button>
-          <button class="btn" onclick="goStep('estimate')">빠른 견적 바로가기</button>
-        </div>
-      </div>
+  <script>
+    const AppState = {
+      currentScreen: 'home',
+      mode: 'pc',
+      filter: 'all',
+      selectedPatientId: 1,
+      drawMode: 'pen',
+      consultTab: 'diagnosis',
+      diagnosisMemo: '현재 어금니 부위 손상이 진행되어 크라운 또는 임플란트 상담이 필요합니다. 비용 차이는 재료와 방식에 따라 바로 비교 가능합니다.',
+      sendMemo: '3개월 치료 예상, 내원 일정 조율 필요',
+      estimateItems: {
+        implant: { optionKey: '국산', qty: 1 },
+        crown: { optionKey: '지르코니아', qty: 1 }
+      }
+    };
 
-      <div class="card pad">
-        <div class="section-title">선택된 환자 요약</div>
-        <div class="info-box">
-          <div class="label">환자명</div>
-          <div class="big" id="summaryName"></div>
-        </div>
-        <div class="btn-row" style="margin-top:0; margin-bottom:12px;">
-          <div class="info-box" style="margin:0;">
-            <div class="label">최근 견적</div>
-            <div class="big" id="summaryEstimate" style="font-size:22px;"></div>
-          </div>
-          <div class="info-box" style="margin:0;">
-            <div class="label">상태</div>
-            <div class="big" id="summaryStatus" style="font-size:22px;"></div>
-          </div>
-        </div>
-        <div class="dashed">
-          첫 화면에서 복잡한 메뉴를 줄이고, 환자 선택 후 바로 <b>빠른 견적</b> 또는 <b>진단 설명</b>으로 이동하도록 구성했습니다.
-        </div>
-        <div class="btn-row">
-          <button class="btn-outline" onclick="goStep('diagnosis')">진단 설명 보기</button>
-          <button class="btn" onclick="goStep('estimate')">견적 시작</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step-diagnosis" class="step-section hidden">
-    <div class="grid-2">
-      <div>
-        <div class="preview-wrap">
-          <div class="mode-chip" id="modeChip">자유 펜 표시</div>
-          <svg viewBox="0 0 800 560">
-            <rect x="0" y="0" width="800" height="560" fill="#ffffff"></rect>
-            <text x="36" y="48" fill="#64748b" font-size="24" font-weight="700">진단 이미지 미리보기</text>
-            <text x="36" y="82" fill="#94a3b8" font-size="16">복잡한 편집 대신 필요한 부위만 빠르게 표시</text>
-            <ellipse cx="400" cy="240" rx="245" ry="120" fill="#fee2e2"></ellipse>
-            <ellipse cx="400" cy="250" rx="215" ry="85" fill="#fff7ed" stroke="#fdba74" stroke-width="4"></ellipse>
-            <g fill="#fff" stroke="#cbd5e1" stroke-width="3">
-              <rect x="220" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="264" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="308" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="352" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="396" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="440" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="484" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="528" y="155" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="220" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="264" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="308" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="352" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="396" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="440" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="484" y="275" rx="10" ry="10" width="34" height="65"></rect>
-              <rect x="528" y="275" rx="10" ry="10" width="34" height="65"></rect>
-            </g>
-            <circle cx="508" cy="186" r="40" fill="rgba(239,68,68,0.14)" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 8"></circle>
-            <path d="M560 152 C620 120, 650 112, 702 128" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round"></path>
-            <polygon points="694,118 725,126 701,148" fill="#ef4444"></polygon>
-            <text x="590" y="108" fill="#b91c1c" font-size="22" font-weight="700">치료 필요 부위</text>
-            <rect x="54" y="420" rx="16" ry="16" width="248" height="76" fill="#eff6ff" stroke="#93c5fd"></rect>
-            <text x="76" y="455" fill="#1d4ed8" font-size="20" font-weight="700">전후 비교 예시</text>
-            <text x="76" y="482" fill="#475569" font-size="16">치료 전: 금속 변색 / 치료 후: 밝은 색감</text>
-            <path id="drawPen" d="M175 355 Q230 330 290 345 T415 332" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round"></path>
-            <ellipse id="drawHighlight" cx="330" cy="184" rx="96" ry="34" fill="rgba(250,204,21,0.35)" style="display:none;"></ellipse>
-            <g id="drawArrow" style="display:none;">
-              <path d="M280 115 C315 108, 345 105, 390 110" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"></path>
-              <polygon points="384,98 416,111 384,123" fill="#7c3aed"></polygon>
-            </g>
-          </svg>
-        </div>
-        <div class="toolbar">
-          <button class="tiny-btn active" data-mode="pen">펜 표시</button>
-          <button class="tiny-btn" data-mode="highlight">형광 강조</button>
-          <button class="tiny-btn" data-mode="arrow">화살표</button>
-          <button class="tiny-btn" onclick="setMode('pen')">초기화</button>
-        </div>
-      </div>
-
-      <div class="card pad">
-        <div class="section-title">간단 설명 패널</div>
-        <div class="info-box">
-          <div style="font-weight:800;">영상/이미지 설명</div>
-          <div class="sub" style="margin-top:8px; line-height:1.7;">실제 MVP에서는 영상 재생보다 정지 화면 캡처와 부위 표시 위주로 단순화하는 것이 더 빠릅니다.</div>
-        </div>
-        <div class="info-box">
-          <div style="font-weight:800;">전후 비교 예시</div>
-          <div class="sub" style="margin-top:8px; line-height:1.7;">치료 전/후 참고 이미지를 작은 카드형으로 제시해 설득력을 높일 수 있습니다.</div>
-        </div>
-        <textarea>현재 어금니 부위 손상이 진행되어 크라운 또는 임플란트 상담이 필요합니다. 비용 차이는 재료와 방식에 따라 바로 비교 가능합니다.</textarea>
-        <div class="btn-row">
-          <button class="btn-outline" onclick="goStep('patient')">이전</button>
-          <button class="btn" onclick="goStep('estimate')">견적 보기</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step-estimate" class="step-section hidden">
-    <div class="grid-2">
-      <div class="card pad">
-        <div class="section-title">빠른 견적</div>
-        <div style="font-size:14px; font-weight:800; color:#64748b; margin-bottom:8px;">치료 추가</div>
-        <div class="add-buttons" id="addButtons"></div>
-        <div id="estimateList"></div>
-      </div>
-
-      <div>
-        <div class="card pad" style="margin-bottom:16px;">
-          <div class="section-title">옵션 비교 요약</div>
-          <div id="compareWrap"></div>
-        </div>
-        <div class="total-card">
-          <div class="total-label">예상 총 금액</div>
-          <div class="total-value" id="totalValue">0원</div>
-          <div style="margin-top:10px; color:#cbd5e1; line-height:1.7; font-size:14px;">
-            재료나 술식을 바꾸면 금액이 즉시 반영됩니다. 복잡한 진단 설명보다 가격 비교와 빠른 수정에 초점을 둔 화면입니다.
-          </div>
-          <div class="btn-row">
-            <button class="btn-outline" onclick="goStep('diagnosis')">설명으로</button>
-            <button class="btn" style="background:#fff; color:#0f172a;" onclick="goStep('send')">견적 확정</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step-send" class="step-section hidden">
-    <div class="grid-2">
-      <div class="card pad">
-        <div class="section-title">견적서 요약</div>
-        <div id="summaryList"></div>
-        <div class="info-box" style="background:#fff; border:1px solid #e2e8f0; margin-top:12px;">
-          <div class="row">
-            <div class="label" style="margin:0;">총 금액</div>
-            <div class="big" id="sendTotal" style="font-size:32px; margin:0;"></div>
-          </div>
-        </div>
-        <div style="margin-top:14px;">
-          <div class="label">상담 메모</div>
-          <textarea id="memoInput">3개월 치료 예상, 내원 일정 조율 필요</textarea>
-        </div>
-      </div>
-
-      <div class="card pad">
-        <div class="section-title">빠른 전송</div>
-        <div class="send-box" id="sendText"></div>
-        <div class="send-grid">
-          <button class="send-btn primary">문자</button>
-          <button class="send-btn">카톡</button>
-          <button class="send-btn">이메일</button>
-        </div>
-        <div class="dashed">
-          환자 요청으로 내용이 바뀌면 다시 이전 단계로 돌아가 수정 후 바로 재전송할 수 있도록 구성했습니다.
-        </div>
-        <div class="btn-row">
-          <button class="btn-outline" onclick="goStep('estimate')">수정하기</button>
-          <button class="btn" onclick="goStep('history')">저장 후 이력 보기</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step-history" class="step-section hidden">
-    <div class="grid-2">
-      <div class="card pad">
-        <div class="section-title">상담 이력 요약</div>
-        <div class="info-box">
-          <div class="label">환자</div>
-          <div class="big" id="historyName"></div>
-        </div>
-        <div class="btn-row" style="margin-top:0; margin-bottom:12px;">
-          <div class="info-box" style="margin:0;">
-            <div class="label">최근 상담일</div>
-            <div class="big" style="font-size:22px;">2026-03-20</div>
-          </div>
-          <div class="info-box" style="margin:0;">
-            <div class="label">최근 상태</div>
-            <div class="big" style="font-size:22px;">고민 후 재내원</div>
-          </div>
-        </div>
-        <div class="info-box" style="background:#fff; border:1px solid #e2e8f0;">
-          <div class="label">마지막 안내 금액</div>
-          <div class="big" id="historyTotal"></div>
-          <div class="sub">임플란트 + 크라운 조합, 문자 전송 완료</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-outline" onclick="goStep('estimate')">이어서 수정</button>
-          <button class="btn" onclick="goStep('send')">다시 전송</button>
-        </div>
-      </div>
-
-      <div class="card pad">
-        <div class="section-title">재상담 시 바로 보이는 요약 카드</div>
-        <div class="info-box">
-          <div style="font-weight:800;">고민했던 옵션</div>
-          <div class="sub" style="margin-top:8px; line-height:1.7;">국산 임플란트와 수입 임플란트를 비교했고, 크라운은 지르코니아 기준으로 설명했습니다.</div>
-        </div>
-        <div class="info-box">
-          <div style="font-weight:800;">최근 변경 이력</div>
-          <ul>
-            <li>임플란트 수입형 → 국산형으로 변경</li>
-            <li>크라운 재료 PFM → 지르코니아로 변경</li>
-            <li>상담 메모 수정 후 문자 발송</li>
-          </ul>
-        </div>
-        <div class="dashed">
-          다음 방문 시 긴 기록을 다시 읽지 않고, <b>최근 견적·옵션·전송 이력</b>만 먼저 보여주면 상담 연결이 빨라집니다.
-        </div>
-        <div style="margin-top:14px;">
-          <button class="btn" style="width:100%;" onclick="goStep('patient')">처음 화면으로</button>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-  </div>  <script>
     const patients = [
-      { id: 1, name: '김민수', phone: '010-2345-6789', note: '임플란트 상담 진행', lastEstimate: '1,800,000원', status: '고민 중' },
-      { id: 2, name: '이서연', phone: '010-1111-2222', note: '크라운 재상담', lastEstimate: '550,000원', status: '재내원 예정' },
-      { id: 3, name: '박준호', phone: '010-9876-1234', note: '충치/신경치료 비교', lastEstimate: '420,000원', status: '당일 결정 가능' }
+      {
+        id: 1,
+        name: '김민수',
+        phone: '010-2345-6789',
+        note: '임플란트 상담 진행',
+        detailNote: '지난 상담에서 수입형과 국산형 임플란트 비교를 요청했고, 비용 차이에 민감한 반응이 있어 빠른 비교 견적 제시가 필요합니다.',
+        lastEstimate: 1800000,
+        lastEstimateText: '1,800,000원',
+        status: '고민 중',
+        statusClass: 'status-pending',
+        sendStatus: '문자 완료',
+        consultPurpose: '임플란트 비교',
+        recommendAction: '설명 후 견적',
+        lastDate: '2026-03-20',
+        category: ['today', 'pending', 'sent'],
+        history: [
+          '3/20 · 수입형 임플란트 → 국산형 비교 요청',
+          '3/20 · 크라운 재료 지르코니아 기준으로 안내',
+          '3/20 · 상담 후 문자 견적 발송 완료'
+        ]
+      },
+      {
+        id: 2,
+        name: '이서연',
+        phone: '010-1111-2222',
+        note: '크라운 재상담',
+        detailNote: 'PFM과 지르코니아 가격 차이를 다시 설명해야 하며, 환자는 심미성을 중요하게 보고 있습니다.',
+        lastEstimate: 550000,
+        lastEstimateText: '550,000원',
+        status: '재내원 예정',
+        statusClass: 'status-revisit',
+        sendStatus: '카톡 발송',
+        consultPurpose: '재료 변경 상담',
+        recommendAction: '가격 재비교',
+        lastDate: '2026-03-18',
+        category: ['revisit', 'sent'],
+        history: [
+          '3/18 · PFM 대비 지르코니아 재안내',
+          '3/18 · 심미성 위주로 비교 요청',
+          '3/18 · 카카오톡 견적 전송'
+        ]
+      },
+      {
+        id: 3,
+        name: '박준호',
+        phone: '010-9876-1234',
+        note: '충치/신경치료 비교',
+        detailNote: '증상 설명보다 빠른 비용 차이 설명이 중요하며, 오늘 바로 결정할 가능성이 높습니다.',
+        lastEstimate: 420000,
+        lastEstimateText: '420,000원',
+        status: '당일 결정 가능',
+        statusClass: 'status-fast',
+        sendStatus: '전송 대기',
+        consultPurpose: '당일 결정 유도',
+        recommendAction: '간단 설명 후 확정',
+        lastDate: '2026-03-17',
+        category: ['today'],
+        history: [
+          '3/17 · 레진과 인레이 차이 설명',
+          '3/17 · 신경치료 필요 가능성 안내',
+          '3/17 · 당일 결정 가능성 높음'
+        ]
+      },
+      {
+        id: 4,
+        name: '최윤아',
+        phone: '010-5643-9900',
+        note: '임플란트 + 크라운 패키지',
+        detailNote: '가족 상담 동반 가능성이 있어 비교 표가 깔끔하게 보이는 방식이 필요합니다.',
+        lastEstimate: 2300000,
+        lastEstimateText: '2,300,000원',
+        status: '재내원 예정',
+        statusClass: 'status-revisit',
+        sendStatus: '이메일 전송',
+        consultPurpose: '패키지 설명',
+        recommendAction: '옵션 비교표 제시',
+        lastDate: '2026-03-15',
+        category: ['revisit', 'sent'],
+        history: [
+          '3/15 · 패키지 설명 요청',
+          '3/15 · 이메일 전송 완료',
+          '3/15 · 다음 내원 예약 검토'
+        ]
+      }
     ];
 
     const treatmentCatalog = {
       implant: {
         label: '임플란트',
-        baseOptions: [
+        options: [
           { key: '국산', price: 1200000, desc: '가성비 중심' },
           { key: '수입', price: 1600000, desc: '브랜드 선호' }
         ]
       },
       crown: {
         label: '크라운',
-        baseOptions: [
+        options: [
           { key: '지르코니아', price: 600000, desc: '심미성 우수' },
           { key: 'PFM', price: 400000, desc: '비용 절감' },
           { key: '골드', price: 700000, desc: '내구성 우수' }
@@ -686,225 +1315,424 @@
       },
       filling: {
         label: '충치치료',
-        baseOptions: [
+        options: [
           { key: '레진', price: 120000, desc: '간단 수복' },
           { key: '인레이', price: 300000, desc: '중간 크기 수복' }
         ]
       },
       root: {
         label: '신경치료',
-        baseOptions: [
+        options: [
           { key: '1관', price: 150000, desc: '기본' },
           { key: '복합', price: 250000, desc: '난이도 높음' }
         ]
       }
     };
 
-    let currentStep = 'patient';
-    let selectedPatient = patients[0];
-    let drawMode = 'pen';
-    let estimateItems = {
-      implant: { option: treatmentCatalog.implant.baseOptions[0], qty: 1 },
-      crown: { option: treatmentCatalog.crown.baseOptions[0], qty: 1 }
-    };
+    const templates = [
+      '현재 어금니 부위 손상이 진행되어 치료가 필요한 상태입니다. 비용은 재료와 방식에 따라 비교가 가능합니다.',
+      '치료를 미루면 통증이나 추가 손상이 생길 수 있어 오늘은 옵션 차이와 예상 금액을 먼저 설명드리겠습니다.',
+      '심미성과 비용 사이에서 선택할 수 있도록 재료별 장단점과 가격 차이를 간단히 비교해드리겠습니다.'
+    ];
 
     function formatKRW(value) {
       return value.toLocaleString('ko-KR') + '원';
     }
 
-    function getTotal() {
-      return Object.values(estimateItems).reduce((sum, item) => sum + item.option.price * item.qty, 0);
+    function getSelectedPatient() {
+      return patients.find(p => p.id === AppState.selectedPatientId) || patients[0];
     }
 
-    function goStep(step) {
-      currentStep = step;
-      document.querySelectorAll('.step-section').forEach(el => el.classList.add('hidden'));
-      document.getElementById('step-' + step).classList.remove('hidden');
-      document.querySelectorAll('[data-step-btn]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.stepBtn === step);
+    function getFilteredPatients() {
+      const keyword = document.getElementById('patientSearch')?.value?.trim() || '';
+      return patients.filter(patient => {
+        const matchesFilter = AppState.filter === 'all' ? true : patient.category.includes(AppState.filter);
+        const matchesKeyword = `${patient.name} ${patient.phone} ${patient.note}`.includes(keyword);
+        return matchesFilter && matchesKeyword;
       });
-      renderDynamic();
     }
 
-    function renderPatients(keyword = '') {
-      const list = document.getElementById('patientList');
-      const filtered = patients.filter(p => (p.name + ' ' + p.phone + ' ' + p.note).includes(keyword));
-      list.innerHTML = filtered.map(patient => `
-        <div class="patient-item ${selectedPatient.id === patient.id ? 'active' : ''}" onclick="selectPatient(${patient.id})">
-          <div class="row">
-            <div>
-              <div class="patient-name">${patient.name}</div>
-              <div class="sub">${patient.phone}</div>
-              <div class="sub" style="color:#475569; margin-top:8px;">${patient.note}</div>
-            </div>
-            <div class="badge">${patient.status}</div>
-          </div>
-        </div>
-      `).join('');
+    function getEstimateOption(catalogKey, optionKey) {
+      return treatmentCatalog[catalogKey].options.find(opt => opt.key === optionKey);
     }
 
-    function selectPatient(id) {
-      selectedPatient = patients.find(p => p.id === id);
-      renderPatients(document.getElementById('patientSearch').value);
-      renderDynamic();
+    function getEstimateTotal() {
+      return Object.entries(AppState.estimateItems).reduce((sum, [key, item]) => {
+        const option = getEstimateOption(key, item.optionKey);
+        return sum + option.price * item.qty;
+      }, 0);
+    }
+
+    function setScreen(screenName) {
+      AppState.currentScreen = screenName;
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.toggle('active', screen.id === `${screenName}Screen`);
+      });
+      renderAll();
     }
 
     function setMode(mode) {
-      drawMode = mode;
-      document.querySelectorAll('[data-mode]').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+      AppState.mode = mode;
+      document.body.classList.remove('mode-pc', 'mode-tablet', 'mode-mobile');
+      document.body.classList.add(`mode-${mode}`);
+      document.querySelectorAll('.mode-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      document.getElementById('consultModeLabel').textContent = mode === 'pc'
+        ? 'PC 운영 모드'
+        : mode === 'tablet'
+        ? '태블릿 설명 모드'
+        : '핸드폰 확인 모드';
+      renderAll();
+    }
+
+    function setFilter(filter) {
+      AppState.filter = filter;
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      renderPatientList();
+    }
+
+    function selectPatient(id) {
+      AppState.selectedPatientId = id;
+      renderAll();
+    }
+
+    function startConsult() {
+      setScreen('consult');
+    }
+
+    function setConsultTab(tabName) {
+      AppState.consultTab = tabName;
+      document.querySelectorAll('[data-consult-tab]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.consultTab === tabName);
+      });
+      document.querySelectorAll('.consult-tab').forEach(tab => {
+        tab.classList.toggle('hidden', tab.id !== `tab-${tabName}`);
+      });
+    }
+
+    function setDrawMode(mode) {
+      AppState.drawMode = mode;
+      document.querySelectorAll('[data-draw-mode]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.drawMode === mode);
+      });
       document.getElementById('drawPen').style.display = mode === 'pen' ? 'block' : 'none';
       document.getElementById('drawHighlight').style.display = mode === 'highlight' ? 'block' : 'none';
       document.getElementById('drawArrow').style.display = mode === 'arrow' ? 'block' : 'none';
-      document.getElementById('modeChip').textContent = mode === 'pen' ? '자유 펜 표시' : mode === 'highlight' ? '형광 강조' : '화살표 표시';
+      document.getElementById('drawModeTag').textContent = mode === 'pen'
+        ? '자유 펜 표시'
+        : mode === 'highlight'
+        ? '형광 강조'
+        : '화살표 표시';
     }
 
     function addTreatment(key) {
-      if (!estimateItems[key]) {
-        estimateItems[key] = { option: treatmentCatalog[key].baseOptions[0], qty: 1 };
-        renderEstimate();
+      if (!AppState.estimateItems[key]) {
+        AppState.estimateItems[key] = { optionKey: treatmentCatalog[key].options[0].key, qty: 1 };
+        renderEstimateSection();
       }
     }
 
     function removeTreatment(key) {
-      delete estimateItems[key];
-      renderEstimate();
-    }
-
-    function changeQty(key, diff) {
-      const next = Math.max(1, estimateItems[key].qty + diff);
-      estimateItems[key].qty = next;
-      renderEstimate();
+      delete AppState.estimateItems[key];
+      renderEstimateSection();
     }
 
     function changeOption(key, optionKey) {
-      estimateItems[key].option = treatmentCatalog[key].baseOptions.find(opt => opt.key === optionKey);
-      renderEstimate();
+      AppState.estimateItems[key].optionKey = optionKey;
+      renderEstimateSection();
     }
 
-    function renderAddButtons() {
-      const wrap = document.getElementById('addButtons');
-      wrap.innerHTML = Object.keys(treatmentCatalog).map(key => `
-        <button class="pill-btn ${estimateItems[key] ? 'active' : ''}" onclick="addTreatment('${key}')">+ ${treatmentCatalog[key].label}</button>
+    function changeQty(key, diff) {
+      const next = Math.max(1, AppState.estimateItems[key].qty + diff);
+      AppState.estimateItems[key].qty = next;
+      renderEstimateSection();
+    }
+
+    function renderHomeMetrics() {
+      document.getElementById('metricToday').textContent = patients.filter(p => p.category.includes('today')).length;
+      document.getElementById('metricPending').textContent = patients.filter(p => p.category.includes('pending')).length;
+      document.getElementById('metricRevisit').textContent = patients.filter(p => p.category.includes('revisit')).length;
+      document.getElementById('todaySummaryChip').textContent = `오늘 상담 ${patients.filter(p => p.category.includes('today')).length}건 · 미결정 ${patients.filter(p => p.category.includes('pending')).length}건`;
+    }
+
+    function renderPatientList() {
+      const list = document.getElementById('patientList');
+      const filtered = getFilteredPatients();
+      document.getElementById('patientCountBadge').textContent = `${filtered.length}명`;
+
+      list.innerHTML = filtered.map(patient => `
+        <article class="patient-card ${patient.id === AppState.selectedPatientId ? 'active' : ''}" data-patient-id="${patient.id}">
+          <div class="patient-card-top">
+            <div>
+              <div class="patient-name">${patient.name}</div>
+              <div class="patient-meta">${patient.phone}<br>${patient.note}<br>최근 상담일 ${patient.lastDate}</div>
+            </div>
+            <div class="status-badge ${patient.statusClass}">${patient.status}</div>
+          </div>
+          <div class="patient-card-bottom">
+            <div class="patient-estimate">${patient.lastEstimateText}</div>
+            <div class="patient-inline-actions">
+              <button class="patient-inline-btn" type="button">이력</button>
+              <button class="patient-inline-btn start-inline-btn" type="button">상담 시작</button>
+            </div>
+          </div>
+        </article>
       `).join('');
+
+      document.querySelectorAll('[data-patient-id]').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const id = Number(card.dataset.patientId);
+          selectPatient(id);
+          if (e.target.classList.contains('start-inline-btn')) {
+            startConsult();
+          }
+        });
+      });
     }
 
-    function renderEstimate() {
-      renderAddButtons();
+    function renderHomeSelectedPanel() {
+      const p = getSelectedPatient();
+      document.getElementById('homeSelectedName').textContent = p.name;
+      document.getElementById('homeSelectedSub').innerHTML = `${p.phone} · ${p.note}<br>최근 상담일 ${p.lastDate}`;
+      document.getElementById('homeSelectedStatus').textContent = p.status;
+      document.getElementById('homeSelectedEstimate').textContent = p.lastEstimateText;
+      document.getElementById('homeSelectedSend').textContent = p.sendStatus;
+      document.getElementById('homeSelectedPurpose').textContent = p.consultPurpose;
+      document.getElementById('homeSelectedAction').textContent = p.recommendAction;
+      document.getElementById('homeSelectedNote').textContent = p.detailNote;
+      document.getElementById('homeTimeline').innerHTML = p.history.map(item => `<div class="timeline-item">${item}</div>`).join('');
+    }
+
+    function renderConsultHeader() {
+      const p = getSelectedPatient();
+      document.getElementById('consultPatientName').textContent = p.name;
+      document.getElementById('consultPatientMeta').innerHTML = `${p.phone} · ${p.note}<br>최근 상담 메모 확인 필요`;
+      document.getElementById('consultPatientStatus').textContent = p.status;
+      document.getElementById('consultRecentEstimate').textContent = p.lastEstimateText;
+      document.getElementById('consultRecentDate').textContent = p.lastDate;
+      document.getElementById('consultPurpose').textContent = p.consultPurpose;
+      document.getElementById('internalMemoBox').textContent = p.detailNote;
+      document.getElementById('tabletPresentationText').textContent = `${p.name}님은 현재 ${p.consultPurpose} 상담이 필요한 상태이며, ${p.status} 상태입니다. 오늘은 치료 필요 부위와 옵션별 금액 차이를 중심으로 설명하면 좋습니다.`;
+    }
+
+    function renderTemplateList() {
+      document.getElementById('templateList').innerHTML = templates.map((text, index) => `
+        <button class="template-chip" data-template-index="${index}">${text}</button>
+      `).join('');
+
+      document.querySelectorAll('[data-template-index]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.templateIndex);
+          AppState.diagnosisMemo = templates[idx];
+          document.getElementById('diagnosisMemoInput').value = AppState.diagnosisMemo;
+          renderSendSection();
+        });
+      });
+    }
+
+    function renderHistory() {
+      const p = getSelectedPatient();
+      const html = p.history.map(item => `<div class="history-row">${item}</div>`).join('');
+      document.getElementById('historyList').innerHTML = html;
+      document.getElementById('consultHistoryList').innerHTML = html;
+    }
+
+    function renderEstimateSection() {
+      const addButtons = document.getElementById('estimateAddButtons');
+      addButtons.innerHTML = Object.keys(treatmentCatalog).map(key => `
+        <button class="tab-btn ${AppState.estimateItems[key] ? 'active' : ''}" data-add-treatment="${key}">+ ${treatmentCatalog[key].label}</button>
+      `).join('');
+
+      document.querySelectorAll('[data-add-treatment]').forEach(btn => {
+        btn.addEventListener('click', () => addTreatment(btn.dataset.addTreatment));
+      });
 
       const estimateList = document.getElementById('estimateList');
-      estimateList.innerHTML = Object.keys(estimateItems).map(key => {
-        const item = estimateItems[key];
-        const options = treatmentCatalog[key].baseOptions.map(opt => `
-          <option value="${opt.key}" ${opt.key === item.option.key ? 'selected' : ''}>${opt.key} · ${formatKRW(opt.price)}</option>
+      estimateList.innerHTML = Object.keys(AppState.estimateItems).map(key => {
+        const item = AppState.estimateItems[key];
+        const option = getEstimateOption(key, item.optionKey);
+        const optionsHtml = treatmentCatalog[key].options.map(opt => `
+          <option value="${opt.key}" ${opt.key === item.optionKey ? 'selected' : ''}>${opt.key} · ${formatKRW(opt.price)}</option>
         `).join('');
-
         return `
           <div class="estimate-item">
-            <div class="row">
+            <div class="estimate-item-top">
               <div>
                 <div class="title">${treatmentCatalog[key].label}</div>
-                <div class="sub">${item.option.desc}</div>
+                <div class="desc">${option.desc}</div>
               </div>
-              <button class="delete" onclick="removeTreatment('${key}')">삭제</button>
+              <button class="delete-btn" data-remove-treatment="${key}">삭제</button>
             </div>
             <div class="form-grid">
               <div>
                 <div class="label">재료 / 종류</div>
-                <select onchange="changeOption('${key}', this.value)">${options}</select>
+                <select data-option-select="${key}">${optionsHtml}</select>
               </div>
               <div>
                 <div class="label">수량</div>
-                <div class="qty-box">
-                  <button class="qty-btn" onclick="changeQty('${key}', -1)">-</button>
+                <div class="qty-wrap">
+                  <button class="qty-btn" data-qty-action="minus" data-qty-key="${key}">-</button>
                   <div class="qty-value">${item.qty}</div>
-                  <button class="qty-btn" onclick="changeQty('${key}', 1)">+</button>
+                  <button class="qty-btn" data-qty-action="plus" data-qty-key="${key}">+</button>
                 </div>
               </div>
             </div>
             <div class="subtotal">
-              <span class="sub" style="margin:0;">소계</span>
-              <b>${formatKRW(item.option.price * item.qty)}</b>
+              <span>소계</span>
+              <strong>${formatKRW(option.price * item.qty)}</strong>
             </div>
           </div>
         `;
       }).join('');
 
-      const compareWrap = document.getElementById('compareWrap');
-      compareWrap.innerHTML = Object.keys(estimateItems).map(key => {
-        const item = estimateItems[key];
-        const lines = treatmentCatalog[key].baseOptions.map(opt => `
-          <div class="opt-line ${opt.key === item.option.key ? 'active' : ''}">
+      document.querySelectorAll('[data-remove-treatment]').forEach(btn => {
+        btn.addEventListener('click', () => removeTreatment(btn.dataset.removeTreatment));
+      });
+      document.querySelectorAll('[data-option-select]').forEach(select => {
+        select.addEventListener('change', () => changeOption(select.dataset.optionSelect, select.value));
+      });
+      document.querySelectorAll('[data-qty-key]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const diff = btn.dataset.qtyAction === 'plus' ? 1 : -1;
+          changeQty(btn.dataset.qtyKey, diff);
+        });
+      });
+
+      const compareList = document.getElementById('compareList');
+      compareList.innerHTML = Object.keys(AppState.estimateItems).map(key => {
+        const current = AppState.estimateItems[key];
+        const options = treatmentCatalog[key].options.map(opt => `
+          <div class="compare-option ${opt.key === current.optionKey ? 'active' : ''}">
             <span>${opt.key}</span>
             <span>${formatKRW(opt.price)}</span>
           </div>
         `).join('');
-
         return `
           <div class="compare-card">
-            <div class="row" style="align-items:center;">
-              <div style="font-weight:800;">${treatmentCatalog[key].label}</div>
-              <div class="badge">현재: ${item.option.key}</div>
+            <div class="compare-card-head">
+              <strong>${treatmentCatalog[key].label}</strong>
+              <span class="count-badge">현재: ${current.optionKey}</span>
             </div>
-            <div style="margin-top:10px;">${lines}</div>
+            ${options}
           </div>
         `;
       }).join('');
 
-      document.getElementById('totalValue').textContent = formatKRW(getTotal());
-      renderSummary();
-      renderHistory();
-      renderSendText();
+      const total = formatKRW(getEstimateTotal());
+      document.getElementById('estimateTotalValue').textContent = total;
+      document.getElementById('floatingTotal').textContent = total;
+      renderSendSection();
     }
 
-    function renderSummary() {
-      const summaryList = document.getElementById('summaryList');
-      summaryList.innerHTML = Object.keys(estimateItems).map(key => {
-        const item = estimateItems[key];
+    function renderSendSection() {
+      const sendSummaryList = document.getElementById('sendSummaryList');
+      sendSummaryList.innerHTML = Object.keys(AppState.estimateItems).map(key => {
+        const item = AppState.estimateItems[key];
+        const option = getEstimateOption(key, item.optionKey);
         return `
-          <div class="summary-item">
+          <div class="summary-row">
             <div>
-              <div style="font-weight:800;">${treatmentCatalog[key].label}</div>
-              <div class="sub">${item.option.key} · 수량 ${item.qty}</div>
+              <div style="font-weight:900;">${treatmentCatalog[key].label}</div>
+              <div style="font-size:13px; color: var(--sub);">${item.optionKey} · 수량 ${item.qty}</div>
             </div>
-            <div style="font-weight:800;">${formatKRW(item.option.price * item.qty)}</div>
+            <div style="font-weight:900;">${formatKRW(option.price * item.qty)}</div>
           </div>
         `;
       }).join('');
-      document.getElementById('sendTotal').textContent = formatKRW(getTotal());
+
+      const p = getSelectedPatient();
+      const sendText = `${p.name}님, 상담 견적 안내드립니다. 현재 예상 총 금액은 ${formatKRW(getEstimateTotal())}이며, 선택 재료 및 술식에 따라 변동 가능합니다. ${AppState.sendMemo}`;
+      document.getElementById('sendTextBox').textContent = sendText;
     }
 
-    function renderSendText() {
-      const text = `${selectedPatient.name}님, 상담 견적 안내드립니다. 총 예상 금액은 ${formatKRW(getTotal())}이며, 선택 재료 및 술식에 따라 변동 가능합니다.`;
-      document.getElementById('sendText').textContent = text;
+    function renderAll() {
+      renderHomeMetrics();
+      renderPatientList();
+      renderHomeSelectedPanel();
+      renderConsultHeader();
+      renderTemplateList();
+      renderHistory();
+      renderEstimateSection();
+      document.getElementById('diagnosisMemoInput').value = AppState.diagnosisMemo;
+      document.getElementById('sendMemoInput').value = AppState.sendMemo;
+      setConsultTab(AppState.consultTab);
+      setDrawMode(AppState.drawMode);
     }
 
-    function renderHistory() {
-      document.getElementById('historyName').textContent = selectedPatient.name;
-      document.getElementById('historyTotal').textContent = formatKRW(getTotal());
+    function bindEvents() {
+      document.querySelectorAll('[data-mode]').forEach(btn => {
+        btn.addEventListener('click', () => setMode(btn.dataset.mode));
+      });
+
+      document.getElementById('patientSearch').addEventListener('input', renderPatientList);
+
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+      });
+
+      document.getElementById('homeStartConsultBtn').addEventListener('click', startConsult);
+      document.getElementById('homeTabletBtn').addEventListener('click', () => {
+        setMode('tablet');
+        startConsult();
+      });
+      document.getElementById('homeMobileBtn').addEventListener('click', () => {
+        setMode('mobile');
+        startConsult();
+      });
+      document.getElementById('backToHomeBtn').addEventListener('click', () => setScreen('home'));
+      document.getElementById('goHomeBtn').addEventListener('click', () => setScreen('home'));
+      document.getElementById('goEstimateTabBtn').addEventListener('click', () => setConsultTab('estimate'));
+      document.getElementById('goSendTabBtn').addEventListener('click', () => setConsultTab('send'));
+      document.getElementById('openDiagnosisTabBtn').addEventListener('click', () => setConsultTab('diagnosis'));
+      document.getElementById('openSendTabBtn').addEventListener('click', () => setConsultTab('send'));
+
+      document.querySelectorAll('[data-consult-tab]').forEach(btn => {
+        btn.addEventListener('click', () => setConsultTab(btn.dataset.consultTab));
+      });
+
+      document.querySelectorAll('[data-draw-mode]').forEach(btn => {
+        btn.addEventListener('click', () => setDrawMode(btn.dataset.drawMode));
+      });
+      document.getElementById('resetDrawModeBtn').addEventListener('click', () => setDrawMode('pen'));
+
+      document.getElementById('diagnosisMemoInput').addEventListener('input', e => {
+        AppState.diagnosisMemo = e.target.value;
+      });
+      document.getElementById('sendMemoInput').addEventListener('input', e => {
+        AppState.sendMemo = e.target.value;
+        renderSendSection();
+      });
+
+      document.querySelectorAll('[data-accordion]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const body = document.getElementById(btn.dataset.accordion);
+          body.classList.toggle('hidden');
+        });
+      });
+
+      document.getElementById('copySendTextBtn').addEventListener('click', async () => {
+        const text = document.getElementById('sendTextBox').textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          alert('전송 문구를 복사했습니다.');
+        } catch {
+          alert('복사에 실패했습니다.');
+        }
+      });
+
+      document.getElementById('newPatientBtn').addEventListener('click', () => alert('실서버 연결 전 단계이므로 신규 환자 등록은 데모 처리되어 있습니다.'));
+      document.getElementById('quickAddPatient').addEventListener('click', () => alert('실서버 연결 전 단계이므로 신규 환자 등록은 데모 처리되어 있습니다.'));
+      document.getElementById('goEstimateTabBtn').addEventListener('click', () => setScreen('consult'));
+      document.getElementById('goSendTabBtn').addEventListener('click', () => setScreen('consult'));
     }
 
-    function renderDynamic() {
-      document.getElementById('summaryName').textContent = selectedPatient.name;
-      document.getElementById('summaryEstimate').textContent = selectedPatient.lastEstimate;
-      document.getElementById('summaryStatus').textContent = selectedPatient.status;
-      renderEstimate();
-    }
-
-    document.querySelectorAll('[data-step-btn]').forEach(btn => {
-      btn.addEventListener('click', () => goStep(btn.dataset.stepBtn));
-    });
-
-    document.getElementById('patientSearch').addEventListener('input', (e) => {
-      renderPatients(e.target.value.trim());
-    });
-
-    document.querySelectorAll('[data-mode]').forEach(btn => {
-      btn.addEventListener('click', () => setMode(btn.dataset.mode));
-    });
-
-    renderPatients();
-    renderDynamic();
-    setMode('pen');
-    goStep('patient');
-  </script></body>
+    bindEvents();
+    renderAll();
+    setMode('pc');
+    setScreen('home');
+  </script>
+</body>
 </html>
