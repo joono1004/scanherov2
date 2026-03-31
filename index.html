@@ -424,23 +424,15 @@
 
           <div class="config-box">
             <p>
-              아래 두 값을 넣은 뒤 <b>Supabase 연결</b>을 누르세요.<br>
-              초기 단계이므로 회원가입/로그인 없이 anon key로만 동작합니다.
+              Supabase가 코드에 직접 연결된 상태입니다.<br>
+              초기 테스트용으로 환자 등록과 상담 저장을 바로 진행할 수 있습니다.
             </p>
-            <div class="field">
-              <label class="label" for="supabaseUrlInput">Supabase URL</label>
-              <input id="supabaseUrlInput" placeholder="https://xxxx.supabase.co" />
-            </div>
-            <div class="field">
-              <label class="label" for="supabaseKeyInput">Supabase anon key</label>
-              <textarea id="supabaseKeyInput" placeholder="eyJhbGciOi..."></textarea>
-            </div>
             <div class="button-row">
-              <button class="dark-btn" id="connectBtn">Supabase 연결</button>
+              <button class="dark-btn" id="connectBtn">Supabase 다시 연결</button>
             </div>
           </div>
 
-          <div class="status-line warn" id="connectionStatus">아직 Supabase에 연결되지 않았습니다.</div>
+          <div class="status-line warn" id="connectionStatus">Supabase 자동 연결 대기 중입니다.</div>
 
           <div class="panel-title" style="margin-top:18px;">
             <div>
@@ -596,6 +588,9 @@
   </div>
 
   <script>
+    const SUPABASE_URL = 'https://kttgyxurltonwvdcfxgf.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
+
     const AppState = {
       supabase: null,
       connected: false,
@@ -700,16 +695,8 @@
     }
 
     async function connectSupabase() {
-      const url = document.getElementById('supabaseUrlInput').value.trim();
-      const key = document.getElementById('supabaseKeyInput').value.trim();
-
-      if (!url || !key) {
-        setConnectionStatus('Supabase URL과 anon key를 모두 입력해주세요.', 'error');
-        return;
-      }
-
       try {
-        AppState.supabase = window.supabase.createClient(url, key);
+        AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { error } = await AppState.supabase.from('patients').select('id').limit(1);
         if (error) throw error;
 
@@ -1037,6 +1024,7 @@
     renderSttState();
     updateEstimatePreview();
     setTab('consult');
+    connectSupabase();
   </script>
 
   <!--
