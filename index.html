@@ -89,7 +89,7 @@
       flex-wrap: wrap;
     }
 
-    .chip, .ghost-btn, .primary-btn, .dark-btn, .soft-btn, .mode-btn, .mini-btn {
+    .chip, .ghost-btn, .primary-btn, .dark-btn, .soft-btn, .mini-btn {
       border: 1px solid var(--line);
       border-radius: 999px;
       background: #fff;
@@ -145,13 +145,6 @@
       background: #fff;
     }
 
-    .app-ready-note {
-      padding: 10px 0 2px;
-      font-size: 13px;
-      color: var(--sub);
-      line-height: 1.6;
-    }
-
     .sr-only {
       position: absolute;
       width: 1px;
@@ -162,12 +155,6 @@
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
-    }
-
-    .info-box, .summary-box, .history-item, .patient-card, .consultation-item {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: #fff;
     }
 
     .field { margin-bottom: 12px; }
@@ -212,7 +199,7 @@
       font-size: 18px;
     }
 
-    .patient-list, .consultation-list, .history-list {
+    .patient-list, .history-list {
       display: grid;
       gap: 12px;
     }
@@ -426,7 +413,6 @@
     </header>
 
     <main class="wrap">
-      <!-- Left: Supabase + patient form -->
       <section class="panel">
         <div class="panel-inner">
           <div class="panel-title">
@@ -470,7 +456,6 @@
         </div>
       </section>
 
-      <!-- Center: patient list + consultation -->
       <section class="panel">
         <div class="panel-inner">
           <div class="panel-title">
@@ -489,7 +474,6 @@
         </div>
       </section>
 
-      <!-- Right: selected patient + consultation -->
       <section class="panel" id="consultRootPanel">
         <div class="panel-inner">
           <div class="panel-title">
@@ -589,7 +573,6 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
 
     const AppState = {
-      sttRawFinal: '',
       supabase: null,
       connected: false,
       patients: [],
@@ -598,7 +581,9 @@
       recognition: null,
       isRecording: false,
       sttRaw: '',
-      sttSummary: ''
+      sttRawFinal: '',
+      sttSummary: '',
+      lastInterimTranscript: ''
     };
 
     const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
@@ -616,8 +601,9 @@
 
     function setConnectionStatus(message, type = 'warn') {
       const el = document.getElementById('connectionStatus');
+      if (!el) return;
       el.textContent = message;
-      el.className = `status-line ${type}`;
+      el.className = `sr-only status-line ${type}`;
     }
 
     function getSelectedPatient() {
@@ -701,9 +687,7 @@
         AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { error } = await AppState.supabase.from('patients').select('id').limit(1);
         if (error) throw error;
-
         AppState.connected = true;
-        
         await loadPatients();
       } catch (error) {
         AppState.connected = false;
@@ -755,11 +739,23 @@
       }
 
       try {
-        const { error } = await AppState.supabase.from('patients').insert(payload);
+        const { data, error } = await AppState.supabase
+          .from('patients')
+          .insert(payload)
+          .select()
+          .single();
         if (error) throw error;
+
         alert('환자를 저장했습니다.');
         resetPatientForm();
         await loadPatients();
+        if (data?.id) {
+          AppState.selectedPatientId = data.id;
+          renderSelectedPatient();
+          renderPatientList();
+          document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('consultTitleInput').focus();
+        }
       } catch (error) {
         console.error(error);
         alert(`환자 저장 실패: ${error.message}`);
@@ -813,6 +809,34 @@
         : '브라우저 STT 또는 시연용 텍스트를 상담 메모로 정리할 수 있습니다.';
     }
 
+    function normalizeSpaces(text) {
+      return (text || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function appendUniqueFinal(base, addition) {
+      const normalizedBase = normalizeSpaces(base);
+      const normalizedAddition = normalizeSpaces(addition);
+
+      if (!normalizedAddition) return normalizedBase;
+      if (!normalizedBase) return normalizedAddition;
+      if (normalizedBase === normalizedAddition) return normalizedBase;
+      if (normalizedBase.endsWith(normalizedAddition)) return normalizedBase;
+
+      const baseWords = normalizedBase.split(' ');
+      const addWords = normalizedAddition.split(' ');
+      const maxOverlap = Math.min(baseWords.length, addWords.length);
+
+      for (let overlap = maxOverlap; overlap > 0; overlap--) {
+        const baseTail = baseWords.slice(-overlap).join(' ');
+        const addHead = addWords.slice(0, overlap).join(' ');
+        if (baseTail === addHead) {
+          return [...baseWords, ...addWords.slice(overlap)].join(' ').trim();
+        }
+      }
+
+      return `${normalizedBase} ${normalizedAddition}`.trim();
+    }
+
     function startBrowserStt() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -835,35 +859,43 @@
       AppState.isRecording = true;
       AppState.sttRaw = '';
       AppState.sttRawFinal = '';
+      AppState.lastInterimTranscript = '';
       renderSttState();
 
       recognition.onresult = (event) => {
-        let transcript = '';
-        let finalTranscript = AppState.sttRawFinal || '';
+        let latestInterim = '';
+        let finalText = AppState.sttRawFinal || '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript.trim();
+          const chunk = normalizeSpaces(event.results[i][0].transcript || '');
           if (!chunk) continue;
 
           if (event.results[i].isFinal) {
-            finalTranscript += (finalTranscript ? ' ' : '') + chunk;
+            finalText = appendUniqueFinal(finalText, chunk);
           } else {
-            transcript += (transcript ? ' ' : '') + chunk;
+            latestInterim = chunk;
           }
         }
 
-        AppState.sttRawFinal = finalTranscript.trim();
-        AppState.sttRaw = [AppState.sttRawFinal, transcript.trim()].filter(Boolean).join(' ').trim();
+        if (latestInterim && latestInterim === AppState.lastInterimTranscript) {
+          latestInterim = '';
+        }
+
+        AppState.lastInterimTranscript = latestInterim;
+        AppState.sttRawFinal = finalText;
+        AppState.sttRaw = normalizeSpaces([finalText, latestInterim].filter(Boolean).join(' '));
         renderSttState();
       };
 
       recognition.onend = () => {
         AppState.isRecording = false;
+        AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
         renderSttState();
       };
 
       recognition.onerror = () => {
         AppState.isRecording = false;
+        AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
         renderSttState();
       };
 
@@ -875,6 +907,7 @@
         try { AppState.recognition.stop(); } catch (e) {}
       }
       AppState.isRecording = false;
+      AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
       renderSttState();
     }
 
@@ -884,7 +917,9 @@
       document.getElementById('consultEstimateInput').value = '';
       document.getElementById('consultPlanInput').value = '재상담 예정';
       AppState.sttRaw = '';
+      AppState.sttRawFinal = '';
       AppState.sttSummary = '';
+      AppState.lastInterimTranscript = '';
       renderSttState();
       updateEstimatePreview();
     }
@@ -896,7 +931,7 @@
 
     async function saveConsultation() {
       if (!AppState.connected) {
-        setConnectionStatus('먼저 Supabase 연결을 해주세요.', 'error');
+        alert('Supabase 연결이 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
         return;
       }
 
@@ -986,7 +1021,7 @@
     }
 
     function bindEvents() {
-            document.getElementById('savePatientBtn').addEventListener('click', savePatient);
+      document.getElementById('savePatientBtn').addEventListener('click', savePatient);
       document.getElementById('resetPatientFormBtn').addEventListener('click', resetPatientForm);
       document.getElementById('goConsultScreenBtn').addEventListener('click', () => {
         document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1008,7 +1043,9 @@
       document.getElementById('stopSttBtn').addEventListener('click', stopBrowserStt);
       document.getElementById('mockSttBtn').addEventListener('click', () => {
         AppState.sttRaw = mockSttText;
+        AppState.sttRawFinal = mockSttText;
         AppState.sttSummary = summarizeConsultationText(mockSttText);
+        AppState.lastInterimTranscript = '';
         renderSttState();
       });
       document.getElementById('summarizeSttBtn').addEventListener('click', () => {
@@ -1027,6 +1064,7 @@
 
       document.getElementById('sttRawInput').addEventListener('input', (e) => {
         AppState.sttRaw = e.target.value;
+        AppState.sttRawFinal = e.target.value;
       });
       document.getElementById('sttSummaryInput').addEventListener('input', (e) => {
         AppState.sttSummary = e.target.value;
@@ -1069,7 +1107,6 @@
       created_at timestamptz default now()
     );
 
-    -- 초기 개발용. 나중에 로그인 붙이면 RLS 다시 정리 필요
     alter table patients enable row level security;
     alter table consultations enable row level security;
 
