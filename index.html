@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OneClick Dental Consult - Supabase 초기 버전</title>
+  <title>OneClick Dental Consult - AI 요약 버전</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -22,571 +22,383 @@
       --radius-md: 14px;
       --shadow: 0 12px 28px rgba(18,34,54,.08);
     }
-
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, "Noto Sans KR", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; background: var(--bg); color: var(--text); }
     button, input, textarea, select { font: inherit; }
     button { cursor: pointer; }
     .hidden { display: none !important; }
-
-    .app {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: rgba(255,255,255,.95);
-      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(255,255,255,.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--line);
       padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .brand { display: flex; align-items: center; gap: 14px; }
     .brand-mark {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
+      width: 44px; height: 44px; border-radius: 14px;
+      display: grid; place-items: center;
       background: linear-gradient(135deg,#d9e7ff,#fff);
-      border: 1px solid #bfd3fb;
-      font-size: 20px;
-      flex: 0 0 auto;
+      border: 1px solid #bfd3fb; font-size: 20px; flex: 0 0 auto;
     }
-    .brand h1 {
-      margin: 0;
-      font-size: 20px;
-      line-height: 1.2;
-    }
-    .brand p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: var(--sub);
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .chip, .ghost-btn, .primary-btn, .dark-btn, .soft-btn, .mini-btn {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      color: var(--text);
-      padding: 10px 14px;
-      font-weight: 800;
+    .brand h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+    .brand p { margin: 4px 0 0; font-size: 13px; color: var(--sub); }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .chip, .ghost-btn, .primary-btn, .dark-btn, .soft-btn, .mini-btn, .ai-btn {
+      border: 1px solid var(--line); border-radius: 999px;
+      background: #fff; color: var(--text); padding: 10px 14px; font-weight: 800;
     }
     .chip { color: var(--sub); }
     .primary-btn { background: var(--primary); color: #fff; border-color: var(--primary); }
     .dark-btn { background: var(--dark); color: #fff; border-color: var(--dark); }
     .soft-btn { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
     .mini-btn { border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .ai-btn {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff; border-color: #6d28d9;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ai-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .wrap {
-      padding: 18px;
-      display: grid;
-      gap: 18px;
-      grid-template-columns: 360px minmax(420px, 1fr) 360px;
-      flex: 1;
+      padding: 18px; display: grid; gap: 18px;
+      grid-template-columns: 360px minmax(420px, 1fr) 360px; flex: 1;
     }
-
     .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      min-width: 0;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow);
+      overflow: hidden; min-width: 0;
     }
     .panel-inner { padding: 18px; }
     .panel-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 14px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 14px;
     }
-    .panel-title h2, .panel-title h3 {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1.3;
-    }
-    .panel-title p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      color: var(--sub);
-      line-height: 1.5;
-    }
+    .panel-title h2 { margin: 0; font-size: 22px; line-height: 1.3; }
+    .panel-title p { margin: 6px 0 0; font-size: 13px; color: var(--sub); line-height: 1.5; }
 
-    .info-box, .summary-box, .history-item, .patient-card, .consultation-item {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: #fff;
+    .info-box, .summary-box, .patient-card, .consultation-item {
+      border: 1px solid var(--line); border-radius: var(--radius-lg); background: #fff;
     }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
+    .sr-only { position: absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     .field { margin-bottom: 12px; }
     .field:last-child { margin-bottom: 0; }
-    .label {
-      display: block;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--sub);
-      margin-bottom: 6px;
-    }
+    .label { display: block; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 6px; }
     input, textarea, select {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 14px;
-      background: #fff;
+      width: 100%; border: 1px solid var(--line);
+      border-radius: 14px; padding: 12px 14px; background: #fff;
     }
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-      line-height: 1.6;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-
-    .search-box {
-      position: relative;
-      margin-bottom: 14px;
-    }
+    textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
+    .button-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .search-box { position: relative; margin-bottom: 14px; }
     .search-box input { padding-left: 40px; }
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 12px;
-      color: #9aabbc;
-      font-size: 18px;
-    }
-
-    .patient-list, .history-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .patient-card {
-      padding: 14px;
-      cursor: pointer;
-      transition: .2s;
-    }
-    .patient-card.active {
-      background: var(--primary-soft);
-      border-color: #bfd3ff;
-    }
-    .patient-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-    .patient-name {
-      font-size: 18px;
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-    .patient-meta {
-      font-size: 13px;
-      color: var(--sub);
-      line-height: 1.55;
-    }
-    .status-badge {
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-      background: #edf4ff;
-      color: #1d4ed8;
-    }
-    .patient-foot {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .estimate-value {
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    .summary-box {
-      padding: 16px;
-      margin-bottom: 14px;
-      background: linear-gradient(180deg,#ffffff,#f8fbff);
-    }
-    .summary-name {
-      font-size: 26px;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-    .summary-sub {
-      color: var(--sub);
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 14px;
-    }
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .info-box {
-      padding: 12px;
-      background: #fff;
-    }
+    .search-icon { position: absolute; left: 14px; top: 12px; color: #9aabbc; font-size: 18px; }
+    .patient-list { display: grid; gap: 12px; }
+    .patient-card { padding: 14px; cursor: pointer; transition: .2s; }
+    .patient-card.active { background: var(--primary-soft); border-color: #bfd3ff; }
+    .patient-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+    .patient-name { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .patient-meta { font-size: 13px; color: var(--sub); line-height: 1.55; }
+    .status-badge { padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; white-space: nowrap; background: #edf4ff; color: #1d4ed8; }
+    .patient-foot { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .estimate-value { font-size: 17px; font-weight: 900; }
+    .summary-box { padding: 16px; margin-bottom: 14px; background: linear-gradient(180deg,#ffffff,#f8fbff); }
+    .summary-name { font-size: 26px; font-weight: 900; margin-bottom: 6px; }
+    .summary-sub { color: var(--sub); font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-box { padding: 12px; background: #fff; }
     .info-box .label { margin-bottom: 4px; }
-    .info-box .value {
-      font-size: 17px;
-      font-weight: 900;
-    }
-
+    .info-box .value { font-size: 17px; font-weight: 900; }
     .section-tabs {
-      display: inline-flex;
-      gap: 6px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
+      display: inline-flex; gap: 6px; padding: 4px;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: #fff; margin-bottom: 16px; flex-wrap: wrap;
     }
-    .tab-btn {
-      border: 1px solid transparent;
-      background: #fff;
-      color: var(--text);
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: var(--dark);
-      color: #fff;
-      border-color: var(--dark);
-    }
-
+    .tab-btn { border: 1px solid transparent; background: #fff; color: var(--text); border-radius: 999px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
+    .tab-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
     .tab-section { display: none; }
     .tab-section.active { display: block; }
+    .consultation-item { padding: 14px; background: #f8fbff; }
+    .consultation-item-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+    .consultation-date { font-size: 12px; color: var(--sub); font-weight: 800; }
+    .consultation-total { font-size: 18px; font-weight: 900; }
+    .consultation-note { font-size: 14px; color: #42586d; line-height: 1.65; white-space: pre-line; }
 
-    .consultation-item {
+    /* AI STT Box */
+    .stt-box {
+      border: 1px solid #c4b5fd;
+      border-radius: var(--radius-lg);
       padding: 14px;
-      background: #f8fbff;
+      background: linear-gradient(135deg, #faf5ff, #eff6ff);
+      margin-bottom: 14px;
     }
-    .consultation-item-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-      align-items: flex-start;
+    .stt-box-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
     }
-    .consultation-date {
-      font-size: 12px;
-      color: var(--sub);
-      font-weight: 800;
+    .stt-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff; border-radius: 999px; padding: 5px 12px;
+      font-size: 12px; font-weight: 900;
     }
-    .consultation-total {
-      font-size: 18px;
-      font-weight: 900;
+    .stt-status {
+      padding: 12px; border-radius: 14px;
+      background: #fff; border: 1px solid var(--line);
+      color: var(--sub); font-size: 13px; line-height: 1.6; margin-bottom: 12px;
     }
-    .consultation-note {
-      font-size: 14px;
-      color: #42586d;
-      line-height: 1.65;
+    .stt-status.recording { color: #dc2626; border-color: #fca5a5; background: #fff7f7; }
+    .stt-status.ai-loading { color: #7c3aed; border-color: #c4b5fd; background: #faf5ff; }
+    .stt-status.ai-done { color: var(--success); border-color: #a7f3d0; background: #f0fdf4; }
+
+    .ai-summary-result {
+      border: 1px solid #c4b5fd;
+      border-radius: var(--radius-md);
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .ai-summary-result .ai-label {
+      font-size: 11px; font-weight: 900; color: #7c3aed;
+      text-transform: uppercase; letter-spacing: .08em;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    }
+    .ai-summary-result .ai-text {
+      font-size: 14px; color: var(--text); line-height: 1.75;
       white-space: pre-line;
     }
 
-    .stt-box {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      padding: 14px;
-      background: #f8fbff;
-      margin-bottom: 14px;
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid #c4b5fd;
+      border-top-color: #7c3aed; border-radius: 50%;
+      animation: spin .7s linear infinite; display: inline-block;
     }
-    .stt-status {
-      padding: 12px;
-      border-radius: 14px;
-      background: #fff;
-      border: 1px solid var(--line);
-      color: var(--sub);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .total-card {
-      padding: 18px;
-      border-radius: 22px;
-      background: var(--dark);
-      color: #fff;
-      box-shadow: 0 12px 28px rgba(16,32,51,.18);
-      margin-top: 14px;
+      padding: 18px; border-radius: 22px;
+      background: var(--dark); color: #fff;
+      box-shadow: 0 12px 28px rgba(16,32,51,.18); margin-top: 14px;
     }
     .total-card .label { color: #c7d5e3; }
-    .total-card .value {
-      font-size: 36px;
-      font-weight: 900;
-      margin-top: 8px;
-    }
-    .total-card .sub {
-      margin-top: 10px;
-      color: #d1dbe5;
-      font-size: 14px;
-      line-height: 1.7;
-    }
+    .total-card .value { font-size: 36px; font-weight: 900; margin-top: 8px; }
+    .total-card .sub { margin-top: 10px; color: #d1dbe5; font-size: 14px; line-height: 1.7; }
 
     .status-line {
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: #fff;
-      border: 1px solid var(--line);
-      color: var(--sub);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 14px;
+      padding: 12px 14px; border-radius: 14px; background: #fff;
+      border: 1px solid var(--line); color: var(--sub);
+      font-size: 13px; line-height: 1.6; margin-bottom: 14px;
     }
     .status-line.ok { color: var(--success); }
     .status-line.warn { color: var(--warn); }
     .status-line.error { color: #b42318; }
+    .history-list { display: grid; gap: 12px; }
 
-    @media (max-width: 1200px) {
-      .wrap { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 1200px) { .wrap { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">🦷</div>
-        <div>
-          <h1>OneClick Dental Consult</h1>
-          <p>Supabase 연결 초기 버전 · 환자 등록 + 상담 저장</p>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🦷</div>
+      <div>
+        <h1>OneClick Dental Consult</h1>
+        <p>AI 상담 요약 버전 · Claude API 연결</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="chip" id="patientCountChip">환자 0명</div>
+      <button class="soft-btn" id="goConsultScreenBtn">상담 화면</button>
+      <button class="soft-btn" id="reloadAllBtn">새로고침</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- 환자 등록 -->
+    <section class="panel">
+      <div class="panel-inner">
+        <div class="panel-title">
+          <div>
+            <h2>환자 등록</h2>
+            <p>환자 기본정보를 등록하면 바로 상담에 사용할 수 있습니다.</p>
+          </div>
+        </div>
+        <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
+        <div class="field">
+          <label class="label" for="patientNameInput">환자명</label>
+          <input id="patientNameInput" placeholder="예: 김민수" />
+        </div>
+        <div class="field">
+          <label class="label" for="patientPhoneInput">연락처</label>
+          <input id="patientPhoneInput" placeholder="예: 010-1234-5678" />
+        </div>
+        <div class="field">
+          <label class="label" for="patientBirthInput">생년월일</label>
+          <input id="patientBirthInput" type="date" />
+        </div>
+        <div class="field">
+          <label class="label" for="patientStatusInput">상담 상태</label>
+          <select id="patientStatusInput">
+            <option value="초기 상담">초기 상담</option>
+            <option value="고민 중">고민 중</option>
+            <option value="재내원 예정">재내원 예정</option>
+            <option value="당일 결정 가능">당일 결정 가능</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="patientMemoInput">환자 메모</label>
+          <textarea id="patientMemoInput" placeholder="예: 임플란트 비교 관심, 비용 민감"></textarea>
+        </div>
+        <div class="button-row">
+          <button class="primary-btn" id="savePatientBtn">환자 저장</button>
+          <button class="ghost-btn" id="resetPatientFormBtn">입력 초기화</button>
         </div>
       </div>
-      <div class="topbar-actions">
-        <div class="chip" id="patientCountChip">환자 0명</div>
-        <button class="soft-btn" id="goConsultScreenBtn">상담 화면</button>
-        <button class="soft-btn" id="reloadAllBtn">새로고침</button>
-      </div>
-    </header>
+    </section>
 
-    <main class="wrap">
-      <section class="panel">
-        <div class="panel-inner">
-          <div class="panel-title">
-            <div>
-              <h2>환자 등록</h2>
-              <p>환자 기본정보를 등록하면 바로 상담에 사용할 수 있습니다.</p>
+    <!-- 환자 목록 -->
+    <section class="panel">
+      <div class="panel-inner">
+        <div class="panel-title">
+          <div>
+            <h2>환자 목록</h2>
+            <p>선택한 환자로 바로 상담 기록을 저장할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="patientSearchInput" placeholder="환자명 / 연락처 / 메모 검색" />
+        </div>
+        <div class="patient-list" id="patientList"></div>
+      </div>
+    </section>
+
+    <!-- 상담 패널 -->
+    <section class="panel" id="consultRootPanel">
+      <div class="panel-inner">
+        <div class="panel-title">
+          <div>
+            <h2>선택 환자 상담</h2>
+            <p>환자 정보 확인 후 상담 내용을 저장합니다.</p>
+          </div>
+        </div>
+
+        <div class="summary-box" id="selectedPatientBox">
+          <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
+          <div class="summary-sub" id="selectedPatientSub">환자 목록에서 선택 후 상담을 진행할 수 있습니다.</div>
+          <div class="summary-grid">
+            <div class="info-box">
+              <div class="label">상담 상태</div>
+              <div class="value" id="selectedPatientStatus">-</div>
+            </div>
+            <div class="info-box">
+              <div class="label">최근 총액</div>
+              <div class="value" id="selectedPatientLastTotal">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-tabs">
+          <button class="tab-btn active" data-tab="consult">상담 입력</button>
+          <button class="tab-btn" data-tab="history">상담 이력</button>
+        </div>
+
+        <section class="tab-section active" id="tab-consult">
+          <div class="field">
+            <label class="label" for="consultTitleInput">상담 제목</label>
+            <input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" />
+          </div>
+          <div class="field">
+            <label class="label" for="consultDiagnosisInput">진단/설명 메모</label>
+            <textarea id="consultDiagnosisInput" placeholder="현재 상태, 설명한 치료 옵션, 환자 반응 등을 적어주세요."></textarea>
+          </div>
+
+          <!-- AI STT 박스 -->
+          <div class="stt-box">
+            <div class="stt-box-header">
+              <div class="stt-badge">✦ Claude AI 요약</div>
+            </div>
+
+            <div class="stt-status" id="sttStatusBox">
+              STT 녹음 후 Claude AI가 상담 내용을 구조화된 메모로 정리해드립니다.
+            </div>
+
+            <div class="button-row" style="margin-top:0; margin-bottom:12px;">
+              <button class="dark-btn" id="startSttBtn">🎙 녹음 시작</button>
+              <button class="ghost-btn" id="stopSttBtn">⏹ 녹음 중지</button>
+              <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
+            </div>
+
+            <div class="field">
+              <label class="label" for="sttRawInput">원본 STT 기록</label>
+              <textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력"></textarea>
+            </div>
+
+            <div class="button-row" style="margin-top:0; margin-bottom:12px;">
+              <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
+              <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
+            </div>
+
+            <div class="ai-summary-result" id="aiSummaryResult" style="display:none;">
+              <div class="ai-label">✦ Claude AI 요약 결과</div>
+              <div class="ai-text" id="sttSummaryOutput"></div>
             </div>
           </div>
 
-          <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
-
           <div class="field">
-            <label class="label" for="patientNameInput">환자명</label>
-            <input id="patientNameInput" placeholder="예: 김민수" />
+            <label class="label" for="consultEstimateInput">예상 총 금액</label>
+            <input id="consultEstimateInput" type="number" min="0" step="1000" placeholder="예: 1800000" />
           </div>
           <div class="field">
-            <label class="label" for="patientPhoneInput">연락처</label>
-            <input id="patientPhoneInput" placeholder="예: 010-1234-5678" />
-          </div>
-          <div class="field">
-            <label class="label" for="patientBirthInput">생년월일</label>
-            <input id="patientBirthInput" type="date" />
-          </div>
-          <div class="field">
-            <label class="label" for="patientStatusInput">상담 상태</label>
-            <select id="patientStatusInput">
-              <option value="초기 상담">초기 상담</option>
-              <option value="고민 중">고민 중</option>
-              <option value="재내원 예정">재내원 예정</option>
+            <label class="label" for="consultPlanInput">다음 액션</label>
+            <select id="consultPlanInput">
+              <option value="재상담 예정">재상담 예정</option>
+              <option value="견적 발송 예정">견적 발송 예정</option>
               <option value="당일 결정 가능">당일 결정 가능</option>
+              <option value="치료 예약 유도">치료 예약 유도</option>
             </select>
           </div>
-          <div class="field">
-            <label class="label" for="patientMemoInput">환자 메모</label>
-            <textarea id="patientMemoInput" placeholder="예: 임플란트 비교 관심, 비용 민감"></textarea>
-          </div>
           <div class="button-row">
-            <button class="primary-btn" id="savePatientBtn">환자 저장</button>
-            <button class="ghost-btn" id="resetPatientFormBtn">입력 초기화</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-inner">
-          <div class="panel-title">
-            <div>
-              <h2>환자 목록</h2>
-              <p>선택한 환자로 바로 상담 기록을 저장할 수 있습니다.</p>
-            </div>
+            <button class="primary-btn" id="saveConsultationBtn">상담 저장</button>
+            <button class="ghost-btn" id="resetConsultationBtn">입력 초기화</button>
           </div>
 
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input id="patientSearchInput" placeholder="환자명 / 연락처 / 메모 검색" />
+          <div class="total-card">
+            <div class="label">입력한 예상 총 금액</div>
+            <div class="value" id="consultEstimatePreview">0원</div>
+            <div class="sub">Claude AI가 STT 녹음 내용을 구조화된 상담 메모로 정리합니다. 현재 상태 · 치료 옵션 · 환자 반응 · 다음 액션이 자동 추출됩니다.</div>
           </div>
+        </section>
 
-          <div class="patient-list" id="patientList"></div>
-        </div>
-      </section>
+        <section class="tab-section" id="tab-history">
+          <div class="history-list" id="consultationHistoryList"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
 
-      <section class="panel" id="consultRootPanel">
-        <div class="panel-inner">
-          <div class="panel-title">
-            <div>
-              <h2>선택 환자 상담</h2>
-              <p>환자 정보 확인 후 상담 내용을 저장합니다.</p>
-            </div>
-          </div>
+<script>
+const SUPABASE_URL = 'https://kttgyxurltonwvdcfxgf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
 
-          <div class="summary-box" id="selectedPatientBox">
-            <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
-            <div class="summary-sub" id="selectedPatientSub">환자 목록에서 선택 후 상담을 진행할 수 있습니다.</div>
-            <div class="summary-grid">
-              <div class="info-box">
-                <div class="label">상담 상태</div>
-                <div class="value" id="selectedPatientStatus">-</div>
-              </div>
-              <div class="info-box">
-                <div class="label">최근 총액</div>
-                <div class="value" id="selectedPatientLastTotal">-</div>
-              </div>
-            </div>
-          </div>
+const AppState = {
+  supabase: null,
+  connected: false,
+  patients: [],
+  selectedPatientId: null,
+  currentTab: 'consult',
+  recognition: null,
+  isRecording: false,
+  sttRaw: '',
+  sttRawFinal: '',
+  sttSummary: '',
+  lastInterimTranscript: '',
+  aiLoading: false
+};
 
-          <div class="section-tabs">
-            <button class="tab-btn active" data-tab="consult">상담 입력</button>
-            <button class="tab-btn" data-tab="history">상담 이력</button>
-          </div>
-
-          <section class="tab-section active" id="tab-consult">
-            <div class="field">
-              <label class="label" for="consultTitleInput">상담 제목</label>
-              <input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" />
-            </div>
-            <div class="field">
-              <label class="label" for="consultDiagnosisInput">진단/설명 메모</label>
-              <textarea id="consultDiagnosisInput" placeholder="현재 상태, 설명한 치료 옵션, 환자 반응 등을 적어주세요."></textarea>
-            </div>
-
-            <div class="stt-box">
-              <div class="label">STT 시연 영역</div>
-              <div class="stt-status" id="sttStatusBox">브라우저 STT 또는 시연용 텍스트를 상담 메모로 정리할 수 있습니다.</div>
-              <div class="button-row" style="margin-top:0; margin-bottom:12px;">
-                <button class="dark-btn" id="startSttBtn">녹음 시작</button>
-                <button class="ghost-btn" id="stopSttBtn">녹음 중지</button>
-                <button class="soft-btn" id="mockSttBtn">시연용 STT</button>
-              </div>
-              <div class="field">
-                <label class="label" for="sttRawInput">원본 STT 기록</label>
-                <textarea id="sttRawInput" placeholder="STT 원문 또는 시연 텍스트"></textarea>
-              </div>
-              <div class="button-row" style="margin-top:0; margin-bottom:12px;">
-                <button class="primary-btn" id="summarizeSttBtn">상담 메모로 정리</button>
-                <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
-              </div>
-              <div class="field">
-                <label class="label" for="sttSummaryInput">정리된 상담 메모</label>
-                <textarea id="sttSummaryInput" placeholder="STT 요약 결과"></textarea>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label" for="consultEstimateInput">예상 총 금액</label>
-              <input id="consultEstimateInput" type="number" min="0" step="1000" placeholder="예: 1800000" />
-            </div>
-            <div class="field">
-              <label class="label" for="consultPlanInput">다음 액션</label>
-              <select id="consultPlanInput">
-                <option value="재상담 예정">재상담 예정</option>
-                <option value="견적 발송 예정">견적 발송 예정</option>
-                <option value="당일 결정 가능">당일 결정 가능</option>
-                <option value="치료 예약 유도">치료 예약 유도</option>
-              </select>
-            </div>
-            <div class="button-row">
-              <button class="primary-btn" id="saveConsultationBtn">상담 저장</button>
-              <button class="ghost-btn" id="resetConsultationBtn">입력 초기화</button>
-            </div>
-
-            <div class="total-card">
-              <div class="label">입력한 예상 총 금액</div>
-              <div class="value" id="consultEstimatePreview">0원</div>
-              <div class="sub">현재는 환자 등록과 상담 저장까지 가능한 초기 실버전입니다. 다음 단계에서 견적 항목 세분화, 전송, 권한 관리 등을 확장하면 됩니다.</div>
-            </div>
-          </section>
-
-          <section class="tab-section" id="tab-history">
-            <div class="history-list" id="consultationHistoryList"></div>
-          </section>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://kttgyxurltonwvdcfxgf.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
-
-    const AppState = {
-      supabase: null,
-      connected: false,
-      patients: [],
-      selectedPatientId: null,
-      currentTab: 'consult',
-      recognition: null,
-      isRecording: false,
-      sttRaw: '',
-      sttRawFinal: '',
-      sttSummary: '',
-      lastInterimTranscript: ''
-    };
-
-    const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
+const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
 환자: 비용 차이가 많이 나나요?
 원장: 국산 임플란트와 수입 임플란트 가격 차이가 있고, 크라운은 지르코니아와 PFM으로 비교 가능합니다.
 환자: 저는 비용이 조금 부담돼서 우선 국산 쪽이 궁금합니다.
@@ -594,528 +406,382 @@
 환자: 다음 주에 가족과 상의한 뒤 다시 결정해도 될까요?
 원장: 네, 가능하고 오늘 상담 내용은 문자로도 보내드리겠습니다.`;
 
-    function formatKRW(value) {
-      const num = Number(value || 0);
-      return num.toLocaleString('ko-KR') + '원';
-    }
+function formatKRW(value) {
+  return Number(value || 0).toLocaleString('ko-KR') + '원';
+}
 
-    function setConnectionStatus(message, type = 'warn') {
-      const el = document.getElementById('connectionStatus');
-      if (!el) return;
-      el.textContent = message;
-      el.className = `sr-only status-line ${type}`;
-    }
+function getSelectedPatient() {
+  return AppState.patients.find(p => p.id === AppState.selectedPatientId) || null;
+}
 
-    function getSelectedPatient() {
-      return AppState.patients.find(p => p.id === AppState.selectedPatientId) || null;
-    }
+function renderPatientCount() {
+  document.getElementById('patientCountChip').textContent = `환자 ${AppState.patients.length}명`;
+}
 
-    function renderPatientCount() {
-      document.getElementById('patientCountChip').textContent = `환자 ${AppState.patients.length}명`;
-    }
-
-    function renderPatientList() {
-      const keyword = document.getElementById('patientSearchInput').value.trim();
-      const list = document.getElementById('patientList');
-      const filtered = AppState.patients.filter(p => {
-        return `${p.name || ''} ${p.phone || ''} ${p.memo || ''}`.includes(keyword);
-      });
-
-      if (!filtered.length) {
-        list.innerHTML = `<div class="status-line">등록된 환자가 없습니다. 좌측에서 환자를 먼저 등록해주세요.</div>`;
-        return;
-      }
-
-      list.innerHTML = filtered.map(patient => `
-        <article class="patient-card ${patient.id === AppState.selectedPatientId ? 'active' : ''}" data-patient-id="${patient.id}">
-          <div class="patient-head">
-            <div>
-              <div class="patient-name">${patient.name || '-'}</div>
-              <div class="patient-meta">${patient.phone || '-'}<br>${patient.birth_date || '-'}<br>${patient.memo || '메모 없음'}</div>
-            </div>
-            <div class="status-badge">${patient.status || '초기 상담'}</div>
-          </div>
-          <div class="patient-foot">
-            <div class="estimate-value">${formatKRW(patient.last_total || 0)}</div>
-            <button class="mini-btn" type="button">상담 선택</button>
-          </div>
-        </article>
-      `).join('');
-
-      document.querySelectorAll('[data-patient-id]').forEach(card => {
-        card.addEventListener('click', (event) => {
-          AppState.selectedPatientId = card.dataset.patientId;
-          renderSelectedPatient();
-          renderPatientList();
-          loadConsultations();
-          const clickedButton = event.target.closest('.mini-btn');
-          if (clickedButton) {
-            document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
-      });
-    }
-
-    function renderSelectedPatient() {
-      const patient = getSelectedPatient();
-      if (!patient) {
-        document.getElementById('selectedPatientName').textContent = '환자를 선택하세요';
-        document.getElementById('selectedPatientSub').textContent = '환자 목록에서 선택 후 상담을 진행할 수 있습니다.';
-        document.getElementById('selectedPatientStatus').textContent = '-';
-        document.getElementById('selectedPatientLastTotal').textContent = '-';
-        return;
-      }
-
-      document.getElementById('selectedPatientName').textContent = patient.name || '-';
-      document.getElementById('selectedPatientSub').innerHTML = `${patient.phone || '-'} · ${patient.birth_date || '-'}<br>${patient.memo || '메모 없음'}`;
-      document.getElementById('selectedPatientStatus').textContent = patient.status || '-';
-      document.getElementById('selectedPatientLastTotal').textContent = formatKRW(patient.last_total || 0);
-    }
-
-    function setTab(tabName) {
-      AppState.currentTab = tabName;
-      document.querySelectorAll('[data-tab]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tabName);
-      });
-      document.querySelectorAll('.tab-section').forEach(section => {
-        section.classList.toggle('active', section.id === `tab-${tabName}`);
-      });
-    }
-
-    async function connectSupabase() {
-      try {
-        AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const { error } = await AppState.supabase.from('patients').select('id').limit(1);
-        if (error) throw error;
-        AppState.connected = true;
-        await loadPatients();
-      } catch (error) {
-        AppState.connected = false;
-        console.error(error);
-        console.error('Supabase connection failed:', error.message);
-      }
-    }
-
-    async function loadPatients() {
-      if (!AppState.connected) return;
-      try {
-        const { data, error } = await AppState.supabase
-          .from('patients')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        AppState.patients = data || [];
-        if (!AppState.selectedPatientId && AppState.patients.length) {
-          AppState.selectedPatientId = AppState.patients[0].id;
-        }
-        renderPatientCount();
-        renderPatientList();
-        renderSelectedPatient();
-        await loadConsultations();
-      } catch (error) {
-        console.error(error);
-        console.error('Patient load failed:', error.message);
-      }
-    }
-
-    async function savePatient() {
-      if (!AppState.connected) {
-        alert('Supabase 연결이 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-
-      const payload = {
-        name: document.getElementById('patientNameInput').value.trim(),
-        phone: document.getElementById('patientPhoneInput').value.trim(),
-        birth_date: document.getElementById('patientBirthInput').value || null,
-        status: document.getElementById('patientStatusInput').value,
-        memo: document.getElementById('patientMemoInput').value.trim(),
-        last_total: 0
-      };
-
-      if (!payload.name || !payload.phone) {
-        alert('환자명과 연락처는 필수입니다.');
-        return;
-      }
-
-      try {
-        const { data, error } = await AppState.supabase
-          .from('patients')
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
-
-        alert('환자를 저장했습니다.');
-        resetPatientForm();
-        await loadPatients();
-        if (data?.id) {
-          AppState.selectedPatientId = data.id;
-          renderSelectedPatient();
-          renderPatientList();
-          document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          document.getElementById('consultTitleInput').focus();
-        }
-      } catch (error) {
-        console.error(error);
-        alert(`환자 저장 실패: ${error.message}`);
-      }
-    }
-
-    function resetPatientForm() {
-      document.getElementById('patientNameInput').value = '';
-      document.getElementById('patientPhoneInput').value = '';
-      document.getElementById('patientBirthInput').value = '';
-      document.getElementById('patientStatusInput').value = '초기 상담';
-      document.getElementById('patientMemoInput').value = '';
-    }
-
-    function summarizeConsultationText(rawText) {
-      const text = (rawText || '').trim();
-      if (!text) return '요약할 STT 기록이 없습니다.';
-
-      const diagnosis = [];
-      const treatments = [];
-      const comparisons = [];
-      const responses = [];
-      const nextAction = [];
-
-      if (text.includes('손상') || text.includes('어금니') || text.includes('치료가 필요')) diagnosis.push('손상 부위 및 치료 필요 상태 설명');
-      if (text.includes('임플란트')) treatments.push('임플란트 설명 진행');
-      if (text.includes('크라운')) treatments.push('크라운 설명 진행');
-      if (text.includes('국산')) comparisons.push('국산 옵션 비교');
-      if (text.includes('수입')) comparisons.push('수입 옵션 비교');
-      if (text.includes('지르코니아')) comparisons.push('지르코니아 기준 설명');
-      if (text.includes('PFM')) comparisons.push('PFM 비교 설명');
-      if (text.includes('비용') || text.includes('부담')) responses.push('비용 민감 반응 있음');
-      if (text.includes('가족') || text.includes('상의')) responses.push('가족 상의 후 결정 예정');
-      if (text.includes('다음 주') || text.includes('다시 결정')) nextAction.push('재상담 후 결정 가능성 있음');
-      if (text.includes('문자')) nextAction.push('상담 내용 문자 전송 예정');
-
-      return [
-        `현재 상태: ${diagnosis[0] || '치료 필요 상태 설명 진행'}`,
-        `설명한 치료: ${treatments.length ? [...new Set(treatments)].join(', ') : '치료 옵션 설명 진행'}`,
-        `비교한 옵션: ${comparisons.length ? [...new Set(comparisons)].join(', ') : '재료 및 옵션 비교 진행'}`,
-        `환자 반응: ${responses.length ? [...new Set(responses)].join(', ') : '상담 내용 검토 중'}`,
-        `다음 액션: ${nextAction.length ? [...new Set(nextAction)].join(', ') : '재상담 또는 견적 안내 예정'}`
-      ].join('\n');
-    }
-
-    function renderSttState() {
-      document.getElementById('sttRawInput').value = AppState.sttRaw;
-      document.getElementById('sttSummaryInput').value = AppState.sttSummary;
-      document.getElementById('sttStatusBox').textContent = AppState.isRecording
-        ? '녹음 중입니다. 브라우저가 지원하면 실시간으로 음성이 텍스트로 바뀝니다.'
-        : '브라우저 STT 또는 시연용 텍스트를 상담 메모로 정리할 수 있습니다.';
-    }
-
-    function normalizeSpaces(text) {
-      return (text || '').replace(/\s+/g, ' ').trim();
-    }
-
-    function appendUniqueFinal(base, addition) {
-      const normalizedBase = normalizeSpaces(base);
-      const normalizedAddition = normalizeSpaces(addition);
-
-      if (!normalizedAddition) return normalizedBase;
-      if (!normalizedBase) return normalizedAddition;
-      if (normalizedBase === normalizedAddition) return normalizedBase;
-      if (normalizedBase.endsWith(normalizedAddition)) return normalizedBase;
-
-      const baseWords = normalizedBase.split(' ');
-      const addWords = normalizedAddition.split(' ');
-      const maxOverlap = Math.min(baseWords.length, addWords.length);
-
-      for (let overlap = maxOverlap; overlap > 0; overlap--) {
-        const baseTail = baseWords.slice(-overlap).join(' ');
-        const addHead = addWords.slice(0, overlap).join(' ');
-        if (baseTail === addHead) {
-          return [...baseWords, ...addWords.slice(overlap)].join(' ').trim();
-        }
-      }
-
-      return `${normalizedBase} ${normalizedAddition}`.trim();
-    }
-
-    function startBrowserStt() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        AppState.sttRaw = mockSttText;
-        AppState.sttSummary = summarizeConsultationText(mockSttText);
-        renderSttState();
-        alert('이 브라우저는 STT를 지원하지 않아 시연용 텍스트를 불러왔습니다.');
-        return;
-      }
-
-      if (AppState.recognition) {
-        try { AppState.recognition.stop(); } catch (e) {}
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ko-KR';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      AppState.recognition = recognition;
-      AppState.isRecording = true;
-      AppState.sttRaw = '';
-      AppState.sttRawFinal = '';
-      AppState.lastInterimTranscript = '';
-      renderSttState();
-
-      recognition.onresult = (event) => {
-        let latestInterim = '';
-        let finalText = AppState.sttRawFinal || '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = normalizeSpaces(event.results[i][0].transcript || '');
-          if (!chunk) continue;
-
-          if (event.results[i].isFinal) {
-            finalText = appendUniqueFinal(finalText, chunk);
-          } else {
-            latestInterim = chunk;
-          }
-        }
-
-        if (latestInterim && latestInterim === AppState.lastInterimTranscript) {
-          latestInterim = '';
-        }
-
-        AppState.lastInterimTranscript = latestInterim;
-        AppState.sttRawFinal = finalText;
-        AppState.sttRaw = normalizeSpaces([finalText, latestInterim].filter(Boolean).join(' '));
-        renderSttState();
-      };
-
-      recognition.onend = () => {
-        AppState.isRecording = false;
-        AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
-        renderSttState();
-      };
-
-      recognition.onerror = () => {
-        AppState.isRecording = false;
-        AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
-        renderSttState();
-      };
-
-      recognition.start();
-    }
-
-    function stopBrowserStt() {
-      if (AppState.recognition) {
-        try { AppState.recognition.stop(); } catch (e) {}
-      }
-      AppState.isRecording = false;
-      AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
-      renderSttState();
-    }
-
-    function resetConsultationForm() {
-      document.getElementById('consultTitleInput').value = '';
-      document.getElementById('consultDiagnosisInput').value = '';
-      document.getElementById('consultEstimateInput').value = '';
-      document.getElementById('consultPlanInput').value = '재상담 예정';
-      AppState.sttRaw = '';
-      AppState.sttRawFinal = '';
-      AppState.sttSummary = '';
-      AppState.lastInterimTranscript = '';
-      renderSttState();
-      updateEstimatePreview();
-    }
-
-    function updateEstimatePreview() {
-      const value = document.getElementById('consultEstimateInput').value;
-      document.getElementById('consultEstimatePreview').textContent = formatKRW(value || 0);
-    }
-
-    async function saveConsultation() {
-      if (!AppState.connected) {
-        alert('Supabase 연결이 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-
-      const patient = getSelectedPatient();
-      if (!patient) {
-        alert('상담할 환자를 먼저 선택해주세요.');
-        return;
-      }
-
-      const total = Number(document.getElementById('consultEstimateInput').value || 0);
-      const payload = {
-        patient_id: patient.id,
-        title: document.getElementById('consultTitleInput').value.trim() || '상담 기록',
-        diagnosis_note: document.getElementById('consultDiagnosisInput').value.trim(),
-        stt_raw: AppState.sttRaw || null,
-        stt_summary: AppState.sttSummary || null,
-        estimated_total: total,
-        next_action: document.getElementById('consultPlanInput').value
-      };
-
-      if (!payload.diagnosis_note) {
-        alert('진단/설명 메모를 입력해주세요.');
-        return;
-      }
-
-      try {
-        const { error } = await AppState.supabase.from('consultations').insert(payload);
-        if (error) throw error;
-
-        const { error: patientUpdateError } = await AppState.supabase
-          .from('patients')
-          .update({
-            status: payload.next_action,
-            last_total: total,
-            memo: payload.diagnosis_note
-          })
-          .eq('id', patient.id);
-        if (patientUpdateError) throw patientUpdateError;
-
-        alert('상담 내용을 저장했습니다.');
-        resetConsultationForm();
-        await loadPatients();
-      } catch (error) {
-        console.error(error);
-        alert(`상담 저장 실패: ${error.message}`);
-      }
-    }
-
-    async function loadConsultations() {
-      const patient = getSelectedPatient();
-      const list = document.getElementById('consultationHistoryList');
-      if (!AppState.connected || !patient) {
-        list.innerHTML = `<div class="status-line">환자를 선택하면 상담 이력이 표시됩니다.</div>`;
-        return;
-      }
-
-      try {
-        const { data, error } = await AppState.supabase
-          .from('consultations')
-          .select('*')
-          .eq('patient_id', patient.id)
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-
-        if (!data || !data.length) {
-          list.innerHTML = `<div class="status-line">저장된 상담 이력이 없습니다.</div>`;
-          return;
-        }
-
-        list.innerHTML = data.map(item => `
-          <article class="consultation-item">
-            <div class="consultation-item-head">
-              <div>
-                <div style="font-weight:900; font-size:17px;">${item.title || '상담 기록'}</div>
-                <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
-              </div>
-              <div class="consultation-total">${formatKRW(item.estimated_total || 0)}</div>
-            </div>
-            <div class="consultation-note">${item.diagnosis_note || ''}</div>
-            ${item.stt_summary ? `<div class="history-item" style="padding:12px; margin-top:10px; white-space:pre-line; color:#44576a;">${item.stt_summary}</div>` : ''}
-          </article>
-        `).join('');
-      } catch (error) {
-        console.error(error);
-        list.innerHTML = `<div class="status-line error">상담 이력 조회 실패: ${error.message}</div>`;
-      }
-    }
-
-    function bindEvents() {
-      document.getElementById('savePatientBtn').addEventListener('click', savePatient);
-      document.getElementById('resetPatientFormBtn').addEventListener('click', resetPatientForm);
-      document.getElementById('goConsultScreenBtn').addEventListener('click', () => {
+function renderPatientList() {
+  const keyword = document.getElementById('patientSearchInput').value.trim();
+  const list = document.getElementById('patientList');
+  const filtered = AppState.patients.filter(p =>
+    `${p.name||''} ${p.phone||''} ${p.memo||''}`.includes(keyword)
+  );
+  if (!filtered.length) {
+    list.innerHTML = `<div class="status-line">등록된 환자가 없습니다. 좌측에서 먼저 등록해주세요.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(p => `
+    <article class="patient-card ${p.id === AppState.selectedPatientId ? 'active' : ''}" data-patient-id="${p.id}">
+      <div class="patient-head">
+        <div>
+          <div class="patient-name">${p.name||'-'}</div>
+          <div class="patient-meta">${p.phone||'-'}<br>${p.birth_date||'-'}<br>${p.memo||'메모 없음'}</div>
+        </div>
+        <div class="status-badge">${p.status||'초기 상담'}</div>
+      </div>
+      <div class="patient-foot">
+        <div class="estimate-value">${formatKRW(p.last_total||0)}</div>
+        <button class="mini-btn" type="button">상담 선택</button>
+      </div>
+    </article>
+  `).join('');
+  document.querySelectorAll('[data-patient-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      AppState.selectedPatientId = card.dataset.patientId;
+      renderSelectedPatient(); renderPatientList(); loadConsultations();
+      if (e.target.closest('.mini-btn')) {
         document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      document.getElementById('reloadAllBtn').addEventListener('click', async () => {
-        if (AppState.connected) await loadPatients();
-      });
-      document.getElementById('patientSearchInput').addEventListener('input', renderPatientList);
+      }
+    });
+  });
+}
 
-      document.querySelectorAll('[data-tab]').forEach(btn => {
-        btn.addEventListener('click', () => setTab(btn.dataset.tab));
-      });
+function renderSelectedPatient() {
+  const p = getSelectedPatient();
+  if (!p) {
+    document.getElementById('selectedPatientName').textContent = '환자를 선택하세요';
+    document.getElementById('selectedPatientSub').textContent = '환자 목록에서 선택 후 상담을 진행할 수 있습니다.';
+    document.getElementById('selectedPatientStatus').textContent = '-';
+    document.getElementById('selectedPatientLastTotal').textContent = '-';
+    return;
+  }
+  document.getElementById('selectedPatientName').textContent = p.name||'-';
+  document.getElementById('selectedPatientSub').innerHTML = `${p.phone||'-'} · ${p.birth_date||'-'}<br>${p.memo||'메모 없음'}`;
+  document.getElementById('selectedPatientStatus').textContent = p.status||'-';
+  document.getElementById('selectedPatientLastTotal').textContent = formatKRW(p.last_total||0);
+}
 
-      document.getElementById('consultEstimateInput').addEventListener('input', updateEstimatePreview);
-      document.getElementById('saveConsultationBtn').addEventListener('click', saveConsultation);
-      document.getElementById('resetConsultationBtn').addEventListener('click', resetConsultationForm);
+function setTab(tabName) {
+  AppState.currentTab = tabName;
+  document.querySelectorAll('[data-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+  document.querySelectorAll('.tab-section').forEach(sec => sec.classList.toggle('active', sec.id === `tab-${tabName}`));
+}
 
-      document.getElementById('startSttBtn').addEventListener('click', startBrowserStt);
-      document.getElementById('stopSttBtn').addEventListener('click', stopBrowserStt);
-      document.getElementById('mockSttBtn').addEventListener('click', () => {
-        AppState.sttRaw = mockSttText;
-        AppState.sttRawFinal = mockSttText;
-        AppState.sttSummary = summarizeConsultationText(mockSttText);
-        AppState.lastInterimTranscript = '';
-        renderSttState();
-      });
-      document.getElementById('summarizeSttBtn').addEventListener('click', () => {
-        AppState.sttRaw = document.getElementById('sttRawInput').value;
-        AppState.sttSummary = summarizeConsultationText(AppState.sttRaw);
-        renderSttState();
-      });
-      document.getElementById('applySttSummaryBtn').addEventListener('click', () => {
-        if (!AppState.sttSummary.trim()) {
-          AppState.sttRaw = document.getElementById('sttRawInput').value;
-          AppState.sttSummary = summarizeConsultationText(AppState.sttRaw);
-        }
-        document.getElementById('consultDiagnosisInput').value = AppState.sttSummary;
-        renderSttState();
-      });
+async function connectSupabase() {
+  try {
+    AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { error } = await AppState.supabase.from('patients').select('id').limit(1);
+    if (error) throw error;
+    AppState.connected = true;
+    await loadPatients();
+  } catch (e) {
+    AppState.connected = false;
+    console.error('Supabase 연결 실패:', e.message);
+  }
+}
 
-      document.getElementById('sttRawInput').addEventListener('input', (e) => {
-        AppState.sttRaw = e.target.value;
-        AppState.sttRawFinal = e.target.value;
-      });
-      document.getElementById('sttSummaryInput').addEventListener('input', (e) => {
-        AppState.sttSummary = e.target.value;
-      });
+async function loadPatients() {
+  if (!AppState.connected) return;
+  try {
+    const { data, error } = await AppState.supabase.from('patients').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    AppState.patients = data || [];
+    if (!AppState.selectedPatientId && AppState.patients.length) AppState.selectedPatientId = AppState.patients[0].id;
+    renderPatientCount(); renderPatientList(); renderSelectedPatient(); await loadConsultations();
+  } catch (e) { console.error('환자 로드 실패:', e.message); }
+}
+
+async function savePatient() {
+  if (!AppState.connected) { alert('Supabase 연결이 아직 완료되지 않았습니다.'); return; }
+  const payload = {
+    name: document.getElementById('patientNameInput').value.trim(),
+    phone: document.getElementById('patientPhoneInput').value.trim(),
+    birth_date: document.getElementById('patientBirthInput').value || null,
+    status: document.getElementById('patientStatusInput').value,
+    memo: document.getElementById('patientMemoInput').value.trim(),
+    last_total: 0
+  };
+  if (!payload.name || !payload.phone) { alert('환자명과 연락처는 필수입니다.'); return; }
+  try {
+    const { data, error } = await AppState.supabase.from('patients').insert(payload).select().single();
+    if (error) throw error;
+    alert('환자를 저장했습니다.');
+    resetPatientForm(); await loadPatients();
+    if (data?.id) {
+      AppState.selectedPatientId = data.id;
+      renderSelectedPatient(); renderPatientList();
+      document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } catch (e) { alert(`환자 저장 실패: ${e.message}`); }
+}
+
+function resetPatientForm() {
+  ['patientNameInput','patientPhoneInput','patientBirthInput','patientMemoInput'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('patientStatusInput').value = '초기 상담';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Claude AI 요약 핵심 함수
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function summarizeWithClaude(rawText) {
+  const statusBox = document.getElementById('sttStatusBox');
+  const aiResult = document.getElementById('aiSummaryResult');
+  const summaryOutput = document.getElementById('sttSummaryOutput');
+  const summarizeBtn = document.getElementById('summarizeSttBtn');
+
+  if (!rawText.trim()) {
+    setSttStatus('요약할 STT 기록이 없습니다. 먼저 녹음하거나 텍스트를 입력해주세요.', '');
+    return;
+  }
+
+  AppState.aiLoading = true;
+  summarizeBtn.disabled = true;
+  summarizeBtn.innerHTML = '<span class="spinner"></span> AI 요약 중...';
+  setSttStatus('Claude AI가 상담 내용을 분석하고 있습니다...', 'ai-loading');
+  aiResult.style.display = 'none';
+
+  const systemPrompt = `당신은 치과 상담 전문 어시스턴트입니다.
+치과 원장과 환자 사이의 상담 대화를 분석하여 구조화된 상담 메모를 작성합니다.
+
+반드시 아래 형식으로만 답변하세요:
+
+【현재 상태】
+(환자의 치아 상태, 문제점 요약)
+
+【설명한 치료 옵션】
+(원장이 설명한 치료 방법, 재료, 옵션들)
+
+【비교한 항목】
+(국산/수입, 재료 비교 등 논의한 내용)
+
+【환자 반응 및 관심사】
+(환자의 반응, 우선순위, 우려사항)
+
+【다음 액션】
+(다음 단계로 합의된 내용)
+
+【주요 키워드】
+(핵심 치료명, 재료명, 금액 정보가 있다면 포함)
+
+간결하고 임상적으로 유용한 표현을 사용하세요.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `다음 치과 상담 대화를 분석하여 구조화된 상담 메모를 작성해주세요:\n\n${rawText}` }]
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `HTTP ${response.status}`);
     }
 
-    bindEvents();
-    renderPatientCount();
-    renderPatientList();
-    renderSelectedPatient();
+    const data = await response.json();
+    const resultText = data.content?.find(c => c.type === 'text')?.text || '';
+
+    if (!resultText) throw new Error('AI 응답이 비어 있습니다.');
+
+    AppState.sttSummary = resultText;
+    summaryOutput.textContent = resultText;
+    aiResult.style.display = 'block';
+    setSttStatus('✓ AI 요약이 완료되었습니다. "메모에 반영" 버튼으로 진단 메모에 추가하세요.', 'ai-done');
+
+  } catch (e) {
+    console.error('Claude API 오류:', e);
+    setSttStatus(`AI 요약 실패: ${e.message}`, '');
+    aiResult.style.display = 'none';
+  } finally {
+    AppState.aiLoading = false;
+    summarizeBtn.disabled = false;
+    summarizeBtn.innerHTML = '✦ AI로 상담 요약';
+  }
+}
+
+function setSttStatus(message, type) {
+  const box = document.getElementById('sttStatusBox');
+  box.textContent = message;
+  box.className = `stt-status${type ? ' ' + type : ''}`;
+}
+
+function renderSttState() {
+  document.getElementById('sttRawInput').value = AppState.sttRaw;
+  if (!AppState.aiLoading) {
+    setSttStatus(
+      AppState.isRecording
+        ? '🔴 녹음 중입니다. 브라우저가 실시간으로 음성을 텍스트로 변환합니다.'
+        : 'STT 녹음 후 Claude AI가 상담 내용을 구조화된 메모로 정리해드립니다.',
+      AppState.isRecording ? 'recording' : ''
+    );
+  }
+}
+
+function normalizeSpaces(text) { return (text||'').replace(/\s+/g,' ').trim(); }
+
+function appendUniqueFinal(base, addition) {
+  const nb = normalizeSpaces(base), na = normalizeSpaces(addition);
+  if (!na) return nb; if (!nb) return na;
+  if (nb === na || nb.endsWith(na)) return nb;
+  const bw = nb.split(' '), aw = na.split(' ');
+  for (let o = Math.min(bw.length, aw.length); o > 0; o--) {
+    if (bw.slice(-o).join(' ') === aw.slice(0, o).join(' '))
+      return [...bw, ...aw.slice(o)].join(' ').trim();
+  }
+  return `${nb} ${na}`.trim();
+}
+
+function startBrowserStt() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    AppState.sttRaw = mockSttText; AppState.sttRawFinal = mockSttText;
     renderSttState();
-    updateEstimatePreview();
-    setTab('consult');
-    connectSupabase();
-  </script>
+    alert('이 브라우저는 STT를 지원하지 않아 시연용 텍스트를 불러왔습니다.');
+    return;
+  }
+  if (AppState.recognition) try { AppState.recognition.stop(); } catch(e){}
+  const r = new SR();
+  r.lang = 'ko-KR'; r.continuous = true; r.interimResults = true;
+  AppState.recognition = r; AppState.isRecording = true;
+  AppState.sttRaw = ''; AppState.sttRawFinal = ''; AppState.lastInterimTranscript = '';
+  renderSttState();
+  r.onresult = (e) => {
+    let interim = '', final = AppState.sttRawFinal || '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const chunk = normalizeSpaces(e.results[i][0].transcript || '');
+      if (!chunk) continue;
+      e.results[i].isFinal ? (final = appendUniqueFinal(final, chunk)) : (interim = chunk);
+    }
+    if (interim === AppState.lastInterimTranscript) interim = '';
+    AppState.lastInterimTranscript = interim;
+    AppState.sttRawFinal = final;
+    AppState.sttRaw = normalizeSpaces([final, interim].filter(Boolean).join(' '));
+    renderSttState();
+  };
+  r.onend = () => { AppState.isRecording = false; AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal); renderSttState(); };
+  r.onerror = () => { AppState.isRecording = false; AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal); renderSttState(); };
+  r.start();
+}
 
-  <!--
-    Supabase SQL 예시
+function stopBrowserStt() {
+  if (AppState.recognition) try { AppState.recognition.stop(); } catch(e){}
+  AppState.isRecording = false; AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal); renderSttState();
+}
 
-    create table if not exists patients (
-      id uuid primary key default gen_random_uuid(),
-      name text not null,
-      phone text not null,
-      birth_date date,
-      status text default '초기 상담',
-      memo text,
-      last_total bigint default 0,
-      created_at timestamptz default now()
-    );
+function resetConsultationForm() {
+  ['consultTitleInput','consultDiagnosisInput','consultEstimateInput'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('consultPlanInput').value = '재상담 예정';
+  AppState.sttRaw = ''; AppState.sttRawFinal = ''; AppState.sttSummary = ''; AppState.lastInterimTranscript = '';
+  document.getElementById('aiSummaryResult').style.display = 'none';
+  renderSttState(); updateEstimatePreview();
+}
 
-    create table if not exists consultations (
-      id uuid primary key default gen_random_uuid(),
-      patient_id uuid not null references patients(id) on delete cascade,
-      title text,
-      diagnosis_note text not null,
-      stt_raw text,
-      stt_summary text,
-      estimated_total bigint default 0,
-      next_action text,
-      created_at timestamptz default now()
-    );
+function updateEstimatePreview() {
+  document.getElementById('consultEstimatePreview').textContent = formatKRW(document.getElementById('consultEstimateInput').value || 0);
+}
 
-    alter table patients enable row level security;
-    alter table consultations enable row level security;
+async function saveConsultation() {
+  if (!AppState.connected) { alert('Supabase 연결이 아직 완료되지 않았습니다.'); return; }
+  const patient = getSelectedPatient();
+  if (!patient) { alert('상담할 환자를 먼저 선택해주세요.'); return; }
+  const total = Number(document.getElementById('consultEstimateInput').value || 0);
+  const payload = {
+    patient_id: patient.id,
+    title: document.getElementById('consultTitleInput').value.trim() || '상담 기록',
+    diagnosis_note: document.getElementById('consultDiagnosisInput').value.trim(),
+    stt_raw: AppState.sttRaw || null,
+    stt_summary: AppState.sttSummary || null,
+    estimated_total: total,
+    next_action: document.getElementById('consultPlanInput').value
+  };
+  if (!payload.diagnosis_note) { alert('진단/설명 메모를 입력해주세요.'); return; }
+  try {
+    const { error } = await AppState.supabase.from('consultations').insert(payload);
+    if (error) throw error;
+    await AppState.supabase.from('patients').update({ status: payload.next_action, last_total: total, memo: payload.diagnosis_note }).eq('id', patient.id);
+    alert('상담 내용을 저장했습니다.');
+    resetConsultationForm(); await loadPatients();
+  } catch (e) { alert(`상담 저장 실패: ${e.message}`); }
+}
 
-    create policy "anon read patients" on patients for select using (true);
-    create policy "anon insert patients" on patients for insert with check (true);
-    create policy "anon update patients" on patients for update using (true);
+async function loadConsultations() {
+  const patient = getSelectedPatient();
+  const list = document.getElementById('consultationHistoryList');
+  if (!AppState.connected || !patient) {
+    list.innerHTML = `<div class="status-line">환자를 선택하면 상담 이력이 표시됩니다.</div>`; return;
+  }
+  try {
+    const { data, error } = await AppState.supabase.from('consultations').select('*').eq('patient_id', patient.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || !data.length) { list.innerHTML = `<div class="status-line">저장된 상담 이력이 없습니다.</div>`; return; }
+    list.innerHTML = data.map(item => `
+      <article class="consultation-item">
+        <div class="consultation-item-head">
+          <div>
+            <div style="font-weight:900;font-size:17px;">${item.title||'상담 기록'}</div>
+            <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
+          </div>
+          <div class="consultation-total">${formatKRW(item.estimated_total||0)}</div>
+        </div>
+        <div class="consultation-note">${item.diagnosis_note||''}</div>
+        ${item.stt_summary ? `
+          <div style="margin-top:10px;padding:12px;border:1px solid #c4b5fd;border-radius:14px;background:#faf5ff;">
+            <div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:8px;">✦ AI 요약</div>
+            <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${item.stt_summary}</div>
+          </div>` : ''}
+      </article>
+    `).join('');
+  } catch (e) { list.innerHTML = `<div class="status-line error">상담 이력 조회 실패: ${e.message}</div>`; }
+}
 
-    create policy "anon read consultations" on consultations for select using (true);
-    create policy "anon insert consultations" on consultations for insert with check (true);
-  -->
+function bindEvents() {
+  document.getElementById('savePatientBtn').addEventListener('click', savePatient);
+  document.getElementById('resetPatientFormBtn').addEventListener('click', resetPatientForm);
+  document.getElementById('goConsultScreenBtn').addEventListener('click', () =>
+    document.getElementById('consultRootPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  document.getElementById('reloadAllBtn').addEventListener('click', () => { if (AppState.connected) loadPatients(); });
+  document.getElementById('patientSearchInput').addEventListener('input', renderPatientList);
+  document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+  document.getElementById('consultEstimateInput').addEventListener('input', updateEstimatePreview);
+  document.getElementById('saveConsultationBtn').addEventListener('click', saveConsultation);
+  document.getElementById('resetConsultationBtn').addEventListener('click', resetConsultationForm);
+  document.getElementById('startSttBtn').addEventListener('click', startBrowserStt);
+  document.getElementById('stopSttBtn').addEventListener('click', stopBrowserStt);
+  document.getElementById('mockSttBtn').addEventListener('click', () => {
+    AppState.sttRaw = mockSttText; AppState.sttRawFinal = mockSttText;
+    AppState.lastInterimTranscript = ''; renderSttState();
+  });
+  document.getElementById('summarizeSttBtn').addEventListener('click', () => {
+    AppState.sttRaw = document.getElementById('sttRawInput').value;
+    summarizeWithClaude(AppState.sttRaw);
+  });
+  document.getElementById('applySttSummaryBtn').addEventListener('click', () => {
+    if (AppState.sttSummary.trim()) {
+      document.getElementById('consultDiagnosisInput').value = AppState.sttSummary;
+    } else {
+      alert('먼저 AI 요약을 실행해주세요.');
+    }
+  });
+  document.getElementById('sttRawInput').addEventListener('input', (e) => {
+    AppState.sttRaw = e.target.value; AppState.sttRawFinal = e.target.value;
+  });
+}
+
+bindEvents();
+renderPatientCount(); renderPatientList(); renderSelectedPatient(); renderSttState(); updateEstimatePreview(); setTab('consult');
+connectSupabase();
+</script>
 </body>
 </html>
