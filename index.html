@@ -63,7 +63,7 @@
 
     .wrap {
       padding: 18px; display: grid; gap: 18px;
-      grid-template-columns: 360px minmax(420px, 1fr) 360px; flex: 1;
+      grid-template-columns: 380px 1fr; flex: 1;
     }
     .panel {
       background: var(--panel); border: 1px solid var(--line);
@@ -198,7 +198,7 @@
     .panel-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .today-chip { font-size: 12px; font-weight: 800; color: var(--primary); background: var(--primary-soft); border: 1px solid #bfd3ff; border-radius: 999px; padding: 5px 11px; white-space: nowrap; }
 
-    .birth-display { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-size: 15px; }
+    .birth-display { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 9px 10px; background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-size: 13px; }
     .birth-display.empty { color: #9aabbc; }
     .birth-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
     .birth-modal { background: #fff; border-radius: 24px 24px 0 0; padding: 20px; width: 100%; max-width: 400px; }
@@ -273,7 +273,17 @@
     .tag-picker-val { padding: 5px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
     .tag-picker-val:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
-    @media (max-width: 1200px) { .wrap { grid-template-columns: 1fr; } }
+    /* ── 환자목록 팝업 ── */
+    .patient-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; }
+    .patient-popup { background: #fff; border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,.18); width: 420px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+    .patient-popup-header { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .patient-popup-header h3 { margin: 0; font-size: 18px; font-weight: 900; }
+    .patient-popup-close { background: #f1f3f5; border: none; border-radius: 999px; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .patient-popup-body { padding: 14px 18px; overflow-y: auto; flex: 1; }
+    .patient-count-chip { cursor: pointer; transition: .15s; }
+    .patient-count-chip:hover { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -365,8 +375,7 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <div class="chip" id="patientCountChip">환자 0명</div>
-      <button class="soft-btn" id="goConsultScreenBtn">상담 화면</button>
+      <div class="chip patient-count-chip" id="patientCountChip" title="클릭하면 환자 목록이 열립니다">환자 0명</div>
       <button class="soft-btn" id="reloadAllBtn">새로고침</button>
       <button class="ghost-btn" id="openSettingBtn">⚙️ 설정</button>
     </div>
@@ -480,24 +489,7 @@
       </div>
     </section>
 
-    <!-- 환자 목록 -->
-    <section class="panel">
-      <div class="panel-inner">
-        <div class="panel-title">
-          <div>
-            <h2>환자 목록</h2>
-            <p>선택한 환자로 바로 상담 기록을 저장할 수 있습니다.</p>
-          </div>
-        </div>
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input id="patientSearchInput" placeholder="환자명 / 연락처 / 메모 검색" />
-        </div>
-        <div class="patient-list" id="patientList"></div>
-      </div>
-    </section>
-
-    <!-- 상담 패널 -->
+    <!-- 환자 목록 팝업 -->
     <section class="panel" id="consultRootPanel">
       <div class="panel-inner">
         <div class="panel-title">
@@ -601,6 +593,23 @@
     </section>
   </main>
 </div><!-- /#mainApp -->
+
+<!-- 환자 목록 팝업 -->
+<div class="patient-popup-overlay hidden" id="patientPopupOverlay">
+  <div class="patient-popup">
+    <div class="patient-popup-header">
+      <h3>🧑‍⚕️ 환자 목록</h3>
+      <button class="patient-popup-close" id="patientPopupClose">✕</button>
+    </div>
+    <div class="patient-popup-body">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="patientSearchInput" placeholder="환자명 / 연락처 / 메모 검색" />
+      </div>
+      <div class="patient-list" id="patientList"></div>
+    </div>
+  </div>
+</div>
 
 <!-- 생년월일 드럼롤 모달 -->
 <div class="birth-modal-overlay hidden" id="birthModalOverlay">
@@ -781,8 +790,9 @@ function renderPatientList() {
     card.addEventListener('click', (e) => {
       AppState.selectedPatientId = card.dataset.patientId;
       renderSelectedPatient(); renderPatientList(); loadConsultations(); loadPatientTags();
-      if (e.target.closest('.mini-btn'))
-        document.getElementById('consultRootPanel').scrollIntoView({behavior:'smooth',block:'start'});
+      if (e.target.closest('.mini-btn')) {
+        closePatientPopup();
+      }
     });
   });
 }
@@ -809,6 +819,18 @@ function setTab(t) {
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
   document.querySelectorAll('.tab-section').forEach(s=>s.classList.toggle('active',s.id===`tab-${t}`));
 }
+
+/* ── 휴대전화 자동 포맷 ── */
+function formatMobile(val) {
+  const d = val.replace(/\D/g, '').slice(0, 11);
+  if (d.length < 4) return d;
+  if (d.length < 8) return d.slice(0,3) + '-' + d.slice(3);
+  return d.slice(0,3) + '-' + d.slice(3,7) + '-' + d.slice(7);
+}
+
+/* ── 환자목록 팝업 ── */
+function openPatientPopup() { document.getElementById('patientPopupOverlay').classList.remove('hidden'); }
+function closePatientPopup() { document.getElementById('patientPopupOverlay').classList.add('hidden'); }
 
 /* ── 성별 선택 ── */
 function setGender(val) {
@@ -867,7 +889,7 @@ function confirmBirth() {
   document.getElementById('patientBirthInput').value = str;
   const btn = document.getElementById('birthDisplayBtn');
   btn.classList.remove('empty');
-  document.getElementById('birthDisplayText').textContent = `${y}년 ${m}월 ${d}일`;
+  document.getElementById('birthDisplayText').textContent = `${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
   closeBirthModal();
 }
 
@@ -1435,7 +1457,19 @@ async function loadConsultations() {
 
 /* ── 이벤트 바인딩 ── */
 function bindEvents() {
-  // ── 인증 ──
+  // ── 환자목록 팝업 ──
+  document.getElementById('patientCountChip').addEventListener('click', openPatientPopup);
+  document.getElementById('patientPopupClose').addEventListener('click', closePatientPopup);
+  document.getElementById('patientPopupOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('patientPopupOverlay')) closePatientPopup();
+  });
+
+  // ── 휴대전화 자동 포맷 ──
+  document.getElementById('patientMobileInput').addEventListener('input', e => {
+    const pos = e.target.selectionStart;
+    const formatted = formatMobile(e.target.value);
+    e.target.value = formatted;
+  });
   document.getElementById('loginTab').addEventListener('click', () => {
     document.getElementById('loginTab').classList.add('active');
     document.getElementById('signupTab').classList.remove('active');
@@ -1499,8 +1533,6 @@ function bindEvents() {
   });
 
   // 상단 버튼
-  document.getElementById('goConsultScreenBtn').addEventListener('click', ()=>
-    document.getElementById('consultRootPanel').scrollIntoView({behavior:'smooth',block:'start'}));
   document.getElementById('reloadAllBtn').addEventListener('click', async()=>{
     if(AppState.connected){ await loadPatients(); await loadTodayConsultCount(); }
   });
