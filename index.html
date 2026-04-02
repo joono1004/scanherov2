@@ -387,49 +387,69 @@
         </div>
         <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
 
-        <!-- 차트번호 -->
+        <!-- 줄 1: 환자명 + 차트번호 -->
         <div class="field">
-          <label class="label" for="patientChartInput">차트번호 <span style="font-weight:400;color:#b0bec5">(선택 · 전자차트 연동용)</span></label>
-          <input id="patientChartInput" placeholder="전자차트 차트번호 (없으면 비워두세요)" />
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <div style="flex:1.2;display:flex;flex-direction:column;">
+              <label class="label" for="patientNameInput">환자명 <span style="color:#e24b4a">*</span></label>
+              <input id="patientNameInput" placeholder="예: 김민수" />
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <label class="label" for="patientChartInput">차트번호 <span style="font-weight:400;color:#b0bec5">(선택)</span></label>
+              <input id="patientChartInput" placeholder="전자차트 연동" />
+            </div>
+          </div>
         </div>
 
-        <!-- 환자명 -->
+        <!-- 줄 2: 휴대전화 + 카카오 버튼 + 성별 -->
         <div class="field">
-          <label class="label" for="patientNameInput">환자명 <span style="color:#e24b4a">*</span></label>
-          <input id="patientNameInput" placeholder="예: 김민수" />
-        </div>
-
-        <!-- 휴대전화 + SNS -->
-        <div class="field">
-          <label class="label">휴대전화 <span style="color:#e24b4a">*</span> · SNS</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input id="patientMobileInput" placeholder="예: 010-1234-5678" style="flex:1;" />
-            <button class="soft-btn" id="snsAddBtn" style="white-space:nowrap;padding:11px 14px;border-radius:14px;" type="button">💬 SNS</button>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <label class="label" for="patientMobileInput">휴대전화 <span style="color:#e24b4a">*</span></label>
+              <input id="patientMobileInput" placeholder="예: 010-1234-5678" />
+            </div>
+            <div style="display:flex;flex-direction:column;flex-shrink:0;">
+              <label class="label" style="visibility:hidden;">x</label>
+              <button id="snsAddBtn" type="button" style="width:44px;height:44px;border-radius:14px;border:1px solid #B8860B;background:#FEE500;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                <svg width="26" height="24" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/>
+                </svg>
+              </button>
+            </div>
+            <div style="display:flex;flex-direction:column;flex-shrink:0;">
+              <label class="label">성별</label>
+              <div style="display:flex;gap:4px;">
+                <button type="button" id="genderMaleBtn" onclick="setGender('남')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">남</button>
+                <button type="button" id="genderFemaleBtn" onclick="setGender('여')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">여</button>
+              </div>
+            </div>
           </div>
           <div id="snsPreviewArea" style="margin-top:6px;display:none;">
             <div class="sns-preview" id="snsPreviewText"></div>
           </div>
         </div>
 
-        <!-- 생년월일 드럼롤 -->
+        <!-- 줄 3: 생년월일 + 상담상태 -->
         <div class="field">
-          <label class="label">생년월일</label>
-          <button class="birth-display empty" id="birthDisplayBtn" type="button">
-            <span id="birthDisplayText">생년월일 선택</span>
-            <span style="color:#9aabbc;font-size:18px;">📅</span>
-          </button>
-          <input type="hidden" id="patientBirthInput" />
-        </div>
-
-        <!-- 상담 상태 -->
-        <div class="field">
-          <label class="label" for="patientStatusInput">상담 상태</label>
-          <select id="patientStatusInput">
-            <option value="초기 상담">초기 상담</option>
-            <option value="고민 중">고민 중</option>
-            <option value="재내원 예정">재내원 예정</option>
-            <option value="당일 결정 가능">당일 결정 가능</option>
-          </select>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <label class="label">생년월일</label>
+              <button class="birth-display empty" id="birthDisplayBtn" type="button">
+                <span id="birthDisplayText">생년월일 선택</span>
+                <span style="color:#9aabbc;font-size:16px;">📅</span>
+              </button>
+              <input type="hidden" id="patientBirthInput" />
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;">
+              <label class="label" for="patientStatusInput">상담 상태</label>
+              <select id="patientStatusInput">
+                <option value="초기 상담">초기 상담</option>
+                <option value="고민 중">고민 중</option>
+                <option value="재내원 예정">재내원 예정</option>
+                <option value="당일 결정 가능">당일 결정 가능</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- 사용자 직접 메모 -->
@@ -686,6 +706,7 @@ const AppState = {
   sttRaw: '', sttRawFinal: '', sttSummary: '', lastInterimTranscript: '', aiLoading: false,
   birthYear: null, birthMonth: null, birthDay: null,
   snsType: null, snsId: '',
+  gender: null,
   currentPatientTags: [],
   tagPickerCategory: null, tagPickerOpen: false,
   todayConsultCount: 0,
@@ -787,6 +808,17 @@ function setTab(t) {
   AppState.currentTab = t;
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
   document.querySelectorAll('.tab-section').forEach(s=>s.classList.toggle('active',s.id===`tab-${t}`));
+}
+
+/* ── 성별 선택 ── */
+function setGender(val) {
+  AppState.gender = val;
+  const maleBtn  = document.getElementById('genderMaleBtn');
+  const femaleBtn = document.getElementById('genderFemaleBtn');
+  const activeStyle  = 'padding:10px 12px;border-radius:14px;border:1px solid var(--primary);background:var(--primary-soft);font-weight:800;font-size:14px;cursor:pointer;color:var(--primary);';
+  const normalStyle  = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
+  maleBtn.style.cssText  = val === '남' ? activeStyle : normalStyle;
+  femaleBtn.style.cssText = val === '여' ? activeStyle : normalStyle;
 }
 
 /* ── 생년월일 드럼롤 ── */
@@ -1129,6 +1161,7 @@ async function savePatient() {
     chart_number: document.getElementById('patientChartInput').value.trim() || null,
     name: document.getElementById('patientNameInput').value.trim(),
     mobile: document.getElementById('patientMobileInput').value.trim(),
+    gender: AppState.gender || null,
     sns_type: AppState.snsType || null,
     sns_id: AppState.snsId || null,
     birth_date: document.getElementById('patientBirthInput').value || null,
@@ -1173,6 +1206,10 @@ function resetPatientForm() {
   document.getElementById('birthDisplayText').textContent = '생년월일 선택';
   AppState.birthYear = null; AppState.birthMonth = null; AppState.birthDay = null;
   AppState.snsType = null; AppState.snsId = '';
+  AppState.gender = null;
+  const normalGenderStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
+  document.getElementById('genderMaleBtn').style.cssText = normalGenderStyle;
+  document.getElementById('genderFemaleBtn').style.cssText = normalGenderStyle;
   document.getElementById('snsPreviewArea').style.display = 'none';
   AppState.currentPatientTags = [];
   renderTagChips();
