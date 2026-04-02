@@ -1870,6 +1870,18 @@ function bindEvents() {
   });
   document.getElementById('patientSearchInput').addEventListener('input', renderPatientList);
 
+  // 상담 탭
+  document.querySelectorAll('[data-consult-tab]').forEach(btn =>
+    btn.addEventListener('click', () => setConsultTab(btn.dataset.consultTab)));
+
+  // 견적
+  document.getElementById('openPricePickerBtn').addEventListener('click', togglePricePicker);
+  document.getElementById('addDirectItemBtn').addEventListener('click', toggleDirectInput);
+  document.getElementById('addDirectItemConfirm').addEventListener('click', addDirectItem);
+  document.getElementById('discountInput').addEventListener('input', updateEstimateSummary);
+  document.getElementById('directItemPrice').addEventListener('keydown', e => { if(e.key==='Enter') addDirectItem(); });
+  document.getElementById('directItemName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('directItemPrice').focus(); });
+
   // 상담
   document.getElementById('saveConsultationBtn').addEventListener('click', saveConsultation);
   document.getElementById('resetConsultationBtn').addEventListener('click', resetConsultationForm);
