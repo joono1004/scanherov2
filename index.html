@@ -1741,18 +1741,26 @@ async function uploadCanvasImage() {
   const canvas = document.getElementById('mainCanvas');
   if (!canvas) return null;
   try {
+    // 캔버스가 비어있는지 확인 (흰 배경만 있으면 저장 생략)
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const isEmpty = Array.from(data).every((v, i) => i % 4 === 3 ? true : v === 255);
+    if (isEmpty) return null;  // 빈 캔버스면 업로드 생략
+
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+    if (!blob || blob.size < 1000) return null;  // 너무 작으면 생략
+
     const date = new Date().toISOString().slice(0,10);
     const path = `${AppState.currentUser.id}/${date}_${Date.now()}.jpg`;
-    const { data, error } = await AppState.supabase.storage
+    const { data: uploadData, error } = await AppState.supabase.storage
       .from('dental-canvas')
       .upload(path, blob, { contentType: 'image/jpeg', upsert: false });
     if (error) throw error;
     const { data: urlData } = AppState.supabase.storage.from('dental-canvas').getPublicUrl(path);
     return urlData?.publicUrl || null;
   } catch(e) {
-    console.error('캔버스 업로드 실패:', e.message);
-    return null;
+    console.warn('캔버스 업로드 건너뜀:', e.message);
+    return null;  // 실패해도 null 반환 (저장은 계속)
   }
 }
 
@@ -1777,7 +1785,7 @@ async function saveConsultOnEnd() {
       const payload = {
         user_id: AppState.currentUser.id,
         patient_id: patient?.id || null,
-        title: patient ? `${patient.name} 상담` : '미지정 환자 상담',
+        title: patient ? `${patient.name} 상담` : '일반 상담',
         diagnosis_note: summary || AppState.sttRaw || '-',
         stt_text: AppState.sttRaw || null,
         stt_summary: summary || null,
