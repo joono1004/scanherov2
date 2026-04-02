@@ -273,7 +273,50 @@
     .tag-picker-val { padding: 5px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
     .tag-picker-val:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
-    /* ── 환자목록 팝업 ── */
+    /* ── 견적 상담 ── */
+    .consult-tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+    .consult-tab { padding: 10px 16px; font-weight: 800; font-size: 14px; color: var(--sub); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .consult-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .consult-tab-section { display: none; }
+    .consult-tab-section.active { display: block; }
+
+    /* 견적 항목 테이블 */
+    .estimate-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+    .estimate-table th { padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 800; color: var(--sub); border-bottom: 1px solid var(--line); background: #f8fbff; }
+    .estimate-table th:last-child { text-align: right; }
+    .estimate-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .estimate-table td:last-child { text-align: right; }
+    .estimate-table tr:last-child td { border-bottom: none; }
+    .estimate-table tr:hover td { background: #f8fbff; }
+    .qty-btn { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; }
+    .qty-val { display: inline-block; width: 24px; text-align: center; font-weight: 800; }
+    .item-del-btn { color: #ccc; background: none; border: none; font-size: 16px; cursor: pointer; padding: 2px 4px; }
+    .item-del-btn:hover { color: #e24b4a; }
+
+    /* 단가표 선택 팝업 */
+    .price-picker { border: 1px solid var(--line); border-radius: var(--radius-md); background: #f8fbff; padding: 12px; margin-bottom: 12px; }
+    .price-picker-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .price-picker-cat { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; border: 1px solid var(--line); background: #fff; cursor: pointer; transition: .15s; }
+    .price-picker-cat.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .price-picker-items { display: grid; gap: 6px; }
+    .price-picker-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; transition: .15s; }
+    .price-picker-item:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .price-picker-item .item-name { font-size: 13px; font-weight: 800; }
+    .price-picker-item .item-price { font-size: 13px; color: var(--primary); font-weight: 900; }
+
+    /* 합계 카드 */
+    .estimate-summary { border-radius: var(--radius-lg); border: 1px solid var(--line); overflow: hidden; margin-bottom: 14px; }
+    .estimate-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; font-size: 14px; border-bottom: 1px solid var(--line); }
+    .estimate-summary-row:last-child { border-bottom: none; background: var(--dark); color: #fff; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .estimate-summary-row.total { font-size: 18px; font-weight: 900; }
+    .discount-input { width: 100px; border: 1px solid var(--line); border-radius: 10px; padding: 5px 8px; font-size: 13px; text-align: right; }
+
+    /* 직접입력 행 */
+    .direct-input-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+    .direct-input-row input { border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 13px; }
+
+    .patient-count-chip { cursor: pointer; transition: .15s; }
+    .patient-count-chip:hover { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
     .patient-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; }
     .patient-popup { background: #fff; border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,.18); width: 420px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
     .patient-popup-header { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -489,20 +532,20 @@
       </div>
     </section>
 
-    <!-- 환자 목록 팝업 -->
+    <!-- 상담 패널 -->
     <section class="panel" id="consultRootPanel">
       <div class="panel-inner">
-        <div class="panel-title">
-          <div>
-            <h2>선택 환자 상담</h2>
-            <p>환자 정보 확인 후 상담 내용을 저장합니다.</p>
-          </div>
-        </div>
 
-        <div class="summary-box" id="selectedPatientBox">
-          <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
-          <div class="summary-sub" id="selectedPatientSub">환자 목록에서 선택 후 상담을 진행할 수 있습니다.</div>
-          <div class="summary-grid">
+        <!-- 선택 환자 요약 -->
+        <div class="summary-box" id="selectedPatientBox" style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <div>
+              <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
+              <div class="summary-sub" id="selectedPatientSub">상단 [환자 N명] 칩을 클릭해서 환자를 선택해주세요.</div>
+            </div>
+            <div id="selectedPatientBadge"></div>
+          </div>
+          <div class="summary-grid" style="margin-top:10px;">
             <div class="info-box">
               <div class="label">상담 상태</div>
               <div class="value" id="selectedPatientStatus">-</div>
@@ -514,12 +557,96 @@
           </div>
         </div>
 
-        <div class="section-tabs">
-          <button class="tab-btn active" data-tab="consult">상담 입력</button>
-          <button class="tab-btn" data-tab="history">상담 이력</button>
+        <!-- 상담 탭 -->
+        <div class="consult-tabs">
+          <button class="consult-tab active" data-consult-tab="estimate">💰 비용 상담</button>
+          <button class="consult-tab" data-consult-tab="memo">📋 메모 · AI 요약</button>
+          <button class="consult-tab" data-consult-tab="history">🗂 상담 이력</button>
         </div>
 
-        <section class="tab-section active" id="tab-consult">
+        <!-- TAB 1: 비용 상담 -->
+        <div class="consult-tab-section active" id="ctab-estimate">
+
+          <!-- 견적 항목 테이블 -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="label" style="margin:0;">견적 항목</span>
+            <div style="display:flex;gap:6px;">
+              <button class="soft-btn" id="openPricePickerBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 단가표에서 추가</button>
+              <button class="ghost-btn" id="addDirectItemBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 직접 입력</button>
+            </div>
+          </div>
+
+          <!-- 단가표 선택 영역 -->
+          <div class="price-picker hidden" id="pricePicker">
+            <div class="price-picker-cats" id="pricePickerCats"></div>
+            <div class="price-picker-items" id="pricePickerItems"></div>
+          </div>
+
+          <!-- 직접 입력 영역 -->
+          <div class="direct-input-row hidden" id="directInputRow">
+            <input id="directItemName" placeholder="항목명" style="flex:1.5;" />
+            <input id="directItemPrice" type="number" placeholder="단가" style="flex:1;" />
+            <button class="primary-btn" id="addDirectItemConfirm" style="padding:9px 12px;border-radius:12px;font-size:13px;">추가</button>
+          </div>
+
+          <!-- 견적 테이블 -->
+          <div style="border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;">
+            <table class="estimate-table" id="estimateTable">
+              <thead>
+                <tr>
+                  <th style="width:40%;">항목</th>
+                  <th style="width:25%;text-align:right;">단가</th>
+                  <th style="width:20%;text-align:center;">수량</th>
+                  <th style="width:15%;text-align:right;"></th>
+                </tr>
+              </thead>
+              <tbody id="estimateTableBody">
+                <tr id="estimateEmptyRow">
+                  <td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">
+                    항목을 추가해주세요
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 합계 -->
+          <div class="estimate-summary">
+            <div class="estimate-summary-row">
+              <span style="color:var(--sub);">소계</span>
+              <span id="estimateSubtotal" style="font-weight:900;">0원</span>
+            </div>
+            <div class="estimate-summary-row">
+              <span style="color:var(--sub);">할인</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span>-</span>
+                <input class="discount-input" id="discountInput" type="number" min="0" step="10000" value="0" />
+                <span>원</span>
+              </div>
+            </div>
+            <div class="estimate-summary-row total">
+              <span>최종 견적</span>
+              <span id="estimateTotal">0원</span>
+            </div>
+          </div>
+
+          <!-- 다음 액션 + 저장 -->
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;">
+            <div style="flex:1;">
+              <label class="label" for="consultPlanInput">다음 액션</label>
+              <select id="consultPlanInput">
+                <option value="재상담 예정">재상담 예정</option>
+                <option value="견적 발송 예정">견적 발송 예정</option>
+                <option value="당일 결정 가능">당일 결정 가능</option>
+                <option value="치료 예약 유도">치료 예약 유도</option>
+              </select>
+            </div>
+            <button class="primary-btn" id="saveConsultationBtn" style="padding:12px 20px;border-radius:14px;white-space:nowrap;">상담 저장</button>
+          </div>
+        </div>
+
+        <!-- TAB 2: 메모 · AI 요약 -->
+        <div class="consult-tab-section" id="ctab-memo">
           <div class="field">
             <label class="label" for="consultTitleInput">상담 제목</label>
             <input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" />
@@ -534,61 +661,38 @@
             <div class="stt-box-header">
               <div class="stt-badge">✦ Gemini AI 요약</div>
             </div>
-
             <div class="stt-status" id="sttStatusBox">
               STT 녹음 후 Gemini AI가 상담 내용을 구조화된 메모로 정리해드립니다.
             </div>
-
-            <div class="button-row" style="margin-top:0; margin-bottom:12px;">
+            <div class="button-row" style="margin-top:0;margin-bottom:12px;">
               <button class="dark-btn" id="startSttBtn">🎙 녹음 시작</button>
               <button class="ghost-btn" id="stopSttBtn">⏹ 녹음 중지</button>
               <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
             </div>
-
             <div class="field">
               <label class="label" for="sttRawInput">원본 STT 기록</label>
               <textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력"></textarea>
             </div>
-
-            <div class="button-row" style="margin-top:0; margin-bottom:12px;">
+            <div class="button-row" style="margin-top:0;margin-bottom:12px;">
               <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
               <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
             </div>
-
             <div class="ai-summary-result" id="aiSummaryResult" style="display:none;">
               <div class="ai-label">✦ Gemini AI 요약 결과</div>
               <div class="ai-text" id="sttSummaryOutput"></div>
             </div>
           </div>
 
-          <div class="field">
-            <label class="label" for="consultEstimateInput">예상 총 금액</label>
-            <input id="consultEstimateInput" type="number" min="0" step="1000" placeholder="예: 1800000" />
-          </div>
-          <div class="field">
-            <label class="label" for="consultPlanInput">다음 액션</label>
-            <select id="consultPlanInput">
-              <option value="재상담 예정">재상담 예정</option>
-              <option value="견적 발송 예정">견적 발송 예정</option>
-              <option value="당일 결정 가능">당일 결정 가능</option>
-              <option value="치료 예약 유도">치료 예약 유도</option>
-            </select>
-          </div>
           <div class="button-row">
-            <button class="primary-btn" id="saveConsultationBtn">상담 저장</button>
             <button class="ghost-btn" id="resetConsultationBtn">입력 초기화</button>
           </div>
+        </div>
 
-          <div class="total-card">
-            <div class="label">입력한 예상 총 금액</div>
-            <div class="value" id="consultEstimatePreview">0원</div>
-            <div class="sub">Gemini AI가 STT 녹음 내용을 구조화된 상담 메모로 정리합니다. 현재 상태 · 치료 옵션 · 환자 반응 · 다음 액션이 자동 추출됩니다.</div>
-          </div>
-        </section>
-
-        <section class="tab-section" id="tab-history">
+        <!-- TAB 3: 상담 이력 -->
+        <div class="consult-tab-section" id="ctab-history">
           <div class="history-list" id="consultationHistoryList"></div>
-        </section>
+        </div>
+
       </div>
     </section>
   </main>
@@ -722,7 +826,13 @@ const AppState = {
   // 인증
   currentUser: null,
   userProfile: null,
-  geminiApiKey: null,   // 복호화된 키 (메모리에만 보관)
+  geminiApiKey: null,
+  // 견적
+  estimateItems: [],        // [{id, name, unitPrice, qty, presetId}]
+  pricePresets: [],         // Supabase에서 로드한 단가표
+  pricePickerCategory: null,
+  pricePickerOpen: false,
+  directInputOpen: false,
 };
 
 const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
@@ -998,7 +1108,180 @@ async function addUserTag(category, value) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   인증 관련 함수
+   상담 탭 전환
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function setConsultTab(tabName) {
+  document.querySelectorAll('[data-consult-tab]').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.consultTab === tabName));
+  document.querySelectorAll('.consult-tab-section').forEach(sec =>
+    sec.classList.toggle('active', sec.id === `ctab-${tabName}`));
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   단가표 로드 (Supabase)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadPricePresets() {
+  if (!AppState.connected) return;
+  try {
+    // 기본 단가표 로드
+    const { data: presets } = await AppState.supabase
+      .from('treatment_presets')
+      .select('*')
+      .eq('is_active', true)
+      .order('category').order('display_order');
+
+    // 사용자 커스텀 단가 로드
+    const { data: customs } = await AppState.supabase
+      .from('user_price_settings')
+      .select('*')
+      .eq('user_id', AppState.currentUser.id);
+
+    // 병합: 커스텀 단가 있으면 덮어쓰기
+    const customMap = {};
+    (customs || []).forEach(c => { customMap[c.preset_id] = c; });
+
+    AppState.pricePresets = (presets || []).map(p => ({
+      ...p,
+      price: customMap[p.id]?.custom_price ?? p.default_price,
+      is_hidden: customMap[p.id]?.is_hidden ?? false,
+    })).filter(p => !p.is_hidden);
+
+  } catch(e) { console.error('단가표 로드 실패:', e); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   단가 피커
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function togglePricePicker() {
+  AppState.pricePickerOpen = !AppState.pricePickerOpen;
+  document.getElementById('pricePicker').classList.toggle('hidden', !AppState.pricePickerOpen);
+  if (AppState.pricePickerOpen) renderPricePicker();
+  // 직접입력 닫기
+  AppState.directInputOpen = false;
+  document.getElementById('directInputRow').classList.add('hidden');
+}
+
+function renderPricePicker() {
+  const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
+  if (!AppState.pricePickerCategory) AppState.pricePickerCategory = cats[0];
+
+  const catsEl = document.getElementById('pricePickerCats');
+  catsEl.innerHTML = cats.map(c =>
+    `<button class="price-picker-cat${c === AppState.pricePickerCategory ? ' active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+  catsEl.querySelectorAll('.price-picker-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AppState.pricePickerCategory = btn.dataset.cat;
+      renderPricePicker();
+    });
+  });
+
+  const items = AppState.pricePresets.filter(p => p.category === AppState.pricePickerCategory);
+  const itemsEl = document.getElementById('pricePickerItems');
+  itemsEl.innerHTML = items.map(p => `
+    <div class="price-picker-item" data-preset-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
+      <span class="item-name">${p.name} <span style="font-size:11px;color:var(--sub);font-weight:400;">/ ${p.unit}</span></span>
+      <span class="item-price">${formatKRW(p.price)}</span>
+    </div>
+  `).join('');
+  itemsEl.querySelectorAll('.price-picker-item').forEach(el => {
+    el.addEventListener('click', () => {
+      addEstimateItem({
+        presetId: el.dataset.presetId,
+        name: el.dataset.name,
+        unitPrice: Number(el.dataset.price),
+        unit: el.dataset.unit,
+        qty: 1,
+      });
+    });
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   견적 항목 관리
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function addEstimateItem(item) {
+  // 같은 preset이면 수량만 증가
+  if (item.presetId) {
+    const existing = AppState.estimateItems.find(i => i.presetId === item.presetId);
+    if (existing) { existing.qty++; renderEstimateTable(); return; }
+  }
+  AppState.estimateItems.push({ id: Date.now(), ...item });
+  renderEstimateTable();
+}
+
+function removeEstimateItem(id) {
+  AppState.estimateItems = AppState.estimateItems.filter(i => i.id !== id);
+  renderEstimateTable();
+}
+
+function changeQty(id, delta) {
+  const item = AppState.estimateItems.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderEstimateTable();
+}
+
+function renderEstimateTable() {
+  const tbody = document.getElementById('estimateTableBody');
+  const items = AppState.estimateItems;
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr id="estimateEmptyRow"><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">항목을 추가해주세요</td></tr>`;
+    updateEstimateSummary();
+    return;
+  }
+
+  tbody.innerHTML = items.map(item => `
+    <tr>
+      <td style="font-weight:800;">${item.name}${item.unit ? ` <span style="font-size:11px;color:var(--sub);font-weight:400;">/${item.unit}</span>` : ''}</td>
+      <td style="text-align:right;color:var(--primary);font-weight:800;">${formatKRW(item.unitPrice)}</td>
+      <td style="text-align:center;">
+        <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+        <span class="qty-val">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id},+1)">+</button>
+      </td>
+      <td style="text-align:right;">
+        <div style="font-size:12px;color:var(--sub);">${formatKRW(item.unitPrice * item.qty)}</div>
+        <button class="item-del-btn" onclick="removeEstimateItem(${item.id})">×</button>
+      </td>
+    </tr>
+  `).join('');
+
+  updateEstimateSummary();
+}
+
+function updateEstimateSummary() {
+  const subtotal = AppState.estimateItems.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+  const discount = Number(document.getElementById('discountInput').value || 0);
+  const total = Math.max(0, subtotal - discount);
+  document.getElementById('estimateSubtotal').textContent = formatKRW(subtotal);
+  document.getElementById('estimateTotal').textContent = formatKRW(total);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   직접 입력
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toggleDirectInput() {
+  AppState.directInputOpen = !AppState.directInputOpen;
+  document.getElementById('directInputRow').classList.toggle('hidden', !AppState.directInputOpen);
+  // 단가표 피커 닫기
+  AppState.pricePickerOpen = false;
+  document.getElementById('pricePicker').classList.add('hidden');
+  if (AppState.directInputOpen) document.getElementById('directItemName').focus();
+}
+
+function addDirectItem() {
+  const name = document.getElementById('directItemName').value.trim();
+  const price = Number(document.getElementById('directItemPrice').value || 0);
+  if (!name) { alert('항목명을 입력해주세요.'); return; }
+  addEstimateItem({ presetId: null, name, unitPrice: price, unit: '', qty: 1 });
+  document.getElementById('directItemName').value = '';
+  document.getElementById('directItemPrice').value = '';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   상담 저장 (견적 항목 포함)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function showAuthScreen() {
   document.getElementById('authScreen').style.display = 'flex';
@@ -1011,6 +1294,7 @@ async function showMainApp(user) {
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('mainApp').style.flexDirection = 'column';
   await loadUserProfile();
+  await loadPricePresets();
   await loadPatients();
   await loadTodayConsultCount();
 }
@@ -1393,11 +1677,16 @@ function stopBrowserStt() {
 }
 
 function resetConsultationForm() {
-  ['consultTitleInput','consultDiagnosisInput','consultEstimateInput'].forEach(id=>document.getElementById(id).value='');
+  ['consultTitleInput','consultDiagnosisInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('consultPlanInput').value='재상담 예정';
+  document.getElementById('discountInput').value='0';
   AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.sttSummary=''; AppState.lastInterimTranscript='';
+  AppState.estimateItems=[];
   document.getElementById('aiSummaryResult').style.display='none';
-  renderSttState(); updateEstimatePreview();
+  document.getElementById('pricePicker').classList.add('hidden');
+  document.getElementById('directInputRow').classList.add('hidden');
+  AppState.pricePickerOpen=false; AppState.directInputOpen=false;
+  renderEstimateTable(); renderSttState();
 }
 
 function updateEstimatePreview() {
@@ -1408,22 +1697,47 @@ async function saveConsultation() {
   if(!AppState.connected){alert('Supabase 연결이 아직 완료되지 않았습니다.');return;}
   const patient=getSelectedPatient();
   if(!patient){alert('상담할 환자를 먼저 선택해주세요.');return;}
-  const total=Number(document.getElementById('consultEstimateInput').value||0);
+
+  const subtotal = AppState.estimateItems.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const discount = Number(document.getElementById('discountInput').value||0);
+  const total = Math.max(0, subtotal - discount);
+
   const payload={
     user_id: AppState.currentUser.id,
     patient_id:patient.id,
     title:document.getElementById('consultTitleInput').value.trim()||'상담 기록',
-    diagnosis_note:document.getElementById('consultDiagnosisInput').value.trim(),
+    diagnosis_note:document.getElementById('consultDiagnosisInput').value.trim()||'-',
     stt_raw:AppState.sttRaw||null,
     stt_summary:AppState.sttSummary||null,
     estimated_total:total,
     next_action:document.getElementById('consultPlanInput').value
   };
-  if(!payload.diagnosis_note){alert('진단/설명 메모를 입력해주세요.');return;}
+
   try {
-    const{error}=await AppState.supabase.from('consultations').insert(payload);
+    const{data, error}=await AppState.supabase.from('consultations').insert(payload).select().single();
     if(error) throw error;
-    await AppState.supabase.from('patients').update({status:payload.next_action,last_total:total,memo:payload.diagnosis_note}).eq('id',patient.id);
+
+    // 견적 항목 저장
+    if(AppState.estimateItems.length && data?.id) {
+      const itemPayloads = AppState.estimateItems.map((item, idx) => ({
+        consultation_id: data.id,
+        user_id: AppState.currentUser.id,
+        preset_id: item.presetId || null,
+        item_name: item.name,
+        unit_price: item.unitPrice,
+        quantity: item.qty,
+        discount: 0,
+        display_order: idx,
+      }));
+      // 전체 할인은 마지막 항목에 적용
+      if(itemPayloads.length > 0) itemPayloads[itemPayloads.length-1].discount = discount;
+      await AppState.supabase.from('consultation_items').insert(itemPayloads);
+    }
+
+    await AppState.supabase.from('patients').update({
+      status:payload.next_action, last_total:total
+    }).eq('id',patient.id);
+
     alert('상담 내용을 저장했습니다.');
     resetConsultationForm();
     await loadPatients();
@@ -1436,22 +1750,40 @@ async function loadConsultations() {
   const list=document.getElementById('consultationHistoryList');
   if(!AppState.connected||!patient){list.innerHTML=`<div class="status-line">환자를 선택하면 상담 이력이 표시됩니다.</div>`;return;}
   try {
-    const{data,error}=await AppState.supabase.from('consultations').select('*').eq('patient_id',patient.id).order('created_at',{ascending:false});
+    const{data,error}=await AppState.supabase
+      .from('consultations').select('*, consultation_items(*)')
+      .eq('patient_id',patient.id).order('created_at',{ascending:false});
     if(error) throw error;
     if(!data||!data.length){list.innerHTML=`<div class="status-line">저장된 상담 이력이 없습니다.</div>`;return;}
-    list.innerHTML=data.map(item=>`
+    list.innerHTML=data.map(item=>{
+      const items = (item.consultation_items||[]).sort((a,b)=>a.display_order-b.display_order);
+      const itemsHtml = items.length ? `
+        <div style="margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;">
+          ${items.map(ci=>`
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;">
+              <span>${ci.item_name} × ${ci.quantity}</span>
+              <span style="font-weight:800;color:var(--primary);">${formatKRW(ci.unit_price*ci.quantity)}</span>
+            </div>
+          `).join('')}
+          <div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--dark);color:#fff;font-weight:900;">
+            <span>최종 견적</span>
+            <span>${formatKRW(item.estimated_total||0)}</span>
+          </div>
+        </div>` : '';
+      return `
       <article class="consultation-item">
         <div class="consultation-item-head">
           <div>
             <div style="font-weight:900;font-size:17px;">${item.title||'상담 기록'}</div>
             <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
           </div>
-          <div class="consultation-total">${formatKRW(item.estimated_total||0)}</div>
+          <div class="status-badge">${item.next_action||''}</div>
         </div>
-        <div class="consultation-note">${item.diagnosis_note||''}</div>
+        ${item.diagnosis_note&&item.diagnosis_note!=='-'?`<div class="consultation-note">${item.diagnosis_note}</div>`:''}
+        ${itemsHtml}
         ${item.stt_summary?`<div style="margin-top:10px;padding:12px;border:1px solid #c4b5fd;border-radius:14px;background:#faf5ff;"><div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:8px;">✦ AI 요약</div><div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${item.stt_summary}</div></div>`:''}
-      </article>
-    `).join('');
+      </article>`;
+    }).join('');
   } catch(e){list.innerHTML=`<div class="status-line error">상담 이력 조회 실패: ${e.message}</div>`;}
 }
 
@@ -1537,10 +1869,8 @@ function bindEvents() {
     if(AppState.connected){ await loadPatients(); await loadTodayConsultCount(); }
   });
   document.getElementById('patientSearchInput').addEventListener('input', renderPatientList);
-  document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>setTab(btn.dataset.tab)));
 
   // 상담
-  document.getElementById('consultEstimateInput').addEventListener('input', updateEstimatePreview);
   document.getElementById('saveConsultationBtn').addEventListener('click', saveConsultation);
   document.getElementById('resetConsultationBtn').addEventListener('click', resetConsultationForm);
 
@@ -1562,10 +1892,10 @@ function bindEvents() {
 }
 
 bindEvents();
-// 초기 상태 - 로그인 화면 표시 (connectSupabase에서 세션 확인 후 전환)
 document.getElementById('authScreen').style.display = 'flex';
 document.getElementById('mainApp').style.display = 'none';
-renderPatientCount(); renderPatientList(); renderSelectedPatient(); renderSttState(); updateEstimatePreview(); setTab('consult');
+renderPatientCount(); renderPatientList(); renderSelectedPatient();
+renderSttState(); renderEstimateTable(); setConsultTab('estimate');
 connectSupabase();
 </script>
 </body>
