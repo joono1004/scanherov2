@@ -898,6 +898,10 @@ function renderPatientList() {
   `).join('');
   document.querySelectorAll('[data-patient-id]').forEach(card => {
     card.addEventListener('click', (e) => {
+      // 다른 환자 선택 시 상담 폼 초기화
+      if (card.dataset.patientId !== AppState.selectedPatientId) {
+        resetConsultationForm();
+      }
       AppState.selectedPatientId = card.dataset.patientId;
       renderSelectedPatient(); renderPatientList(); loadConsultations(); loadPatientTags();
       if (e.target.closest('.mini-btn')) {
