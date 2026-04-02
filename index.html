@@ -323,8 +323,12 @@
     .patient-popup-header h3 { margin: 0; font-size: 18px; font-weight: 900; }
     .patient-popup-close { background: #f1f3f5; border: none; border-radius: 999px; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .patient-popup-body { padding: 14px 18px; overflow-y: auto; flex: 1; }
-    .patient-count-chip { cursor: pointer; transition: .15s; }
-    .patient-count-chip:hover { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+
+    /* ── 토스트 알림 ── */
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--dark); color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 800; opacity: 0; transition: opacity .3s, transform .3s; z-index: 9999; white-space: nowrap; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.warn { background: var(--warn); }
 
     @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   </style>
@@ -700,6 +704,9 @@
   </main>
 </div><!-- /#mainApp -->
 
+<!-- 토스트 알림 -->
+<div class="toast" id="toastEl"></div>
+
 <!-- 환자 목록 팝업 -->
 <div class="patient-popup-overlay hidden" id="patientPopupOverlay">
   <div class="patient-popup">
@@ -938,6 +945,17 @@ function setTab(t) {
   document.querySelectorAll('.tab-section').forEach(s=>s.classList.toggle('active',s.id===`tab-${t}`));
 }
 
+/* ── 토스트 알림 ── */
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.className = `toast${type ? ' ' + type : ''}`;
+  requestAnimationFrame(() => el.classList.add('show'));
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
 /* ── 휴대전화 자동 포맷 ── */
 function formatMobile(val) {
   const d = val.replace(/\D/g, '').slice(0, 11);
@@ -1032,6 +1050,7 @@ function confirmSns() {
   document.getElementById('snsPreviewText').textContent = `${t} · ${id}`;
   document.getElementById('snsPreviewArea').style.display = 'block';
   closeSnsModal();
+  showToast('SNS 정보가 저장됐습니다.', 'success');
 }
 
 /* ── 태그 렌더링 ── */
@@ -1496,29 +1515,46 @@ async function savePatient() {
     if (!current) { alert('수정할 환자 정보를 찾을 수 없습니다.'); return; }
 
     const changes = [];
-    if (current.name !== newData.name) changes.push(`환자명: ${current.name} → ${newData.name}`);
-    if (current.mobile !== newData.mobile) changes.push(`휴대전화: ${current.mobile} → ${newData.mobile}`);
+    if ((current.name||'') !== (newData.name||'')) changes.push(`환자명: ${current.name} → ${newData.name}`);
+    if ((current.mobile||'') !== (newData.mobile||'')) changes.push(`휴대전화: ${current.mobile} → ${newData.mobile}`);
     if ((current.gender||'') !== (newData.gender||'')) changes.push(`성별: ${current.gender||'-'} → ${newData.gender||'-'}`);
     if ((current.birth_date||'') !== (newData.birth_date||'')) changes.push(`생년월일: ${current.birth_date||'-'} → ${newData.birth_date||'-'}`);
-    if ((current.status||'') !== (newData.status||'')) changes.push(`상담상태: ${current.status} → ${newData.status}`);
     if ((current.chart_number||'') !== (newData.chart_number||'')) changes.push(`차트번호: ${current.chart_number||'-'} → ${newData.chart_number||'-'}`);
-    if ((current.memo||'') !== (newData.memo||'')) changes.push(`메모: 변경됨`);
+    if ((current.memo||'') !== (newData.memo||'')) changes.push('메모: 변경됨');
     if ((current.sns_type||'') !== (newData.sns_type||'')) changes.push(`SNS: ${current.sns_type||'-'} → ${newData.sns_type||'-'}`);
+    // 상담상태는 별도 처리 (토스트로)
+    const statusChanged = (current.status||'') !== (newData.status||'');
 
-    if (!changes.length) { alert('변경된 내용이 없습니다.'); return; }
+    if (!changes.length && !statusChanged) { showToast('변경된 내용이 없습니다.', 'warn'); return; }
 
-    const confirmMsg = `다음 내용으로 수정하시겠습니까?\n\n${changes.join('\n')}`;
+    // 상담상태만 변경된 경우 바로 저장
+    if (!changes.length && statusChanged) {
+      try {
+        await AppState.supabase.from('patients').update({ status: newData.status }).eq('id', current.id);
+        // 로컬 업데이트
+        const idx = AppState.patients.findIndex(p => p.id === current.id);
+        if (idx !== -1) AppState.patients[idx].status = newData.status;
+        renderPatientList();
+        showToast(`${newData.status}으로 변경됐습니다.`, 'success');
+      } catch(e) { showToast(`저장 실패: ${e.message}`, 'warn'); }
+      return;
+    }
+
+    // 그 외 변경사항 confirm
+    const confirmMsg = `다음 내용으로 수정하시겠습니까?\n\n${changes.join('\n')}${statusChanged ? '\n상담상태: ' + current.status + ' → ' + newData.status : ''}`;
     if (!confirm(confirmMsg)) return;
 
     try {
       const { error } = await AppState.supabase.from('patients').update(newData).eq('id', current.id);
       if (error) throw error;
-      alert('환자 정보가 수정됐습니다.');
-      await loadPatients();
-      AppState.selectedPatientId = current.id;
-      fillPatientForm(getSelectedPatient());
+      // 로컬 patients 배열 직접 업데이트 (loadPatients 없이)
+      const idx = AppState.patients.findIndex(p => p.id === current.id);
+      if (idx !== -1) AppState.patients[idx] = { ...AppState.patients[idx], ...newData };
+      fillPatientForm(AppState.patients[idx]);
       renderSelectedPatient();
-    } catch(e) { alert(`수정 실패: ${e.message}`); }
+      renderPatientList();
+      showToast('환자 정보가 수정됐습니다.', 'success');
+    } catch(e) { showToast(`수정 실패: ${e.message}`, 'warn'); }
     return;
   }
 
@@ -1536,7 +1572,7 @@ async function savePatient() {
         source: t.source, is_locked: t.is_locked
       });
     }
-    alert('환자가 등록됐습니다.');
+    showToast('환자가 등록됐습니다.', 'success');
     await loadPatients();
     await loadTodayConsultCount();
     if (data?.id) {
@@ -1549,9 +1585,9 @@ async function savePatient() {
 
 function resetPatientForm() {
   AppState.patientFormMode = 'new';
-  document.getElementById('patientPanelTitle').textContent = '환자 등록';
+  document.getElementById('patientPanelTitle').textContent = '환자 정보';
   document.getElementById('patientPanelSub').textContent = '신규 환자 정보를 입력하세요.';
-  document.getElementById('savePatientBtn').textContent = '등록';
+  document.getElementById('savePatientBtn').textContent = '저장';
   document.getElementById('patientChartInput').value = '';
   document.getElementById('patientNameInput').value = '';
   document.getElementById('patientMobileInput').value = '';
