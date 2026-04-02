@@ -1690,34 +1690,154 @@ function bindCanvasEvents() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    캔버스 상단 STT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MediaRecorder (오디오 녹음 → 기기 저장)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const RecordState = {
+  mediaRecorder: null,
+  chunks: [],
+  startTime: null,
+};
+
+async function startMediaRecorder() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    RecordState.chunks = [];
+    RecordState.startTime = new Date();
+    RecordState.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    RecordState.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) RecordState.chunks.push(e.data); };
+    RecordState.mediaRecorder.start(1000);
+  } catch(e) {
+    console.warn('마이크 접근 불가 (STT만 진행):', e.message);
+  }
+}
+
+function stopMediaRecorderAndDownload(patientName) {
+  return new Promise(resolve => {
+    if (!RecordState.mediaRecorder || RecordState.mediaRecorder.state === 'inactive') { resolve(null); return; }
+    RecordState.mediaRecorder.onstop = () => {
+      const blob = new Blob(RecordState.chunks, { type: 'audio/webm' });
+      const date = (RecordState.startTime || new Date()).toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
+      const name = `${patientName||'미지정'}_${date}_상담.webm`;
+      // 자동 다운로드
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      // 스트림 종료
+      RecordState.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      RecordState.mediaRecorder = null;
+      resolve(blob);
+    };
+    RecordState.mediaRecorder.stop();
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   캔버스 이미지 → Supabase Storage 업로드
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function uploadCanvasImage() {
+  if (!AppState.connected || !AppState.currentUser) return null;
+  const canvas = document.getElementById('mainCanvas');
+  if (!canvas) return null;
+  try {
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+    const date = new Date().toISOString().slice(0,10);
+    const path = `${AppState.currentUser.id}/${date}_${Date.now()}.jpg`;
+    const { data, error } = await AppState.supabase.storage
+      .from('dental-canvas')
+      .upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+    if (error) throw error;
+    const { data: urlData } = AppState.supabase.storage.from('dental-canvas').getPublicUrl(path);
+    return urlData?.publicUrl || null;
+  } catch(e) {
+    console.error('캔버스 업로드 실패:', e.message);
+    return null;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   상담 종료 시 자동 저장
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function saveConsultOnEnd() {
+  if (!AppState.connected) return;
+  const patient = getSelectedPatient();
+
+  showToast('상담 기록 저장 중...', '');
+
+  // 1. 캔버스 이미지 업로드
+  const canvasUrl = await uploadCanvasImage();
+
+  // 2. 오디오 다운로드 (기기 저장)
+  await stopMediaRecorderAndDownload(patient?.name);
+
+  // 3. AI 요약 대기 후 DB 저장
+  const saveRecord = async (summary) => {
+    try {
+      const payload = {
+        user_id: AppState.currentUser.id,
+        patient_id: patient?.id || null,
+        title: patient ? `${patient.name} 상담` : '미지정 환자 상담',
+        diagnosis_note: summary || AppState.sttRaw || '-',
+        stt_text: AppState.sttRaw || null,
+        stt_summary: summary || null,
+        canvas_image_url: canvasUrl,
+        estimated_total: 0,
+        next_action: '재상담 예정',
+        consult_date: new Date().toISOString().slice(0,10),
+      };
+      const { error } = await AppState.supabase.from('consultations').insert(payload);
+      if (error) throw error;
+      showToast('상담 기록이 저장됐습니다.', 'success');
+      await loadTodayConsultCount();
+      if (patient) { await loadConsultations(); }
+      // 캔버스 초기화
+      clearCanvas();
+      AppState.sttRaw = ''; AppState.sttRawFinal = ''; AppState.sttSummary = '';
+    } catch(e) {
+      showToast(`저장 실패: ${e.message}`, 'warn');
+    }
+  };
+
+  // STT 내용이 있으면 AI 요약 후 저장, 없으면 바로 저장
+  if (AppState.sttRaw.trim()) {
+    showToast('AI 요약 중... 잠시만 기다려주세요', '');
+    try {
+      await summarizeWithClaude(AppState.sttRaw);
+      await saveRecord(AppState.sttSummary);
+    } catch(e) {
+      await saveRecord(null);
+    }
+  } else {
+    await saveRecord(null);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   캔버스 STT 바인딩 (수정)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function bindCanvasTopbar() {
   const recBtn = document.getElementById('canvasRecBtn');
   const recDot = document.getElementById('canvasRecDot');
 
-  recBtn.addEventListener('click', () => {
+  recBtn.addEventListener('click', async () => {
     CanvasState.isRecording = !CanvasState.isRecording;
     if (CanvasState.isRecording) {
       recBtn.textContent = '■ 상담 종료';
       recBtn.className = 'canvas-btn rec-stop';
       recDot.style.display = 'block';
       startBrowserStt();
+      await startMediaRecorder();
     } else {
       recBtn.textContent = '🎙 상담 시작';
       recBtn.className = 'canvas-btn rec-start';
       recDot.style.display = 'none';
       stopBrowserStt();
-      // 종료 시 AI 요약 자동 실행
-      if (AppState.sttRaw.trim()) {
-        summarizeWithClaude(AppState.sttRaw);
-        showToast('상담 종료 · AI 요약 중...', '');
-      }
+      await saveConsultOnEnd();  // 종료 시 자동 저장
     }
   });
 
-  // 환자 선택 (환자 목록 팝업 열기)
   document.getElementById('canvasPtSelect').addEventListener('click', openPatientPopup);
-
-  // 비용 상담 버튼 → 의료진 패널 열고 비용 탭으로
   document.getElementById('goCostBtn').addEventListener('click', () => {
     openMgmtPanel();
     setConsultTab('estimate');
@@ -1730,6 +1850,9 @@ function bindCanvasTopbar() {
 function openMgmtPanel() {
   document.getElementById('mgmtPanel').classList.add('open');
   document.getElementById('mgmtOverlay').classList.add('open');
+  // 이력 탭이 활성 상태면 자동 로드
+  const historyTab = document.getElementById('ctab-history');
+  if (historyTab?.classList.contains('active')) loadConsultations();
 }
 function closeMgmtPanel() {
   document.getElementById('mgmtPanel').classList.remove('open');
@@ -2072,6 +2195,8 @@ function setConsultTab(tabName) {
     btn.classList.toggle('active', btn.dataset.consultTab === tabName));
   document.querySelectorAll('.consult-tab-section').forEach(sec =>
     sec.classList.toggle('active', sec.id === `ctab-${tabName}`));
+  // 이력 탭 진입 시 자동 로드
+  if (tabName === 'history') loadConsultations();
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2814,16 +2939,35 @@ async function saveConsultation() {
 }
 
 async function loadConsultations() {
-  const patient=getSelectedPatient();
-  const list=document.getElementById('consultationHistoryList');
-  if(!AppState.connected||!patient){list.innerHTML=`<div class="status-line">환자를 선택하면 상담 이력이 표시됩니다.</div>`;return;}
+  const patient = getSelectedPatient();
+  const list = document.getElementById('consultationHistoryList');
+  if (!AppState.connected) { list.innerHTML = `<div class="status-line">연결 중...</div>`; return; }
+
   try {
-    const{data,error}=await AppState.supabase
-      .from('consultations').select('*, consultation_items(*)')
-      .eq('patient_id',patient.id).order('created_at',{ascending:false});
-    if(error) throw error;
-    if(!data||!data.length){list.innerHTML=`<div class="status-line">저장된 상담 이력이 없습니다.</div>`;return;}
-    list.innerHTML=data.map(item=>{
+    let query = AppState.supabase
+      .from('consultations')
+      .select('*, consultation_items(*)')
+      .eq('user_id', AppState.currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    // 환자가 선택된 경우 해당 환자만, 없으면 오늘 전체 기록
+    if (patient) {
+      query = query.eq('patient_id', patient.id);
+    } else {
+      const today = new Date().toISOString().slice(0,10);
+      query = query.eq('consult_date', today);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      list.innerHTML = `<div class="status-line">${patient ? '저장된 상담 이력이 없습니다.' : '오늘 저장된 상담 기록이 없습니다.'}</div>`;
+      return;
+    }
+
+    list.innerHTML = data.map(item => {
       const items = (item.consultation_items||[]).sort((a,b)=>a.display_order-b.display_order);
       const itemsHtml = items.length ? `
         <div style="margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;">
@@ -2834,25 +2978,49 @@ async function loadConsultations() {
             </div>
           `).join('')}
           <div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--dark);color:#fff;font-weight:900;">
-            <span>최종 견적</span>
-            <span>${formatKRW(item.estimated_total||0)}</span>
+            <span>최종 견적</span><span>${formatKRW(item.estimated_total||0)}</span>
           </div>
         </div>` : '';
+
+      const canvasHtml = item.canvas_image_url ? `
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:6px;">🖊 상담 캔버스</div>
+          <img src="${item.canvas_image_url}" style="width:100%;border-radius:10px;border:1px solid var(--line);cursor:pointer;"
+            onclick="window.open('${item.canvas_image_url}','_blank')" title="클릭하면 크게 볼 수 있습니다" />
+        </div>` : '';
+
+      const sttHtml = item.stt_text ? `
+        <details style="margin-top:10px;">
+          <summary style="font-size:12px;font-weight:800;color:var(--sub);cursor:pointer;padding:6px 0;">📝 STT 원문 보기</summary>
+          <div style="margin-top:6px;padding:10px;background:#f8fbff;border-radius:10px;font-size:12px;color:var(--sub);line-height:1.7;white-space:pre-line;max-height:120px;overflow-y:auto;">${item.stt_text}</div>
+        </details>` : '';
+
+      const aiHtml = item.stt_summary ? `
+        <div style="margin-top:10px;padding:12px;border:1px solid #c4b5fd;border-radius:14px;background:#faf5ff;">
+          <div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:8px;">✦ AI 요약</div>
+          <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${item.stt_summary}</div>
+        </div>` : '';
+
+      const patientLabel = !patient && item.patient_id
+        ? `<span style="font-size:11px;background:var(--primary-soft);color:var(--primary);padding:3px 8px;border-radius:999px;font-weight:800;">${item.title?.split(' ')[0] || '환자'}</span>`
+        : '';
+
       return `
-      <article class="consultation-item">
-        <div class="consultation-item-head">
-          <div>
-            <div style="font-weight:900;font-size:17px;">${item.title||'상담 기록'}</div>
-            <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
+        <article class="consultation-item">
+          <div class="consultation-item-head">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:16px;">${patientLabel}${item.title||'상담 기록'}</div>
+              <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
+            </div>
+            <div class="status-badge">${item.next_action||''}</div>
           </div>
-          <div class="status-badge">${item.next_action||''}</div>
-        </div>
-        ${item.diagnosis_note&&item.diagnosis_note!=='-'?`<div class="consultation-note">${item.diagnosis_note}</div>`:''}
-        ${itemsHtml}
-        ${item.stt_summary?`<div style="margin-top:10px;padding:12px;border:1px solid #c4b5fd;border-radius:14px;background:#faf5ff;"><div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:8px;">✦ AI 요약</div><div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${item.stt_summary}</div></div>`:''}
-      </article>`;
+          ${item.diagnosis_note && item.diagnosis_note!=='-' ? `<div class="consultation-note">${item.diagnosis_note}</div>` : ''}
+          ${canvasHtml}${itemsHtml}${sttHtml}${aiHtml}
+        </article>`;
     }).join('');
-  } catch(e){list.innerHTML=`<div class="status-line error">상담 이력 조회 실패: ${e.message}</div>`;}
+  } catch(e) {
+    list.innerHTML = `<div class="status-line error">조회 실패: ${e.message}</div>`;
+  }
 }
 
 /* ── 이벤트 바인딩 ── */
