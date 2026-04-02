@@ -425,16 +425,19 @@
   </header>
 
   <main class="wrap">
-    <!-- 환자 등록 -->
+    <!-- 환자 정보 패널 -->
     <section class="panel">
       <div class="panel-inner">
         <div class="panel-title">
           <div style="width:100%">
             <div class="panel-title-row">
-              <h2 style="margin:0;font-size:22px;">환자 등록</h2>
-              <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
+              <h2 style="margin:0;font-size:22px;" id="patientPanelTitle">환자 정보</h2>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button class="soft-btn" id="resetPatientFormBtn" style="padding:5px 12px;border-radius:10px;font-size:12px;font-weight:800;">+ 환자 등록</button>
+                <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
+              </div>
             </div>
-            <p style="margin:6px 0 0;font-size:13px;color:var(--sub);">기본정보를 등록하면 바로 상담에 사용할 수 있습니다.</p>
+            <p style="margin:6px 0 0;font-size:13px;color:var(--sub);" id="patientPanelSub">환자 목록에서 환자를 선택하거나 신규 등록하세요.</p>
           </div>
         </div>
         <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
@@ -526,8 +529,7 @@
         </div>
 
         <div class="button-row">
-          <button class="primary-btn" id="savePatientBtn">환자 저장</button>
-          <button class="ghost-btn" id="resetPatientFormBtn">초기화</button>
+          <button class="primary-btn" id="savePatientBtn" style="flex:1;">저장</button>
         </div>
       </div>
     </section>
@@ -820,6 +822,7 @@ const AppState = {
   birthYear: null, birthMonth: null, birthDay: null,
   snsType: null, snsId: '',
   gender: null,
+  patientFormMode: 'view',   // 'new' | 'edit' | 'view'
   currentPatientTags: [],
   tagPickerCategory: null, tagPickerOpen: false,
   todayConsultCount: 0,
@@ -898,15 +901,16 @@ function renderPatientList() {
   `).join('');
   document.querySelectorAll('[data-patient-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      // 다른 환자 선택 시 상담 폼 초기화
       if (card.dataset.patientId !== AppState.selectedPatientId) {
         resetConsultationForm();
+        AppState.currentPatientTags = [];
+        renderTagChips();
       }
       AppState.selectedPatientId = card.dataset.patientId;
+      const p = getSelectedPatient();
+      if (p) fillPatientForm(p);
       renderSelectedPatient(); renderPatientList(); loadConsultations(); loadPatientTags();
-      if (e.target.closest('.mini-btn')) {
-        closePatientPopup();
-      }
+      if (e.target.closest('.mini-btn')) closePatientPopup();
     });
   });
 }
@@ -1301,6 +1305,8 @@ async function showMainApp(user) {
   await loadPricePresets();
   await loadPatients();
   await loadTodayConsultCount();
+  // 로그인 후 신규 등록 상태로 시작
+  resetPatientForm();
 }
 
 async function loadUserProfile() {
@@ -1457,17 +1463,20 @@ async function loadPatients() {
     const { data, error } = await AppState.supabase.from('patients').select('*').order('created_at',{ascending:false});
     if(error) throw error;
     AppState.patients = data||[];
-    if(!AppState.selectedPatientId && AppState.patients.length) AppState.selectedPatientId=AppState.patients[0].id;
-    renderPatientCount(); renderPatientList(); renderSelectedPatient();
-    await loadConsultations(); await loadPatientTags();
+    // 자동으로 첫 환자 선택 안 함 - 선택된 환자 있을 때만 갱신
+    renderPatientCount(); renderPatientList();
+    if (AppState.selectedPatientId) {
+      renderSelectedPatient();
+      await loadConsultations(); await loadPatientTags();
+    }
   } catch(e) { console.error('환자 로드 실패:',e.message); }
 }
 
 /* ── 환자 저장 ── */
 async function savePatient() {
   if(!AppState.connected) { alert('Supabase 연결이 아직 완료되지 않았습니다.'); return; }
-  const payload = {
-    user_id: AppState.currentUser.id,
+
+  const newData = {
     chart_number: document.getElementById('patientChartInput').value.trim() || null,
     name: document.getElementById('patientNameInput').value.trim(),
     mobile: document.getElementById('patientMobileInput').value.trim(),
@@ -1477,34 +1486,72 @@ async function savePatient() {
     birth_date: document.getElementById('patientBirthInput').value || null,
     status: document.getElementById('patientStatusInput').value,
     memo: document.getElementById('patientMemoInput').value.trim(),
-    last_total: 0
   };
-  if(!payload.name || !payload.mobile) { alert('환자명과 휴대전화는 필수입니다.'); return; }
+
+  if (!newData.name || !newData.mobile) { alert('환자명과 휴대전화는 필수입니다.'); return; }
+
+  // ── 수정 모드 ──
+  if (AppState.patientFormMode === 'edit') {
+    const current = getSelectedPatient();
+    if (!current) { alert('수정할 환자 정보를 찾을 수 없습니다.'); return; }
+
+    const changes = [];
+    if (current.name !== newData.name) changes.push(`환자명: ${current.name} → ${newData.name}`);
+    if (current.mobile !== newData.mobile) changes.push(`휴대전화: ${current.mobile} → ${newData.mobile}`);
+    if ((current.gender||'') !== (newData.gender||'')) changes.push(`성별: ${current.gender||'-'} → ${newData.gender||'-'}`);
+    if ((current.birth_date||'') !== (newData.birth_date||'')) changes.push(`생년월일: ${current.birth_date||'-'} → ${newData.birth_date||'-'}`);
+    if ((current.status||'') !== (newData.status||'')) changes.push(`상담상태: ${current.status} → ${newData.status}`);
+    if ((current.chart_number||'') !== (newData.chart_number||'')) changes.push(`차트번호: ${current.chart_number||'-'} → ${newData.chart_number||'-'}`);
+    if ((current.memo||'') !== (newData.memo||'')) changes.push(`메모: 변경됨`);
+    if ((current.sns_type||'') !== (newData.sns_type||'')) changes.push(`SNS: ${current.sns_type||'-'} → ${newData.sns_type||'-'}`);
+
+    if (!changes.length) { alert('변경된 내용이 없습니다.'); return; }
+
+    const confirmMsg = `다음 내용으로 수정하시겠습니까?\n\n${changes.join('\n')}`;
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const { error } = await AppState.supabase.from('patients').update(newData).eq('id', current.id);
+      if (error) throw error;
+      alert('환자 정보가 수정됐습니다.');
+      await loadPatients();
+      AppState.selectedPatientId = current.id;
+      fillPatientForm(getSelectedPatient());
+      renderSelectedPatient();
+    } catch(e) { alert(`수정 실패: ${e.message}`); }
+    return;
+  }
+
+  // ── 신규 등록 모드 ──
+  const payload = { user_id: AppState.currentUser.id, ...newData, last_total: 0 };
   try {
     const { data, error } = await AppState.supabase.from('patients').insert(payload).select().single();
-    if(error) throw error;
+    if (error) throw error;
     // 임시 태그 저장
-    const tmpTags = AppState.currentPatientTags.filter(t=>t.patient_id===null&&!t.is_deleted);
-    for(const t of tmpTags) {
+    const tmpTags = AppState.currentPatientTags.filter(t => t.patient_id === null && !t.is_deleted);
+    for (const t of tmpTags) {
       await AppState.supabase.from('patient_tags').insert({
         patient_id: data.id, user_id: AppState.currentUser.id,
-        category_name: t.category_name,
-        tag_value: t.tag_value, source: t.source, is_locked: t.is_locked
+        category_name: t.category_name, tag_value: t.tag_value,
+        source: t.source, is_locked: t.is_locked
       });
     }
-    alert('환자를 저장했습니다.');
-    resetPatientForm();
+    alert('환자가 등록됐습니다.');
     await loadPatients();
     await loadTodayConsultCount();
-    if(data?.id) {
+    if (data?.id) {
       AppState.selectedPatientId = data.id;
+      fillPatientForm(getSelectedPatient());
       renderSelectedPatient(); renderPatientList();
-      document.getElementById('consultRootPanel').scrollIntoView({behavior:'smooth',block:'start'});
     }
-  } catch(e) { alert(`환자 저장 실패: ${e.message}`); }
+  } catch(e) { alert(`등록 실패: ${e.message}`); }
 }
 
 function resetPatientForm() {
+  AppState.patientFormMode = 'new';
+  document.getElementById('patientPanelTitle').textContent = '환자 등록';
+  document.getElementById('patientPanelSub').textContent = '신규 환자 정보를 입력하세요.';
+  document.getElementById('savePatientBtn').textContent = '등록';
   document.getElementById('patientChartInput').value = '';
   document.getElementById('patientNameInput').value = '';
   document.getElementById('patientMobileInput').value = '';
@@ -1517,12 +1564,58 @@ function resetPatientForm() {
   AppState.birthYear = null; AppState.birthMonth = null; AppState.birthDay = null;
   AppState.snsType = null; AppState.snsId = '';
   AppState.gender = null;
+  document.getElementById('snsPreviewArea').style.display = 'none';
   const normalGenderStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
   document.getElementById('genderMaleBtn').style.cssText = normalGenderStyle;
   document.getElementById('genderFemaleBtn').style.cssText = normalGenderStyle;
-  document.getElementById('snsPreviewArea').style.display = 'none';
   AppState.currentPatientTags = [];
   renderTagChips();
+  // 선택 환자 해제
+  AppState.selectedPatientId = null;
+}
+
+/* ── 환자 정보 폼에 데이터 채우기 (수정 모드) ── */
+function fillPatientForm(p) {
+  AppState.patientFormMode = 'edit';
+  document.getElementById('patientPanelTitle').textContent = '환자 정보';
+  document.getElementById('patientPanelSub').textContent = '정보를 수정한 뒤 저장 버튼을 눌러주세요.';
+  document.getElementById('savePatientBtn').textContent = '저장';
+  document.getElementById('patientChartInput').value = p.chart_number || '';
+  document.getElementById('patientNameInput').value = p.name || '';
+  document.getElementById('patientMobileInput').value = p.mobile || '';
+  document.getElementById('patientMemoInput').value = p.memo || '';
+  document.getElementById('patientStatusInput').value = p.status || '초기 상담';
+
+  // 생년월일
+  if (p.birth_date) {
+    document.getElementById('patientBirthInput').value = p.birth_date;
+    const [y, m, d] = p.birth_date.split('-');
+    AppState.birthYear = Number(y); AppState.birthMonth = Number(m); AppState.birthDay = Number(d);
+    const btn = document.getElementById('birthDisplayBtn');
+    btn.classList.remove('empty');
+    document.getElementById('birthDisplayText').textContent = `${y}.${m}.${d}`;
+  } else {
+    document.getElementById('birthDisplayBtn').classList.add('empty');
+    document.getElementById('birthDisplayText').textContent = '생년월일 선택';
+    AppState.birthYear = null; AppState.birthMonth = null; AppState.birthDay = null;
+  }
+
+  // 성별
+  AppState.gender = p.gender || null;
+  const activeStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--primary);background:var(--primary-soft);font-weight:800;font-size:14px;cursor:pointer;color:var(--primary);';
+  const normalStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
+  document.getElementById('genderMaleBtn').style.cssText = p.gender === '남' ? activeStyle : normalStyle;
+  document.getElementById('genderFemaleBtn').style.cssText = p.gender === '여' ? activeStyle : normalStyle;
+
+  // SNS
+  AppState.snsType = p.sns_type || null;
+  AppState.snsId = p.sns_id || '';
+  if (p.sns_type && p.sns_id) {
+    document.getElementById('snsPreviewText').textContent = `${p.sns_type} · ${p.sns_id}`;
+    document.getElementById('snsPreviewArea').style.display = 'block';
+  } else {
+    document.getElementById('snsPreviewArea').style.display = 'none';
+  }
 }
 
 /* ── Gemini AI 요약 ── */
