@@ -215,6 +215,37 @@
     .drum-cancel { background: #f1f3f5; color: var(--sub); }
     .drum-confirm { background: var(--primary); color: #fff; }
 
+    /* ── 로그인 화면 ── */
+    .auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: flex; align-items: center; justify-content: center; }
+    .auth-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); padding: 36px 32px; width: 380px; }
+    .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .auth-logo-mark { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg,#d9e7ff,#fff); border: 1px solid #bfd3fb; display: grid; place-items: center; font-size: 20px; }
+    .auth-logo h1 { margin: 0; font-size: 18px; line-height: 1.3; }
+    .auth-logo p { margin: 3px 0 0; font-size: 12px; color: var(--sub); }
+    .auth-tabs { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; margin-bottom: 22px; }
+    .auth-tab { flex: 1; padding: 9px; border: none; border-radius: 999px; background: transparent; font-weight: 800; font-size: 14px; color: var(--sub); cursor: pointer; transition: .15s; }
+    .auth-tab.active { background: var(--dark); color: #fff; }
+    .auth-field { margin-bottom: 12px; }
+    .auth-field label { display: block; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 6px; }
+    .auth-field input { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font: inherit; background: #fff; }
+    .auth-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: var(--primary); color: #fff; font: inherit; font-weight: 900; font-size: 15px; cursor: pointer; margin-top: 6px; }
+    .auth-submit:hover { opacity: .9; }
+    .auth-msg { font-size: 13px; text-align: center; margin-top: 12px; min-height: 20px; }
+    .auth-msg.error { color: #e24b4a; }
+    .auth-msg.ok { color: var(--success); }
+
+    /* ── 설정 모달 ── */
+    .setting-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 150; display: flex; align-items: center; justify-content: center; }
+    .setting-modal { background: #fff; border-radius: 22px; padding: 26px; width: 360px; box-shadow: 0 20px 40px rgba(0,0,0,.15); }
+    .setting-modal-title { font-weight: 900; font-size: 18px; margin-bottom: 6px; }
+    .setting-modal-sub { font-size: 13px; color: var(--sub); margin-bottom: 20px; }
+    .setting-section { margin-bottom: 18px; }
+    .setting-label { font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 6px; }
+    .setting-input-row { display: flex; gap: 8px; }
+    .api-key-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; padding: 5px 11px; border-radius: 999px; margin-bottom: 10px; }
+    .api-key-status.set { background: #f0fdf4; color: var(--success); border: 1px solid #a7f3d0; }
+    .api-key-status.unset { background: #fff7ed; color: var(--warn); border: 1px solid #fed7aa; }
+
     .sns-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
     .sns-modal { background: #fff; border-radius: 22px; padding: 22px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,.15); }
     .sns-modal-title { font-weight: 900; font-size: 17px; margin-bottom: 16px; }
@@ -246,19 +277,98 @@
   </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ── 로그인/회원가입 화면 ── -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">🦷</div>
+      <div>
+        <h1>똑똑치과상담실장</h1>
+        <p>AI 기반 치과 상담 관리 시스템</p>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab">로그인</button>
+      <button class="auth-tab" id="signupTab">회원가입</button>
+    </div>
+    <div id="authLoginForm">
+      <div class="auth-field">
+        <label>이메일</label>
+        <input type="email" id="loginEmail" placeholder="이메일 입력" />
+      </div>
+      <div class="auth-field">
+        <label>비밀번호</label>
+        <input type="password" id="loginPassword" placeholder="비밀번호 입력" />
+      </div>
+      <button class="auth-submit" id="loginBtn">로그인</button>
+    </div>
+    <div id="authSignupForm" class="hidden">
+      <div class="auth-field">
+        <label>이메일</label>
+        <input type="email" id="signupEmail" placeholder="이메일 입력" />
+      </div>
+      <div class="auth-field">
+        <label>비밀번호 <span style="font-weight:400;color:#b0bec5">(6자 이상)</span></label>
+        <input type="password" id="signupPassword" placeholder="비밀번호 입력" />
+      </div>
+      <div class="auth-field">
+        <label>치과명 <span style="font-weight:400;color:#b0bec5">(선택)</span></label>
+        <input type="text" id="signupClinic" placeholder="예: 스마일치과" />
+      </div>
+      <button class="auth-submit" id="signupBtn">회원가입</button>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- ── 설정 모달 ── -->
+<div class="setting-modal-overlay hidden" id="settingModalOverlay">
+  <div class="setting-modal">
+    <div class="setting-modal-title">⚙️ 설정</div>
+    <div class="setting-modal-sub" id="settingUserEmail"></div>
+
+    <div class="setting-section">
+      <div class="setting-label">치과명</div>
+      <div class="setting-input-row">
+        <input id="settingClinicInput" placeholder="예: 스마일치과" style="flex:1;" />
+        <button class="soft-btn" id="saveClinicBtn" style="border-radius:14px;padding:11px 14px;">저장</button>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="setting-label">Gemini AI API 키</div>
+      <div id="apiKeyStatus" class="api-key-status unset">🔑 미설정</div>
+      <div class="setting-input-row">
+        <input type="password" id="settingApiKeyInput" placeholder="AIzaSy..." style="flex:1;" />
+        <button class="soft-btn" id="saveApiKeyBtn" style="border-radius:14px;padding:11px 14px;">저장</button>
+      </div>
+      <div style="font-size:12px;color:#b0bec5;margin-top:6px;">
+        aistudio.google.com 에서 발급 · AES-256 암호화 저장
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="ghost-btn" id="settingCloseBtn" style="flex:1;border-radius:14px;">닫기</button>
+      <button class="ghost-btn" id="logoutBtn" style="flex:1;border-radius:14px;color:#e24b4a;border-color:#fca5a5;">로그아웃</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">🦷</div>
       <div>
         <h1>똑똑치과상담실장</h1>
-        <p>AI 상담 요약 버전 · Gemini API 연결</p>
+        <p id="clinicNameSub">AI 상담 요약 버전 · Gemini API 연결</p>
       </div>
     </div>
     <div class="topbar-actions">
       <div class="chip" id="patientCountChip">환자 0명</div>
       <button class="soft-btn" id="goConsultScreenBtn">상담 화면</button>
       <button class="soft-btn" id="reloadAllBtn">새로고침</button>
+      <button class="ghost-btn" id="openSettingBtn">⚙️ 설정</button>
     </div>
   </header>
 
@@ -470,7 +580,7 @@
       </div>
     </section>
   </main>
-</div>
+</div><!-- /#mainApp -->
 
 <!-- 생년월일 드럼롤 모달 -->
 <div class="birth-modal-overlay hidden" id="birthModalOverlay">
@@ -519,9 +629,48 @@
 </div>
 
 <script>
-const GEMINI_API_KEY = 'AIzaSyApGKU4BtAPRy1I1KOSuA2sr7-Gq1XAS3s';
 const SUPABASE_URL = 'https://kttgyxurltonwvdcfxgf.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Wzl-MMpgRtcrSl1eZt7qXQ_1qeHAGQi';
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AES-GCM 암호화/복호화 (Web Crypto API)
+   암호화 키 = 사용자 UID 기반 파생
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function deriveKey(uid) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(uid.padEnd(32,'0').slice(0,32)), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt: enc.encode('toktok-dental-2024'), iterations:100000, hash:'SHA-256' },
+    keyMaterial, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+  );
+}
+
+async function encryptApiKey(uid, plaintext) {
+  const key = await deriveKey(uid);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(plaintext));
+  return {
+    encrypted: btoa(String.fromCharCode(...new Uint8Array(ciphertext))),
+    iv: btoa(String.fromCharCode(...iv))
+  };
+}
+
+async function decryptApiKey(uid, encrypted, ivB64) {
+  try {
+    const key = await deriveKey(uid);
+    const iv = Uint8Array.from(atob(ivB64), c=>c.charCodeAt(0));
+    const data = Uint8Array.from(atob(encrypted), c=>c.charCodeAt(0));
+    const dec = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, data);
+    return new TextDecoder().decode(dec);
+  } catch(e) { console.error('복호화 실패:', e); return null; }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   앱 상태
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const TAG_CATEGORIES = {
   '비용민감도': ['비용민감','보통','비용여유'],
@@ -539,7 +688,11 @@ const AppState = {
   snsType: null, snsId: '',
   currentPatientTags: [],
   tagPickerCategory: null, tagPickerOpen: false,
-  todayConsultCount: 0
+  todayConsultCount: 0,
+  // 인증
+  currentUser: null,
+  userProfile: null,
+  geminiApiKey: null,   // 복호화된 키 (메모리에만 보관)
 };
 
 const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
@@ -779,7 +932,7 @@ async function addUserTag(category, value) {
   if(AppState.connected && p) {
     try {
       const { data, error } = await AppState.supabase.from('patient_tags')
-        .insert({patient_id:p.id, category_name:category, tag_value:value, source:'USER', is_locked:false, is_deleted:false})
+        .insert({patient_id:p.id, user_id:AppState.currentUser.id, category_name:category, tag_value:value, source:'USER', is_locked:false, is_deleted:false})
         .select().single();
       if(!error && data) newTag.id = data.id;
     } catch(e){}
@@ -790,16 +943,170 @@ async function addUserTag(category, value) {
   AppState.tagPickerOpen = false;
 }
 
-/* ── Supabase 연결 ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   인증 관련 함수
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function showAuthScreen() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+async function showMainApp(user) {
+  AppState.currentUser = user;
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  document.getElementById('mainApp').style.flexDirection = 'column';
+  await loadUserProfile();
+  await loadPatients();
+  await loadTodayConsultCount();
+}
+
+async function loadUserProfile() {
+  try {
+    const { data, error } = await AppState.supabase
+      .from('user_profiles').select('*').eq('id', AppState.currentUser.id).single();
+    if (error) throw error;
+    AppState.userProfile = data;
+
+    // 치과명 표시
+    if (data.clinic_name) {
+      document.getElementById('clinicNameSub').textContent = `${data.clinic_name} · AI 상담 요약`;
+    }
+
+    // API 키 복호화 (메모리에만 보관)
+    if (data.gemini_api_key && data.gemini_api_iv) {
+      AppState.geminiApiKey = await decryptApiKey(AppState.currentUser.id, data.gemini_api_key, data.gemini_api_iv);
+    }
+  } catch(e) { console.error('프로필 로드 실패:', e); }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('authMsg');
+  if (!email || !pw) { setAuthMsg('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
+  setAuthMsg('로그인 중...', '');
+  try {
+    const { data, error } = await AppState.supabase.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+    await showMainApp(data.user);
+  } catch(e) { setAuthMsg(`로그인 실패: ${e.message}`, 'error'); }
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signupEmail').value.trim();
+  const pw = document.getElementById('signupPassword').value;
+  const clinic = document.getElementById('signupClinic').value.trim();
+  if (!email || !pw) { setAuthMsg('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
+  if (pw.length < 6) { setAuthMsg('비밀번호는 6자 이상이어야 합니다.', 'error'); return; }
+  setAuthMsg('가입 중...', '');
+  try {
+    const { data, error } = await AppState.supabase.auth.signUp({ email, password: pw });
+    if (error) throw error;
+    // 치과명 업데이트
+    if (clinic && data.user) {
+      await AppState.supabase.from('user_profiles').update({ clinic_name: clinic }).eq('id', data.user.id);
+    }
+    setAuthMsg('가입 완료! 이메일 확인 후 로그인해주세요.', 'ok');
+  } catch(e) { setAuthMsg(`가입 실패: ${e.message}`, 'error'); }
+}
+
+async function handleLogout() {
+  await AppState.supabase.auth.signOut();
+  AppState.currentUser = null; AppState.userProfile = null; AppState.geminiApiKey = null;
+  AppState.patients = []; AppState.selectedPatientId = null;
+  closeSettingModal();
+  showAuthScreen();
+}
+
+function setAuthMsg(msg, type) {
+  const el = document.getElementById('authMsg');
+  el.textContent = msg;
+  el.className = `auth-msg${type ? ' '+type : ''}`;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   설정 모달
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openSettingModal() {
+  const p = AppState.userProfile;
+  document.getElementById('settingUserEmail').textContent = AppState.currentUser?.email || '';
+  document.getElementById('settingClinicInput').value = p?.clinic_name || '';
+  document.getElementById('settingApiKeyInput').value = '';
+  // API 키 상태 표시
+  const statusEl = document.getElementById('apiKeyStatus');
+  if (AppState.geminiApiKey) {
+    statusEl.className = 'api-key-status set';
+    statusEl.textContent = '✓ API 키 설정됨';
+  } else {
+    statusEl.className = 'api-key-status unset';
+    statusEl.textContent = '🔑 미설정';
+  }
+  document.getElementById('settingModalOverlay').classList.remove('hidden');
+}
+
+function closeSettingModal() {
+  document.getElementById('settingModalOverlay').classList.add('hidden');
+}
+
+async function saveClinicName() {
+  const clinic = document.getElementById('settingClinicInput').value.trim();
+  if (!AppState.currentUser) return;
+  try {
+    await AppState.supabase.from('user_profiles').update({ clinic_name: clinic }).eq('id', AppState.currentUser.id);
+    AppState.userProfile.clinic_name = clinic;
+    document.getElementById('clinicNameSub').textContent = clinic ? `${clinic} · AI 상담 요약` : 'AI 상담 요약 버전 · Gemini API 연결';
+    alert('치과명이 저장됐습니다.');
+  } catch(e) { alert('저장 실패: ' + e.message); }
+}
+
+async function saveApiKey() {
+  const rawKey = document.getElementById('settingApiKeyInput').value.trim();
+  if (!rawKey) { alert('API 키를 입력해주세요.'); return; }
+  if (!rawKey.startsWith('AIza')) { alert('올바른 Gemini API 키 형식이 아닙니다. (AIza...로 시작)'); return; }
+  try {
+    const { encrypted, iv } = await encryptApiKey(AppState.currentUser.id, rawKey);
+    await AppState.supabase.from('user_profiles').update({
+      gemini_api_key: encrypted,
+      gemini_api_iv: iv,
+      api_key_updated_at: new Date().toISOString()
+    }).eq('id', AppState.currentUser.id);
+    AppState.geminiApiKey = rawKey;  // 메모리에 평문 보관
+    AppState.userProfile.gemini_api_key = encrypted;
+    AppState.userProfile.gemini_api_iv = iv;
+    document.getElementById('settingApiKeyInput').value = '';
+    const statusEl = document.getElementById('apiKeyStatus');
+    statusEl.className = 'api-key-status set';
+    statusEl.textContent = '✓ API 키 설정됨';
+    alert('API 키가 암호화되어 저장됐습니다.');
+  } catch(e) { alert('저장 실패: ' + e.message); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Supabase 초기화 + 세션 확인
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function connectSupabase() {
   try {
     AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { error } = await AppState.supabase.from('patients').select('id').limit(1);
-    if(error) throw error;
     AppState.connected = true;
-    await loadPatients();
-    await loadTodayConsultCount();
-  } catch(e) { AppState.connected=false; console.error('Supabase 연결 실패:',e.message); }
+
+    // 기존 세션 확인 (새로고침 시 자동 로그인)
+    const { data: { session } } = await AppState.supabase.auth.getSession();
+    if (session?.user) {
+      await showMainApp(session.user);
+    } else {
+      showAuthScreen();
+    }
+
+    // 세션 변경 감지
+    AppState.supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await showMainApp(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        showAuthScreen();
+      }
+    });
+  } catch(e) { AppState.connected = false; console.error('Supabase 연결 실패:', e.message); }
 }
 
 async function loadPatients() {
@@ -818,6 +1125,7 @@ async function loadPatients() {
 async function savePatient() {
   if(!AppState.connected) { alert('Supabase 연결이 아직 완료되지 않았습니다.'); return; }
   const payload = {
+    user_id: AppState.currentUser.id,
     chart_number: document.getElementById('patientChartInput').value.trim() || null,
     name: document.getElementById('patientNameInput').value.trim(),
     mobile: document.getElementById('patientMobileInput').value.trim(),
@@ -836,7 +1144,8 @@ async function savePatient() {
     const tmpTags = AppState.currentPatientTags.filter(t=>t.patient_id===null&&!t.is_deleted);
     for(const t of tmpTags) {
       await AppState.supabase.from('patient_tags').insert({
-        patient_id: data.id, category_name: t.category_name,
+        patient_id: data.id, user_id: AppState.currentUser.id,
+        category_name: t.category_name,
         tag_value: t.tag_value, source: t.source, is_locked: t.is_locked
       });
     }
@@ -875,6 +1184,15 @@ async function summarizeWithClaude(rawText) {
   const summaryOutput = document.getElementById('sttSummaryOutput');
   const summarizeBtn = document.getElementById('summarizeSttBtn');
   if(!rawText.trim()) { setSttStatus('요약할 STT 기록이 없습니다. 먼저 녹음하거나 텍스트를 입력해주세요.',''); return; }
+
+  // API 키 확인
+  const apiKey = AppState.geminiApiKey;
+  if (!apiKey) {
+    setSttStatus('⚙️ 설정에서 Gemini API 키를 먼저 입력해주세요.', '');
+    alert('AI 요약을 사용하려면 설정에서 Gemini API 키를 입력해주세요.');
+    openSettingModal();
+    return;
+  }
   AppState.aiLoading = true;
   summarizeBtn.disabled = true;
   summarizeBtn.innerHTML = '<span class="spinner"></span> AI 요약 중...';
@@ -915,7 +1233,7 @@ ${rawText}`;
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1500,temperature:0.3} }) }
     );
@@ -935,7 +1253,7 @@ ${rawText}`;
             category_name:t.category_name, tag_value:t.tag_value, source:'AI', is_locked:false, is_deleted:false };
           if(AppState.connected && p) {
             const { data:td } = await AppState.supabase.from('patient_tags')
-              .insert({patient_id:p.id, category_name:t.category_name, tag_value:t.tag_value, source:'AI', is_locked:false, is_deleted:false})
+              .insert({patient_id:p.id, user_id:AppState.currentUser.id, category_name:t.category_name, tag_value:t.tag_value, source:'AI', is_locked:false, is_deleted:false})
               .select().single();
             if(td) newTag.id = td.id;
           }
@@ -1033,6 +1351,7 @@ async function saveConsultation() {
   if(!patient){alert('상담할 환자를 먼저 선택해주세요.');return;}
   const total=Number(document.getElementById('consultEstimateInput').value||0);
   const payload={
+    user_id: AppState.currentUser.id,
     patient_id:patient.id,
     title:document.getElementById('consultTitleInput').value.trim()||'상담 기록',
     diagnosis_note:document.getElementById('consultDiagnosisInput').value.trim(),
@@ -1079,6 +1398,36 @@ async function loadConsultations() {
 
 /* ── 이벤트 바인딩 ── */
 function bindEvents() {
+  // ── 인증 ──
+  document.getElementById('loginTab').addEventListener('click', () => {
+    document.getElementById('loginTab').classList.add('active');
+    document.getElementById('signupTab').classList.remove('active');
+    document.getElementById('authLoginForm').classList.remove('hidden');
+    document.getElementById('authSignupForm').classList.add('hidden');
+    setAuthMsg('', '');
+  });
+  document.getElementById('signupTab').addEventListener('click', () => {
+    document.getElementById('signupTab').classList.add('active');
+    document.getElementById('loginTab').classList.remove('active');
+    document.getElementById('authSignupForm').classList.remove('hidden');
+    document.getElementById('authLoginForm').classList.add('hidden');
+    setAuthMsg('', '');
+  });
+  document.getElementById('loginBtn').addEventListener('click', handleLogin);
+  document.getElementById('signupBtn').addEventListener('click', handleSignup);
+  document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+  document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+
+  // ── 설정 ──
+  document.getElementById('openSettingBtn').addEventListener('click', openSettingModal);
+  document.getElementById('settingCloseBtn').addEventListener('click', closeSettingModal);
+  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+  document.getElementById('saveClinicBtn').addEventListener('click', saveClinicName);
+  document.getElementById('saveApiKeyBtn').addEventListener('click', saveApiKey);
+  document.getElementById('settingModalOverlay').addEventListener('click', e => {
+    if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
+  });
+
   // 환자 등록
   document.getElementById('savePatientBtn').addEventListener('click', savePatient);
   document.getElementById('resetPatientFormBtn').addEventListener('click', resetPatientForm);
@@ -1144,6 +1493,9 @@ function bindEvents() {
 }
 
 bindEvents();
+// 초기 상태 - 로그인 화면 표시 (connectSupabase에서 세션 확인 후 전환)
+document.getElementById('authScreen').style.display = 'flex';
+document.getElementById('mainApp').style.display = 'none';
 renderPatientCount(); renderPatientList(); renderSelectedPatient(); renderSttState(); updateEstimatePreview(); setTab('consult');
 connectSupabase();
 </script>
