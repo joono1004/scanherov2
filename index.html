@@ -670,8 +670,8 @@
               <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
             </div>
             <div class="field">
-              <label class="label" for="sttRawInput">원본 STT 기록 <span style="font-weight:400;color:#b0bec5">(AI 요약 후 화자 분리 결과로 자동 교체)</span></label>
-              <textarea id="sttRawInput" placeholder="STT 원문이 여기에 표시됩니다. AI 요약 실행 시 원장/환자 대화가 자동으로 분리됩니다." style="min-height:120px;"></textarea>
+              <label class="label" for="sttRawInput">원본 STT 기록</label>
+              <textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력" style="min-height:120px;"></textarea>
             </div>
             <div class="button-row" style="margin-top:0;margin-bottom:12px;">
               <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
@@ -1557,15 +1557,11 @@ async function summarizeWithClaude(rawText) {
 
 반드시 아래 형식으로만 답변:
 
-【대화 분리】
-원장: (핵심 발화만, 짧게)
-환자: (핵심 발화만, 짧게)
-
-【현재 상태】
+【환자 상태】
 • (치아 상태 핵심)
 
-【치료 옵션】
-• (설명한 치료/재료)
+【치료 상담】
+• (설명한 치료/재료 및 제안한 비용)
 
 【환자 반응】
 • (반응/관심사/우려)
@@ -1573,8 +1569,7 @@ async function summarizeWithClaude(rawText) {
 【다음 액션】
 • (합의된 다음 단계)
 
-【분석 태그】
-[{"category_name":"비용민감도","tag_value":"비용민감"},...]
+TAGS:[{"category_name":"비용민감도","tag_value":"비용민감"},...]
 
 STT 원문:
 ${rawText}`;
@@ -1590,21 +1585,11 @@ ${rawText}`;
     const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text||'';
     if(!resultText) throw new Error('AI 응답이 비어 있습니다.');
 
-    // 화자 분리 결과 추출 (【대화 분리】 섹션)
-    const dialogMatch = resultText.match(/【대화 분리】([\s\S]*?)(?=【현재 상태】)/);
-    if(dialogMatch) {
-      AppState.sttDialogSeparated = dialogMatch[1].trim();
-      // STT 원문 영역에 화자 분리 결과 표시
-      const rawEl = document.getElementById('sttRawInput');
-      rawEl.value = AppState.sttDialogSeparated;
-      rawEl.style.color = '#1d4ed8';
-    }
-
-    // 태그 자동 추출
-    const tagMatch = resultText.match(/\[(\s*\{[^}]+\}\s*,?\s*)+\]/);
+    // 태그 자동 추출 (TAGS: 뒤에서 추출, 화면엔 표시 안 함)
+    const tagMatch = resultText.match(/TAGS:\s*(\[[\s\S]*?\])/);
     if(tagMatch) {
       try {
-        const aiTags = JSON.parse(tagMatch[0]);
+        const aiTags = JSON.parse(tagMatch[1]);
         const p = getSelectedPatient();
         for(const t of aiTags) {
           const newTag = { id:'ai_'+Date.now()+Math.random(), patient_id:p?.id||null,
@@ -1621,15 +1606,13 @@ ${rawText}`;
       } catch(e2) { console.error('태그 파싱 오류:', e2); }
     }
 
-    // 태그 JSON 제거한 요약 텍스트
     const summaryText = resultText
-      .replace(/\[(\s*\{[^}]+\}\s*,?\s*)+\]/, '')
-      .replace(/【대화 분리】[\s\S]*?(?=【현재 상태】)/, '')
+      .replace(/TAGS:\s*\[[\s\S]*?\]/, '')
       .trim();
     AppState.sttSummary = summaryText;
     summaryOutput.textContent = summaryText;
     aiResult.style.display = 'block';
-    setSttStatus('✓ 화자 분리 및 AI 요약 완료! STT 원문란에 대화가 분리되어 표시됩니다.','ai-done');
+    setSttStatus('✓ AI 요약 완료! "메모에 반영" 버튼으로 진단 메모에 추가하세요.','ai-done');
   } catch(e) {
     console.error('Gemini API 오류:',e);
     setSttStatus(`AI 요약 실패: ${e.message}`,'');
