@@ -670,8 +670,8 @@
               <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
             </div>
             <div class="field">
-              <label class="label" for="sttRawInput">원본 STT 기록</label>
-              <textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력"></textarea>
+              <label class="label" for="sttRawInput">원본 STT 기록 <span style="font-weight:400;color:#b0bec5">(AI 요약 후 화자 분리 결과로 자동 교체)</span></label>
+              <textarea id="sttRawInput" placeholder="STT 원문이 여기에 표시됩니다. AI 요약 실행 시 원장/환자 대화가 자동으로 분리됩니다." style="min-height:120px;"></textarea>
             </div>
             <div class="button-row" style="margin-top:0;margin-bottom:12px;">
               <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
@@ -816,7 +816,7 @@ const TAG_CATEGORIES = {
 const AppState = {
   supabase: null, connected: false, patients: [], selectedPatientId: null,
   currentTab: 'consult', recognition: null, isRecording: false,
-  sttRaw: '', sttRawFinal: '', sttSummary: '', lastInterimTranscript: '', aiLoading: false,
+  sttRaw: '', sttRawFinal: '', sttSummary: '', sttDialogSeparated: '', lastInterimTranscript: '', aiLoading: false,
   birthYear: null, birthMonth: null, birthDay: null,
   snsType: null, snsId: '',
   gender: null,
@@ -1532,7 +1532,6 @@ async function summarizeWithClaude(rawText) {
   const summarizeBtn = document.getElementById('summarizeSttBtn');
   if(!rawText.trim()) { setSttStatus('요약할 STT 기록이 없습니다. 먼저 녹음하거나 텍스트를 입력해주세요.',''); return; }
 
-  // API 키 확인
   const apiKey = AppState.geminiApiKey;
   if (!apiKey) {
     setSttStatus('⚙️ 설정에서 Gemini API 키를 먼저 입력해주세요.', '');
@@ -1542,13 +1541,22 @@ async function summarizeWithClaude(rawText) {
   }
   AppState.aiLoading = true;
   summarizeBtn.disabled = true;
-  summarizeBtn.innerHTML = '<span class="spinner"></span> AI 요약 중...';
-  setSttStatus('Gemini AI가 상담 내용을 분석하고 있습니다...','ai-loading');
+  summarizeBtn.innerHTML = '<span class="spinner"></span> AI 분석 중...';
+  setSttStatus('Gemini AI가 화자를 분리하고 상담 내용을 분석하고 있습니다...','ai-loading');
   aiResult.style.display = 'none';
 
-  const prompt = `당신은 치과 상담 전문 어시스턴트입니다. 치과 원장과 환자의 상담 대화를 분석하여 구조화된 메모를 작성하세요.
+  const prompt = `당신은 치과 상담 전문 어시스턴트입니다.
+아래 STT 원문은 치과 원장과 환자의 대화를 자동으로 변환한 텍스트입니다.
+화자가 구분되어 있지 않을 수 있으니, 문맥을 분석하여 원장과 환자의 발화를 구분하세요.
 
-반드시 아래 형식으로 답변하세요:
+반드시 아래 순서와 형식으로만 답변하세요:
+
+【대화 분리】
+(원장과 환자 발화를 구분하여 재구성. 불확실한 경우 문맥상 자연스러운 화자로 판단)
+원장: (발화 내용)
+환자: (발화 내용)
+원장: (발화 내용)
+...
 
 【현재 상태】
 (환자의 치아 상태, 문제점 요약)
@@ -1557,7 +1565,7 @@ async function summarizeWithClaude(rawText) {
 (원장이 설명한 치료 방법, 재료, 옵션들)
 
 【비교한 항목】
-(국산/수입, 재료 비교 등 논의한 내용)
+(국산/수입, 재료 비교 등 논의한 내용. 없으면 "해당 없음")
 
 【환자 반응 및 관심사】
 (환자의 반응, 우선순위, 우려사항)
@@ -1566,28 +1574,35 @@ async function summarizeWithClaude(rawText) {
 (다음 단계로 합의된 내용)
 
 【분석 태그】
-(아래 카테고리에서 해당하는 태그를 JSON 배열로만 출력하세요)
 비용민감도: [비용민감, 보통, 비용여유]
 치료관심도: [임플란트, 크라운, 교정, 미백, 스케일링, 틀니, 신경치료]
 결정성향: [당일결정형, 신중검토형, 가족상의필요, 장기고민형, 비교견적중]
 환자성향: [질문많음, 치료공포있음, 빠른결정선호, 꼼꼼한성격, 가격비교중]
-
 분석 태그는 반드시 다음 형식으로만 출력: [{"category_name":"비용민감도","tag_value":"비용민감"},...]
 
-다음 치과 상담 대화를 분석해주세요:
-
+STT 원문:
 ${rawText}`;
 
   try {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1500,temperature:0.3} }) }
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:2000,temperature:0.2} }) }
     );
     if(!response.ok) { const e=await response.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${response.status}`); }
     const data = await response.json();
     const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text||'';
     if(!resultText) throw new Error('AI 응답이 비어 있습니다.');
+
+    // 화자 분리 결과 추출 (【대화 분리】 섹션)
+    const dialogMatch = resultText.match(/【대화 분리】([\s\S]*?)(?=【현재 상태】)/);
+    if(dialogMatch) {
+      AppState.sttDialogSeparated = dialogMatch[1].trim();
+      // STT 원문 영역에 화자 분리 결과 표시
+      const rawEl = document.getElementById('sttRawInput');
+      rawEl.value = AppState.sttDialogSeparated;
+      rawEl.style.color = '#1d4ed8';
+    }
 
     // 태그 자동 추출
     const tagMatch = resultText.match(/\[(\s*\{[^}]+\}\s*,?\s*)+\]/);
@@ -1610,11 +1625,15 @@ ${rawText}`;
       } catch(e2) { console.error('태그 파싱 오류:', e2); }
     }
 
-    const summaryText = resultText.replace(/\[(\s*\{[^}]+\}\s*,?\s*)+\]/, '').trim();
+    // 태그 JSON 제거한 요약 텍스트
+    const summaryText = resultText
+      .replace(/\[(\s*\{[^}]+\}\s*,?\s*)+\]/, '')
+      .replace(/【대화 분리】[\s\S]*?(?=【현재 상태】)/, '')
+      .trim();
     AppState.sttSummary = summaryText;
     summaryOutput.textContent = summaryText;
     aiResult.style.display = 'block';
-    setSttStatus('✓ AI 요약이 완료되었습니다. "메모에 반영" 버튼으로 진단 메모에 추가하세요.','ai-done');
+    setSttStatus('✓ 화자 분리 및 AI 요약 완료! STT 원문란에 대화가 분리되어 표시됩니다.','ai-done');
   } catch(e) {
     console.error('Gemini API 오류:',e);
     setSttStatus(`AI 요약 실패: ${e.message}`,'');
@@ -1684,7 +1703,10 @@ function resetConsultationForm() {
   ['consultTitleInput','consultDiagnosisInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('consultPlanInput').value='재상담 예정';
   document.getElementById('discountInput').value='0';
-  AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.sttSummary=''; AppState.lastInterimTranscript='';
+  AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.sttSummary='';
+  AppState.sttDialogSeparated=''; AppState.lastInterimTranscript='';
+  const rawEl = document.getElementById('sttRawInput');
+  rawEl.value = ''; rawEl.style.color = '';
   AppState.estimateItems=[];
   document.getElementById('aiSummaryResult').style.display='none';
   document.getElementById('pricePicker').classList.add('hidden');
