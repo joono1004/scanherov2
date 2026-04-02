@@ -334,6 +334,59 @@
     .toast.success { background: var(--success); }
     .toast.warn { background: var(--warn); }
 
+    /* ── 캔버스 메인 화면 ── */
+    .canvas-screen { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .canvas-topbar { background: #fff; border-bottom: 1px solid var(--line); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+    .canvas-pt-select { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--line); border-radius: 12px; background: #f8fbff; cursor: pointer; font-size: 14px; font-weight: 800; color: var(--sub); transition: .15s; }
+    .canvas-pt-select:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .canvas-pt-select .pt-name { color: var(--text); }
+    .canvas-rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; animation: recblink 1.2s infinite; display: none; }
+    @keyframes recblink { 0%,100%{opacity:1}50%{opacity:.2} }
+    .canvas-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; border: 1px solid var(--line); background: #fff; color: var(--text); cursor: pointer; white-space: nowrap; transition: .15s; }
+    .canvas-btn:hover { background: #f4f7fb; }
+    .canvas-btn.rec-start { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .canvas-btn.rec-stop { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .canvas-btn.record-btn { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .canvas-btn.mgmt { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+
+    .canvas-body { display: grid; grid-template-columns: 180px 1fr 46px; flex: 1; min-height: 0; overflow: hidden; }
+    .canvas-sidebar { background: #fff; border-right: 1px solid var(--line); padding: 12px; overflow-y: auto; flex-shrink: 0; }
+    .canvas-sidebar-label { font-size: 10px; font-weight: 800; color: #9aabbc; letter-spacing: .07em; margin-bottom: 8px; margin-top: 12px; display: block; }
+    .canvas-sidebar-label:first-child { margin-top: 0; }
+    .canvas-cat { padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--sub); border: none; background: transparent; text-align: left; cursor: pointer; width: 100%; transition: .15s; }
+    .canvas-cat.active { background: var(--dark); color: #fff; }
+    .canvas-cat:hover:not(.active) { background: var(--primary-soft); color: var(--primary); }
+    .canvas-tmpl { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; margin-bottom: 5px; transition: .15s; }
+    .canvas-tmpl.active { border-color: var(--primary); background: var(--primary-soft); }
+    .canvas-tmpl:hover:not(.active) { background: #f8fbff; }
+    .canvas-tmpl-name { font-size: 12px; font-weight: 800; color: var(--text); }
+    .canvas-tmpl-sub { font-size: 10px; color: #9aabbc; margin-top: 1px; }
+
+    .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; }
+    .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; }
+    .canvas-wrap canvas { background: #fff; border-radius: 14px; border: 1px solid var(--line); cursor: crosshair; display: block; box-shadow: 0 4px 16px rgba(18,34,54,.07); max-width: 100%; max-height: 100%; }
+    .canvas-bottombar { background: #fff; border-top: 1px solid var(--line); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+
+    .canvas-toolbar { background: #fff; border-left: 1px solid var(--line); padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; flex-shrink: 0; }
+    .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; }
+    .tool-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
+    .tool-btn:hover:not(.active) { background: #f4f7fb; }
+    .tool-sep { width: 22px; height: 1px; background: var(--line); margin: 3px 0; }
+    .color-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: .15s; }
+    .color-swatch.active { border-color: var(--primary); transform: scale(1.15); }
+    .lw-btn { width: 32px; height: 22px; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .15s; }
+    .lw-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
+
+    /* ── 의료진 패널 (슬라이드) ── */
+    .mgmt-panel { position: fixed; top: 0; right: -820px; width: 820px; height: 100vh; background: var(--bg); box-shadow: -8px 0 32px rgba(18,34,54,.12); z-index: 250; transition: right .3s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; }
+    .mgmt-panel.open { right: 0; }
+    .mgmt-panel-header { background: #fff; border-bottom: 1px solid var(--line); padding: 13px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .mgmt-panel-title { font-size: 16px; font-weight: 900; }
+    .mgmt-panel-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: #f1f3f5; color: var(--sub); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mgmt-panel-body { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; }
+    .mgmt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.2); z-index: 249; display: none; }
+    .mgmt-overlay.open { display: block; }
+
     /* ── 상담 시작 팝업 ── */
     .consult-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; }
     .consult-popup { background: var(--panel); border-radius: var(--radius-xl); width: 100%; max-width: 1100px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
@@ -469,295 +522,303 @@
 </div>
 
 <div class="app" id="mainApp" style="display:none;">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">🦷</div>
-      <div>
-        <h1>똑똑치과상담실장</h1>
-        <p id="clinicNameSub">AI 상담 요약 버전 · Gemini API 연결</p>
+
+  <!-- ══ 캔버스 메인 화면 (환자+원장 함께 보는 화면) ══ -->
+  <div class="canvas-screen">
+
+    <!-- 상단바 -->
+    <div class="canvas-topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="brand-mark">🦷</div>
+        <span style="font-size:15px;font-weight:900;" id="canvasClinicName">똑똑치과상담실장</span>
+        <div class="canvas-pt-select" id="canvasPtSelect">
+          👤 <span class="pt-name" id="canvasPtName">환자 선택 ▾</span>
+        </div>
+        <div class="canvas-rec-dot" id="canvasRecDot"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="canvas-btn rec-start" id="canvasRecBtn">🎙 상담 시작</button>
+        <button class="canvas-btn mgmt" id="openMgmtBtn">📋 환자상담기록</button>
+        <button class="ghost-btn" id="openSettingBtn" style="border-radius:12px;padding:8px 14px;">⚙️</button>
       </div>
     </div>
-    <div class="topbar-actions">
-      <div class="chip patient-count-chip" id="patientCountChip" title="클릭하면 환자 목록이 열립니다">환자 0명</div>
-      <button class="soft-btn" id="reloadAllBtn">새로고침</button>
-      <button class="ghost-btn" id="openSettingBtn">⚙️ 설정</button>
-    </div>
-  </header>
 
-  <main class="wrap">
-    <!-- 환자 정보 패널 -->
-    <section class="panel">
-      <div class="panel-inner">
-        <div class="panel-title">
-          <div style="width:100%">
-            <div class="panel-title-row">
-              <h2 style="margin:0;font-size:22px;" id="patientPanelTitle">환자 정보</h2>
-              <div style="display:flex;align-items:center;gap:8px;">
+    <!-- 바디: 사이드바 + 캔버스 + 툴바 -->
+    <div class="canvas-body">
+
+      <!-- 좌: 카테고리 + 템플릿 -->
+      <div class="canvas-sidebar">
+        <span class="canvas-sidebar-label">치료 카테고리</span>
+        <div style="display:flex;flex-direction:column;gap:2px;" id="canvasCatList">
+          <button class="canvas-cat active" data-cat="임플란트">임플란트</button>
+          <button class="canvas-cat" data-cat="크라운">크라운</button>
+          <button class="canvas-cat" data-cat="교정">교정</button>
+          <button class="canvas-cat" data-cat="신경치료">신경치료</button>
+          <button class="canvas-cat" data-cat="미백">미백</button>
+          <button class="canvas-cat" data-cat="틀니">틀니</button>
+        </div>
+        <span class="canvas-sidebar-label" style="margin-top:14px;">설명 템플릿</span>
+        <div id="canvasTmplList"></div>
+      </div>
+
+      <!-- 중앙: 캔버스 -->
+      <div class="canvas-center">
+        <div class="canvas-wrap">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+        <!-- 하단바 -->
+        <div class="canvas-bottombar">
+          <div style="display:flex;gap:8px;">
+            <button class="canvas-btn" id="canvasSaveBtn">💾 저장</button>
+            <button class="canvas-btn" id="canvasClearBtn">🔄 초기화</button>
+          </div>
+          <button class="canvas-btn mgmt" id="goCostBtn">💰 비용 상담 →</button>
+        </div>
+      </div>
+
+      <!-- 우: 툴바 -->
+      <div class="canvas-toolbar">
+        <button class="tool-btn active" data-tool="pen" title="펜">✏️</button>
+        <button class="tool-btn" data-tool="line" title="직선">╱</button>
+        <button class="tool-btn" data-tool="circle" title="원">○</button>
+        <button class="tool-btn" data-tool="rect" title="사각형">□</button>
+        <button class="tool-btn" data-tool="arrow" title="화살표">↗</button>
+        <button class="tool-btn" data-tool="text" title="텍스트">T</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" data-tool="eraser" title="지우개">🧹</button>
+        <div class="tool-sep"></div>
+        <div class="color-swatch active" data-color="#122236" style="background:#122236;"></div>
+        <div class="color-swatch" data-color="#dc2626" style="background:#dc2626;"></div>
+        <div class="color-swatch" data-color="#246bff" style="background:#246bff;"></div>
+        <div class="color-swatch" data-color="#12995a" style="background:#12995a;"></div>
+        <div class="color-swatch" data-color="#c97a00" style="background:#c97a00;"></div>
+        <div class="tool-sep"></div>
+        <button class="lw-btn active" data-lw="2" title="얇게"><div style="width:12px;height:1.5px;background:#122236;border-radius:1px;"></div></button>
+        <button class="lw-btn" data-lw="4" title="중간"><div style="width:12px;height:3px;background:#122236;border-radius:1px;"></div></button>
+        <button class="lw-btn" data-lw="8" title="굵게"><div style="width:12px;height:5px;background:#122236;border-radius:1px;"></div></button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" id="canvasUndoBtn" title="되돌리기">↩</button>
+        <button class="tool-btn" id="canvasTrashBtn" title="전체지우기">🗑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 의료진 패널 오버레이 ══ -->
+  <div class="mgmt-overlay" id="mgmtOverlay"></div>
+
+  <!-- ══ 의료진 패널 (슬라이드) ══ -->
+  <div class="mgmt-panel" id="mgmtPanel">
+    <div class="mgmt-panel-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="mgmt-panel-title">📋 환자상담기록</span>
+        <div class="chip patient-count-chip" id="patientCountChip" title="클릭하면 환자 목록이 열립니다">환자 0명</div>
+        <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="soft-btn" id="reloadAllBtn" style="border-radius:12px;padding:7px 12px;font-size:12px;">새로고침</button>
+        <button class="mgmt-panel-close" id="closeMgmtBtn">✕</button>
+      </div>
+    </div>
+    <div class="mgmt-panel-body">
+
+      <!-- 좌: 환자 정보 패널 -->
+      <div class="panel" style="height:fit-content;">
+        <div class="panel-inner">
+          <div class="panel-title">
+            <div style="width:100%">
+              <div class="panel-title-row">
+                <h2 style="margin:0;font-size:20px;" id="patientPanelTitle">환자 정보</h2>
                 <button class="soft-btn" id="resetPatientFormBtn" style="padding:5px 12px;border-radius:10px;font-size:12px;font-weight:800;">+ 환자 등록</button>
-                <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
               </div>
-            </div>
-            <p style="margin:6px 0 0;font-size:13px;color:var(--sub);" id="patientPanelSub">환자 목록에서 환자를 선택하거나 신규 등록하세요.</p>
-          </div>
-        </div>
-        <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
-
-        <!-- 줄 1: 환자명 + 차트번호 -->
-        <div class="field">
-          <div style="display:flex;gap:8px;align-items:flex-start;">
-            <div style="flex:1.2;display:flex;flex-direction:column;">
-              <label class="label" for="patientNameInput">환자명 <span style="color:#e24b4a">*</span></label>
-              <input id="patientNameInput" placeholder="예: 김민수" />
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;">
-              <label class="label" for="patientChartInput">차트번호 <span style="font-weight:400;color:#b0bec5">(선택)</span></label>
-              <input id="patientChartInput" placeholder="전자차트 연동" />
+              <p style="margin:6px 0 0;font-size:13px;color:var(--sub);" id="patientPanelSub">환자 목록에서 환자를 선택하거나 신규 등록하세요.</p>
             </div>
           </div>
-        </div>
+          <div id="connectionStatus" class="sr-only" aria-live="polite"></div>
 
-        <!-- 줄 2: 휴대전화 + 카카오 버튼 + 성별 -->
-        <div class="field">
-          <div style="display:flex;gap:8px;align-items:flex-start;">
-            <div style="flex:1;display:flex;flex-direction:column;">
-              <label class="label" for="patientMobileInput">휴대전화 <span style="color:#e24b4a">*</span></label>
-              <input id="patientMobileInput" placeholder="예: 010-1234-5678" />
-            </div>
-            <div style="display:flex;flex-direction:column;flex-shrink:0;">
-              <label class="label" style="visibility:hidden;">x</label>
-              <button id="snsAddBtn" type="button" style="width:44px;height:44px;border-radius:14px;border:1px solid #B8860B;background:#FEE500;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-                <svg width="26" height="24" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/>
-                </svg>
-              </button>
-            </div>
-            <div style="display:flex;flex-direction:column;flex-shrink:0;">
-              <label class="label">성별</label>
-              <div style="display:flex;gap:4px;">
-                <button type="button" id="genderMaleBtn" onclick="setGender('남')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">남</button>
-                <button type="button" id="genderFemaleBtn" onclick="setGender('여')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">여</button>
-              </div>
-            </div>
-          </div>
-          <div id="snsPreviewArea" style="margin-top:6px;display:none;">
-            <div class="sns-preview" id="snsPreviewText"></div>
-          </div>
-        </div>
-
-        <!-- 줄 3: 생년월일 + 상담상태 -->
-        <div class="field">
-          <div style="display:flex;gap:8px;align-items:flex-start;">
-            <div style="flex:1;display:flex;flex-direction:column;">
-              <label class="label">생년월일</label>
-              <button class="birth-display empty" id="birthDisplayBtn" type="button">
-                <span id="birthDisplayText">생년월일 선택</span>
-                <span style="color:#9aabbc;font-size:16px;">📅</span>
-              </button>
-              <input type="hidden" id="patientBirthInput" />
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;">
-              <label class="label" for="patientStatusInput">상담 상태</label>
-              <select id="patientStatusInput">
-                <option value="초기 상담">초기 상담</option>
-                <option value="고민 중">고민 중</option>
-                <option value="재내원 예정">재내원 예정</option>
-                <option value="당일 결정 가능">당일 결정 가능</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- 사용자 직접 메모 -->
-        <div class="field">
-          <label class="label">메모 <span style="font-weight:400;color:#b0bec5">(직접 입력)</span></label>
-          <textarea id="patientMemoInput" placeholder="상담 전 참고사항, 특이사항 등을 적어주세요." style="min-height:70px;"></textarea>
-        </div>
-
-        <!-- AI 분석 태그 영역 -->
-        <div class="field">
-          <label class="label">분석 태그 <span style="font-weight:400;color:#b0bec5">(상담 후 AI 자동 생성 · 직접 추가 가능)</span></label>
-          <div id="tagListArea" style="margin-bottom:8px;">
-            <div class="tag-list" id="tagChipList">
-              <span style="font-size:12px;color:#b0bec5;">상담 저장 후 AI 태그가 자동 생성됩니다.</span>
-            </div>
-          </div>
-          <button class="add-tag-btn" id="addTagBtn" type="button">+ 태그 직접 추가</button>
-          <div class="tag-picker hidden" id="tagPicker">
-            <div class="tag-picker-cats" id="tagPickerCats"></div>
-            <div class="tag-picker-vals" id="tagPickerVals"></div>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <button class="primary-btn" id="savePatientBtn" style="flex:1;" disabled>저장</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 상담 패널 -->
-    <section class="panel" id="consultRootPanel">
-      <div class="panel-inner">
-
-        <!-- 선택 환자 요약 -->
-        <div class="summary-box" id="selectedPatientBox" style="margin-bottom:14px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-            <div>
-              <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
-              <div class="summary-sub" id="selectedPatientSub">상단 [환자 N명] 칩을 클릭해서 환자를 선택해주세요.</div>
-            </div>
-            <button class="start-consult-btn" id="startConsultBtn" disabled>▶ 상담 시작</button>
-          </div>
-          <div class="summary-grid" style="margin-top:10px;">
-            <div class="info-box">
-              <div class="label">상담 상태</div>
-              <div class="value" id="selectedPatientStatus">-</div>
-            </div>
-            <div class="info-box">
-              <div class="label">최근 총액</div>
-              <div class="value" id="selectedPatientLastTotal">-</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 상담 탭 -->
-        <div class="consult-tabs">
-          <button class="consult-tab active" data-consult-tab="estimate">💰 비용 상담</button>
-          <button class="consult-tab" data-consult-tab="memo">📋 메모 · AI 요약</button>
-          <button class="consult-tab" data-consult-tab="history">🗂 상담 이력</button>
-        </div>
-
-        <!-- TAB 1: 비용 상담 -->
-        <div class="consult-tab-section active" id="ctab-estimate">
-
-          <!-- 견적 항목 테이블 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span class="label" style="margin:0;">견적 항목</span>
-            <div style="display:flex;gap:6px;">
-              <button class="soft-btn" id="openPricePickerBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 단가표에서 추가</button>
-              <button class="ghost-btn" id="addDirectItemBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 직접 입력</button>
-            </div>
-          </div>
-
-          <!-- 단가표 선택 영역 -->
-          <div class="price-picker hidden" id="pricePicker">
-            <div class="price-picker-cats" id="pricePickerCats"></div>
-            <div class="price-picker-items" id="pricePickerItems"></div>
-          </div>
-
-          <!-- 직접 입력 영역 -->
-          <div class="direct-input-row hidden" id="directInputRow">
-            <input id="directItemName" placeholder="항목명" style="flex:1.5;" />
-            <input id="directItemPrice" type="number" placeholder="단가" style="flex:1;" />
-            <button class="primary-btn" id="addDirectItemConfirm" style="padding:9px 12px;border-radius:12px;font-size:13px;">추가</button>
-          </div>
-
-          <!-- 견적 테이블 -->
-          <div style="border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;">
-            <table class="estimate-table" id="estimateTable">
-              <thead>
-                <tr>
-                  <th style="width:40%;">항목</th>
-                  <th style="width:25%;text-align:right;">단가</th>
-                  <th style="width:20%;text-align:center;">수량</th>
-                  <th style="width:15%;text-align:right;"></th>
-                </tr>
-              </thead>
-              <tbody id="estimateTableBody">
-                <tr id="estimateEmptyRow">
-                  <td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">
-                    항목을 추가해주세요
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- 합계 -->
-          <div class="estimate-summary">
-            <div class="estimate-summary-row">
-              <span style="color:var(--sub);">소계</span>
-              <span id="estimateSubtotal" style="font-weight:900;">0원</span>
-            </div>
-            <div class="estimate-summary-row">
-              <span style="color:var(--sub);">할인</span>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span>-</span>
-                <input class="discount-input" id="discountInput" type="number" min="0" step="10000" value="0" />
-                <span>원</span>
-              </div>
-            </div>
-            <div class="estimate-summary-row total">
-              <span>최종 견적</span>
-              <span id="estimateTotal">0원</span>
-            </div>
-          </div>
-
-          <!-- 다음 액션 + 저장 -->
-          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;">
-            <div style="flex:1;">
-              <label class="label" for="consultPlanInput">다음 액션</label>
-              <select id="consultPlanInput">
-                <option value="재상담 예정">재상담 예정</option>
-                <option value="견적 발송 예정">견적 발송 예정</option>
-                <option value="당일 결정 가능">당일 결정 가능</option>
-                <option value="치료 예약 유도">치료 예약 유도</option>
-              </select>
-            </div>
-            <button class="primary-btn" id="saveConsultationBtn" style="padding:12px 20px;border-radius:14px;white-space:nowrap;">상담 저장</button>
-          </div>
-        </div>
-
-        <!-- TAB 2: 메모 · AI 요약 -->
-        <div class="consult-tab-section" id="ctab-memo">
+          <!-- 줄 1: 환자명 + 차트번호 -->
           <div class="field">
-            <label class="label" for="consultTitleInput">상담 제목</label>
-            <input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" />
-          </div>
-          <div class="field">
-            <label class="label" for="consultDiagnosisInput">진단/설명 메모</label>
-            <textarea id="consultDiagnosisInput" placeholder="현재 상태, 설명한 치료 옵션, 환자 반응 등을 적어주세요."></textarea>
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div style="flex:1.2;display:flex;flex-direction:column;">
+                <label class="label" for="patientNameInput">환자명 <span style="color:#e24b4a">*</span></label>
+                <input id="patientNameInput" placeholder="예: 김민수" />
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <label class="label" for="patientChartInput">차트번호 <span style="font-weight:400;color:#b0bec5">(선택)</span></label>
+                <input id="patientChartInput" placeholder="전자차트 연동" />
+              </div>
+            </div>
           </div>
 
-          <!-- AI STT 박스 -->
-          <div class="stt-box">
-            <div class="stt-box-header">
-              <div class="stt-badge">✦ Gemini AI 요약</div>
+          <!-- 줄 2: 휴대전화 + 카카오 + 성별 -->
+          <div class="field">
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <label class="label" for="patientMobileInput">휴대전화 <span style="color:#e24b4a">*</span></label>
+                <input id="patientMobileInput" placeholder="예: 010-1234-5678" />
+              </div>
+              <div style="display:flex;flex-direction:column;flex-shrink:0;">
+                <label class="label" style="visibility:hidden;">x</label>
+                <button id="snsAddBtn" type="button" style="width:44px;height:44px;border-radius:14px;border:1px solid #B8860B;background:#FEE500;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                  <svg width="26" height="24" viewBox="0 0 40 36" fill="none"><path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/></svg>
+                </button>
+              </div>
+              <div style="display:flex;flex-direction:column;flex-shrink:0;">
+                <label class="label">성별</label>
+                <div style="display:flex;gap:4px;">
+                  <button type="button" id="genderMaleBtn" onclick="setGender('남')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">남</button>
+                  <button type="button" id="genderFemaleBtn" onclick="setGender('여')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">여</button>
+                </div>
+              </div>
             </div>
-            <div class="stt-status" id="sttStatusBox">
-              STT 녹음 후 Gemini AI가 상담 내용을 구조화된 메모로 정리해드립니다.
+            <div id="snsPreviewArea" style="margin-top:6px;display:none;">
+              <div class="sns-preview" id="snsPreviewText"></div>
             </div>
-            <div class="button-row" style="margin-top:0;margin-bottom:12px;">
-              <button class="dark-btn" id="startSttBtn">🎙 녹음 시작</button>
-              <button class="ghost-btn" id="stopSttBtn">⏹ 녹음 중지</button>
-              <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
+          </div>
+
+          <!-- 줄 3: 생년월일 + 상담상태 -->
+          <div class="field">
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <label class="label">생년월일</label>
+                <button class="birth-display empty" id="birthDisplayBtn" type="button">
+                  <span id="birthDisplayText">생년월일 선택</span>
+                  <span style="color:#9aabbc;font-size:16px;">📅</span>
+                </button>
+                <input type="hidden" id="patientBirthInput" />
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;">
+                <label class="label" for="patientStatusInput">상담 상태</label>
+                <select id="patientStatusInput">
+                  <option value="초기 상담">초기 상담</option>
+                  <option value="고민 중">고민 중</option>
+                  <option value="재내원 예정">재내원 예정</option>
+                  <option value="당일 결정 가능">당일 결정 가능</option>
+                </select>
+              </div>
             </div>
-            <div class="field">
-              <label class="label" for="sttRawInput">원본 STT 기록</label>
-              <textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력" style="min-height:120px;"></textarea>
-            </div>
-            <div class="button-row" style="margin-top:0;margin-bottom:12px;">
-              <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
-              <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
-            </div>
-            <div class="ai-summary-result" id="aiSummaryResult" style="display:none;">
-              <div class="ai-label">✦ Gemini AI 요약 결과</div>
-              <div class="ai-text" id="sttSummaryOutput"></div>
+          </div>
+
+          <!-- 메모 -->
+          <div class="field">
+            <label class="label">메모 <span style="font-weight:400;color:#b0bec5">(직접 입력)</span></label>
+            <textarea id="patientMemoInput" placeholder="상담 전 참고사항, 특이사항 등을 적어주세요." style="min-height:60px;"></textarea>
+          </div>
+
+          <!-- 분석 태그 -->
+          <div class="field">
+            <label class="label">분석 태그 <span style="font-weight:400;color:#b0bec5">(AI 자동 생성 · 직접 추가)</span></label>
+            <div style="margin-bottom:8px;"><div class="tag-list" id="tagChipList"><span style="font-size:12px;color:#b0bec5;">상담 저장 후 AI 태그가 자동 생성됩니다.</span></div></div>
+            <button class="add-tag-btn" id="addTagBtn" type="button">+ 태그 직접 추가</button>
+            <div class="tag-picker hidden" id="tagPicker">
+              <div class="tag-picker-cats" id="tagPickerCats"></div>
+              <div class="tag-picker-vals" id="tagPickerVals"></div>
             </div>
           </div>
 
           <div class="button-row">
-            <button class="ghost-btn" id="resetConsultationBtn">입력 초기화</button>
+            <button class="primary-btn" id="savePatientBtn" style="flex:1;" disabled>저장</button>
           </div>
         </div>
-
-        <!-- TAB 3: 상담 이력 -->
-        <div class="consult-tab-section" id="ctab-history">
-          <div class="history-list" id="consultationHistoryList"></div>
-        </div>
-
       </div>
-    </section>
-  </main>
+
+      <!-- 우: 상담 패널 -->
+      <div class="panel" style="height:fit-content;">
+        <div class="panel-inner">
+
+          <!-- 선택 환자 요약 -->
+          <div class="summary-box" id="selectedPatientBox" style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+              <div>
+                <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
+                <div class="summary-sub" id="selectedPatientSub">환자 목록에서 선택 후 상담을 진행할 수 있습니다.</div>
+              </div>
+              <button class="start-consult-btn" id="startConsultBtn" disabled>▶ 상담 시작</button>
+            </div>
+            <div class="summary-grid" style="margin-top:10px;">
+              <div class="info-box"><div class="label">상담 상태</div><div class="value" id="selectedPatientStatus">-</div></div>
+              <div class="info-box"><div class="label">최근 총액</div><div class="value" id="selectedPatientLastTotal">-</div></div>
+            </div>
+          </div>
+
+          <!-- 상담 탭 -->
+          <div class="consult-tabs">
+            <button class="consult-tab active" data-consult-tab="estimate">💰 비용 상담</button>
+            <button class="consult-tab" data-consult-tab="memo">📋 메모 · AI 요약</button>
+            <button class="consult-tab" data-consult-tab="history">🗂 상담 이력</button>
+          </div>
+
+          <!-- TAB 1: 비용 상담 -->
+          <div class="consult-tab-section active" id="ctab-estimate">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span class="label" style="margin:0;">견적 항목</span>
+              <div style="display:flex;gap:6px;">
+                <button class="soft-btn" id="openPricePickerBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 단가표에서 추가</button>
+                <button class="ghost-btn" id="addDirectItemBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 직접 입력</button>
+              </div>
+            </div>
+            <div class="price-picker hidden" id="pricePicker">
+              <div class="price-picker-cats" id="pricePickerCats"></div>
+              <div class="price-picker-items" id="pricePickerItems"></div>
+            </div>
+            <div class="direct-input-row hidden" id="directInputRow">
+              <input id="directItemName" placeholder="항목명" style="flex:1.5;" />
+              <input id="directItemPrice" type="number" placeholder="단가" style="flex:1;" />
+              <button class="primary-btn" id="addDirectItemConfirm" style="padding:9px 12px;border-radius:12px;font-size:13px;">추가</button>
+            </div>
+            <div style="border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;">
+              <table class="estimate-table" id="estimateTable">
+                <thead><tr><th style="width:40%;">항목</th><th style="width:25%;text-align:right;">단가</th><th style="width:20%;text-align:center;">수량</th><th style="width:15%;text-align:right;"></th></tr></thead>
+                <tbody id="estimateTableBody"><tr id="estimateEmptyRow"><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">항목을 추가해주세요</td></tr></tbody>
+              </table>
+            </div>
+            <div class="estimate-summary">
+              <div class="estimate-summary-row"><span style="color:var(--sub);">소계</span><span id="estimateSubtotal" style="font-weight:900;">0원</span></div>
+              <div class="estimate-summary-row"><span style="color:var(--sub);">할인</span><div style="display:flex;align-items:center;gap:6px;"><span>-</span><input class="discount-input" id="discountInput" type="number" min="0" step="10000" value="0" /><span>원</span></div></div>
+              <div class="estimate-summary-row total"><span>최종 견적</span><span id="estimateTotal">0원</span></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;">
+              <div style="flex:1;"><label class="label" for="consultPlanInput">다음 액션</label>
+                <select id="consultPlanInput"><option value="재상담 예정">재상담 예정</option><option value="견적 발송 예정">견적 발송 예정</option><option value="당일 결정 가능">당일 결정 가능</option><option value="치료 예약 유도">치료 예약 유도</option></select>
+              </div>
+              <button class="primary-btn" id="saveConsultationBtn" style="padding:12px 20px;border-radius:14px;white-space:nowrap;">상담 저장</button>
+            </div>
+          </div>
+
+          <!-- TAB 2: 메모 · AI 요약 -->
+          <div class="consult-tab-section" id="ctab-memo">
+            <div class="field"><label class="label" for="consultTitleInput">상담 제목</label><input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" /></div>
+            <div class="field"><label class="label" for="consultDiagnosisInput">진단/설명 메모</label><textarea id="consultDiagnosisInput" placeholder="현재 상태, 설명한 치료 옵션, 환자 반응 등을 적어주세요."></textarea></div>
+            <div class="stt-box">
+              <div class="stt-box-header"><div class="stt-badge">✦ Gemini AI 요약</div></div>
+              <div class="stt-status" id="sttStatusBox">STT 녹음 후 Gemini AI가 상담 내용을 구조화된 메모로 정리해드립니다.</div>
+              <div class="button-row" style="margin-top:0;margin-bottom:12px;">
+                <button class="dark-btn" id="startSttBtn">🎙 녹음 시작</button>
+                <button class="ghost-btn" id="stopSttBtn">⏹ 녹음 중지</button>
+                <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
+              </div>
+              <div class="field"><label class="label" for="sttRawInput">원본 STT 기록</label><textarea id="sttRawInput" placeholder="STT 원문 또는 직접 입력" style="min-height:120px;"></textarea></div>
+              <div class="button-row" style="margin-top:0;margin-bottom:12px;">
+                <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
+                <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
+              </div>
+              <div class="ai-summary-result" id="aiSummaryResult" style="display:none;">
+                <div class="ai-label">✦ Gemini AI 요약 결과</div>
+                <div class="ai-text" id="sttSummaryOutput"></div>
+              </div>
+            </div>
+            <div class="button-row"><button class="ghost-btn" id="resetConsultationBtn">입력 초기화</button></div>
+          </div>
+
+          <!-- TAB 3: 상담 이력 -->
+          <div class="consult-tab-section" id="ctab-history">
+            <div class="history-list" id="consultationHistoryList"></div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /.mgmt-panel-body -->
+  </div><!-- /.mgmt-panel -->
+
 </div><!-- /#mainApp -->
 
 <!-- 토스트 알림 -->
@@ -1153,6 +1214,7 @@ function renderSelectedPatient() {
   document.getElementById('selectedPatientStatus').textContent = p.status||'-';
   document.getElementById('selectedPatientLastTotal').textContent = formatKRW(p.last_total||0);
   updateStartConsultBtn();
+  updateCanvasPatientName();
 }
 
 function setTab(t) {
@@ -1381,6 +1443,304 @@ async function addUserTag(category, value) {
   renderTagChips();
   document.getElementById('tagPicker').classList.add('hidden');
   AppState.tagPickerOpen = false;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   캔버스 드로잉
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const CanvasState = {
+  tool: 'pen', color: '#122236', lw: 2,
+  drawing: false, startX: 0, startY: 0, snapshot: null,
+  history: [], historyMax: 30,
+  currentCat: '임플란트', currentTmpl: 0,
+  isRecording: false,
+};
+
+function initCanvas() {
+  const canvas = document.getElementById('mainCanvas');
+  if (!canvas) return;
+  const wrap = canvas.parentElement;
+  const w = Math.min(wrap.offsetWidth - 32, 900);
+  const h = Math.min(wrap.offsetHeight - 32, 600);
+  canvas.width = w > 0 ? w : 700;
+  canvas.height = h > 0 ? h : 480;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  saveCanvasHistory(canvas);
+  renderCanvasTmplList();
+}
+
+function getCanvasCtx() {
+  const canvas = document.getElementById('mainCanvas');
+  return canvas ? { canvas, ctx: canvas.getContext('2d') } : null;
+}
+
+function saveCanvasHistory(canvas) {
+  const ctx = canvas.getContext('2d');
+  CanvasState.history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  if (CanvasState.history.length > CanvasState.historyMax) CanvasState.history.shift();
+}
+
+function undoCanvas() {
+  if (CanvasState.history.length <= 1) return;
+  CanvasState.history.pop();
+  const r = getCanvasCtx();
+  if (!r) return;
+  r.ctx.putImageData(CanvasState.history[CanvasState.history.length - 1], 0, 0);
+}
+
+function clearCanvas() {
+  const r = getCanvasCtx();
+  if (!r) return;
+  r.ctx.fillStyle = '#fff';
+  r.ctx.fillRect(0, 0, r.canvas.width, r.canvas.height);
+  saveCanvasHistory(r.canvas);
+}
+
+function drawTemplateOnCanvas(tmplData) {
+  const r = getCanvasCtx();
+  if (!r) return;
+  const { canvas, ctx } = r;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (!tmplData || tmplData.type === 'blank') { saveCanvasHistory(canvas); return; }
+
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.strokeStyle = '#246bff';
+  ctx.fillStyle = '#eaf1ff';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
+
+  if (tmplData.type === 'implant') {
+    ctx.beginPath(); ctx.ellipse(cx, cy-80, 55, 35, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillRect(cx-22, cy-45, 44, 30); ctx.strokeRect(cx-22, cy-45, 44, 30);
+    ctx.beginPath(); ctx.roundRect(cx-10, cy-18, 20, 80, 6); ctx.fill(); ctx.stroke();
+    ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx-80,cy+62); ctx.lineTo(cx+80,cy+62); ctx.stroke();
+    ctx.globalAlpha = 0.25; ctx.setLineDash([]);
+    ctx.fillStyle = '#9aabbc'; ctx.font = '11px Arial'; ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.4;
+    ctx.fillText('크라운', cx, cy-75);
+    ctx.fillText('어버트먼트', cx, cy-20);
+    ctx.fillText('픽스처', cx, cy+40);
+    ctx.fillText('치조골', cx, cy+80);
+  } else if (tmplData.type === 'teeth_row') {
+    const toothW = 36, gap = 6, count = 8;
+    const startX = cx - (toothW + gap) * count / 2;
+    for (let i = 0; i < count; i++) {
+      const tx = startX + i * (toothW + gap);
+      ctx.beginPath(); ctx.roundRect(tx, cy - 40, toothW, 70, 5); ctx.fill(); ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+  saveCanvasHistory(canvas);
+}
+
+const CANVAS_TEMPLATES = {
+  '임플란트': [
+    { name: '임플란트 구조', sub: '크라운·어버트·픽스처', type: 'implant' },
+    { name: '빈 노트', sub: '자유 드로잉', type: 'blank' },
+  ],
+  '크라운': [{ name: '치아 배열', sub: '상악 치아 8개', type: 'teeth_row' }, { name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
+  '교정': [{ name: '치아 배열', sub: '교정 설명용', type: 'teeth_row' }, { name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
+  '신경치료': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
+  '미백': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
+  '틀니': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
+};
+
+function renderCanvasTmplList() {
+  const list = document.getElementById('canvasTmplList');
+  if (!list) return;
+  const tmpls = CANVAS_TEMPLATES[CanvasState.currentCat] || [];
+  list.innerHTML = tmpls.map((t, i) => `
+    <div class="canvas-tmpl${i === CanvasState.currentTmpl ? ' active' : ''}" data-idx="${i}">
+      <div class="canvas-tmpl-name">${t.name}</div>
+      <div class="canvas-tmpl-sub">${t.sub}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.canvas-tmpl').forEach(el => {
+    el.addEventListener('click', () => {
+      list.querySelectorAll('.canvas-tmpl').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      CanvasState.currentTmpl = Number(el.dataset.idx);
+      drawTemplateOnCanvas(tmpls[CanvasState.currentTmpl]);
+    });
+  });
+  // 첫 번째 템플릿 자동 적용
+  if (tmpls.length) drawTemplateOnCanvas(tmpls[CanvasState.currentTmpl]);
+}
+
+function bindCanvasEvents() {
+  const canvas = document.getElementById('mainCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  canvas.addEventListener('mousedown', e => {
+    CanvasState.drawing = true;
+    const r = canvas.getBoundingClientRect();
+    CanvasState.startX = e.clientX - r.left;
+    CanvasState.startY = e.clientY - r.top;
+    CanvasState.snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (CanvasState.tool === 'pen' || CanvasState.tool === 'eraser') {
+      ctx.beginPath(); ctx.moveTo(CanvasState.startX, CanvasState.startY);
+    }
+    if (CanvasState.tool === 'text') {
+      const text = prompt('텍스트 입력:');
+      if (text) {
+        ctx.fillStyle = CanvasState.color;
+        ctx.font = `${CanvasState.lw * 6 + 10}px Arial`;
+        ctx.fillText(text, CanvasState.startX, CanvasState.startY);
+        saveCanvasHistory(canvas);
+      }
+      CanvasState.drawing = false;
+    }
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!CanvasState.drawing) return;
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    ctx.strokeStyle = CanvasState.tool === 'eraser' ? '#fff' : CanvasState.color;
+    ctx.lineWidth = CanvasState.tool === 'eraser' ? 20 : CanvasState.lw;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (CanvasState.tool === 'pen' || CanvasState.tool === 'eraser') {
+      ctx.lineTo(x, y); ctx.stroke();
+    } else {
+      ctx.putImageData(CanvasState.snapshot, 0, 0);
+      ctx.beginPath();
+      if (CanvasState.tool === 'line') { ctx.moveTo(CanvasState.startX, CanvasState.startY); ctx.lineTo(x, y); ctx.stroke(); }
+      else if (CanvasState.tool === 'circle') { ctx.ellipse((CanvasState.startX+x)/2, (CanvasState.startY+y)/2, Math.abs(x-CanvasState.startX)/2, Math.abs(y-CanvasState.startY)/2, 0, 0, Math.PI*2); ctx.stroke(); }
+      else if (CanvasState.tool === 'rect') { ctx.strokeRect(CanvasState.startX, CanvasState.startY, x-CanvasState.startX, y-CanvasState.startY); }
+      else if (CanvasState.tool === 'arrow') {
+        ctx.moveTo(CanvasState.startX, CanvasState.startY); ctx.lineTo(x, y); ctx.stroke();
+        const ang = Math.atan2(y-CanvasState.startY, x-CanvasState.startX);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 16*Math.cos(ang-0.4), y - 16*Math.sin(ang-0.4));
+        ctx.lineTo(x - 16*Math.cos(ang+0.4), y - 16*Math.sin(ang+0.4));
+        ctx.closePath(); ctx.fillStyle = CanvasState.color; ctx.fill();
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => { if(CanvasState.drawing){ CanvasState.drawing=false; saveCanvasHistory(canvas); } });
+  canvas.addEventListener('mouseleave', () => { if(CanvasState.drawing){ CanvasState.drawing=false; saveCanvasHistory(canvas); } });
+
+  // 터치 지원
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; canvas.dispatchEvent(new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY})); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); const t = e.touches[0]; canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY})); }, {passive:false});
+  canvas.addEventListener('touchend', e => { e.preventDefault(); canvas.dispatchEvent(new MouseEvent('mouseup',{})); }, {passive:false});
+
+  // 툴 버튼
+  document.querySelectorAll('[data-tool]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      CanvasState.tool = btn.dataset.tool;
+      canvas.style.cursor = CanvasState.tool === 'eraser' ? 'cell' : CanvasState.tool === 'text' ? 'text' : 'crosshair';
+    });
+  });
+
+  // 색상
+  document.querySelectorAll('.color-swatch').forEach(dot => {
+    dot.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(d => d.classList.remove('active'));
+      dot.classList.add('active'); CanvasState.color = dot.dataset.color;
+    });
+  });
+
+  // 선 굵기
+  document.querySelectorAll('[data-lw]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-lw]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); CanvasState.lw = Number(btn.dataset.lw);
+    });
+  });
+
+  // 카테고리
+  document.querySelectorAll('.canvas-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      CanvasState.currentCat = btn.dataset.cat;
+      CanvasState.currentTmpl = 0;
+      renderCanvasTmplList();
+    });
+  });
+
+  // 되돌리기 / 전체지우기
+  document.getElementById('canvasUndoBtn').addEventListener('click', undoCanvas);
+  document.getElementById('canvasTrashBtn').addEventListener('click', () => { if(confirm('캔버스를 초기화할까요?')) clearCanvas(); });
+  document.getElementById('canvasClearBtn').addEventListener('click', () => { if(confirm('캔버스를 초기화할까요?')) clearCanvas(); });
+
+  // 저장
+  document.getElementById('canvasSaveBtn').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = `상담_${new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','')}_.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('캔버스가 저장됐습니다.', 'success');
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   캔버스 상단 STT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function bindCanvasTopbar() {
+  const recBtn = document.getElementById('canvasRecBtn');
+  const recDot = document.getElementById('canvasRecDot');
+
+  recBtn.addEventListener('click', () => {
+    CanvasState.isRecording = !CanvasState.isRecording;
+    if (CanvasState.isRecording) {
+      recBtn.textContent = '■ 상담 종료';
+      recBtn.className = 'canvas-btn rec-stop';
+      recDot.style.display = 'block';
+      startBrowserStt();
+    } else {
+      recBtn.textContent = '🎙 상담 시작';
+      recBtn.className = 'canvas-btn rec-start';
+      recDot.style.display = 'none';
+      stopBrowserStt();
+      // 종료 시 AI 요약 자동 실행
+      if (AppState.sttRaw.trim()) {
+        summarizeWithClaude(AppState.sttRaw);
+        showToast('상담 종료 · AI 요약 중...', '');
+      }
+    }
+  });
+
+  // 환자 선택 (환자 목록 팝업 열기)
+  document.getElementById('canvasPtSelect').addEventListener('click', openPatientPopup);
+
+  // 비용 상담 버튼 → 의료진 패널 열고 비용 탭으로
+  document.getElementById('goCostBtn').addEventListener('click', () => {
+    openMgmtPanel();
+    setConsultTab('estimate');
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   의료진 패널 열기/닫기
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openMgmtPanel() {
+  document.getElementById('mgmtPanel').classList.add('open');
+  document.getElementById('mgmtOverlay').classList.add('open');
+}
+function closeMgmtPanel() {
+  document.getElementById('mgmtPanel').classList.remove('open');
+  document.getElementById('mgmtOverlay').classList.remove('open');
+}
+
+/* ── 캔버스 환자 선택 시 상단 이름 업데이트 ── */
+function updateCanvasPatientName() {
+  const p = getSelectedPatient();
+  const el = document.getElementById('canvasPtName');
+  if (el) el.textContent = p ? `${p.name} · ${p.status||'초기상담'} ▾` : '환자 선택 ▾';
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1894,8 +2254,9 @@ async function showMainApp(user) {
   await loadPricePresets();
   await loadPatients();
   await loadTodayConsultCount();
-  // 로그인 후 신규 등록 상태로 시작
   resetPatientForm();
+  // 캔버스 초기화 (DOM 렌더 후)
+  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); }, 100);
 }
 
 async function loadUserProfile() {
@@ -1907,7 +2268,8 @@ async function loadUserProfile() {
 
     // 치과명 표시
     if (data.clinic_name) {
-      document.getElementById('clinicNameSub').textContent = `${data.clinic_name} · AI 상담 요약`;
+      document.getElementById('clinicNameSub') && (document.getElementById('clinicNameSub').textContent = `${data.clinic_name} · AI 상담 요약`);
+      document.getElementById('canvasClinicName') && (document.getElementById('canvasClinicName').textContent = data.clinic_name);
     }
 
     // API 키 복호화 (메모리에만 보관)
@@ -2536,6 +2898,11 @@ function bindEvents() {
   document.getElementById('settingModalOverlay').addEventListener('click', e => {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
   });
+
+  // ── 의료진 패널 ──
+  document.getElementById('openMgmtBtn').addEventListener('click', openMgmtPanel);
+  document.getElementById('closeMgmtBtn').addEventListener('click', closeMgmtPanel);
+  document.getElementById('mgmtOverlay').addEventListener('click', closeMgmtPanel);
 
   // ── 상담 시작 팝업 ──
   document.getElementById('startConsultBtn').addEventListener('click', openConsultPopup);
