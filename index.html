@@ -324,6 +324,10 @@
     .patient-popup-close { background: #f1f3f5; border: none; border-radius: 999px; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .patient-popup-body { padding: 14px 18px; overflow-y: auto; flex: 1; }
 
+    /* ── 저장 버튼 활성/비활성 ── */
+    #savePatientBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    #savePatientBtn:not(:disabled) { opacity: 1; cursor: pointer; }
+
     /* ── 토스트 알림 ── */
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--dark); color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 800; opacity: 0; transition: opacity .3s, transform .3s; z-index: 9999; white-space: nowrap; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -533,7 +537,7 @@
         </div>
 
         <div class="button-row">
-          <button class="primary-btn" id="savePatientBtn" style="flex:1;">저장</button>
+          <button class="primary-btn" id="savePatientBtn" style="flex:1;" disabled>저장</button>
         </div>
       </div>
     </section>
@@ -956,6 +960,36 @@ function showToast(msg, type = '') {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+/* ── 저장 버튼 활성/비활성 제어 ── */
+function setSavePatientBtnState(enabled) {
+  document.getElementById('savePatientBtn').disabled = !enabled;
+}
+
+function checkPatientFormDirty() {
+  // 신규 모드: 환자명 또는 휴대전화 입력되면 활성
+  if (AppState.patientFormMode === 'new') {
+    const name = document.getElementById('patientNameInput').value.trim();
+    const mobile = document.getElementById('patientMobileInput').value.trim();
+    setSavePatientBtnState(!!(name || mobile));
+    return;
+  }
+
+  // 수정 모드: 기존 데이터와 비교해서 하나라도 다르면 활성
+  const current = getSelectedPatient();
+  if (!current) return;
+  const changed =
+    (current.name||'') !== document.getElementById('patientNameInput').value.trim() ||
+    (current.mobile||'') !== document.getElementById('patientMobileInput').value.trim() ||
+    (current.chart_number||'') !== document.getElementById('patientChartInput').value.trim() ||
+    (current.memo||'') !== document.getElementById('patientMemoInput').value.trim() ||
+    (current.status||'') !== document.getElementById('patientStatusInput').value ||
+    (current.birth_date||'') !== (document.getElementById('patientBirthInput').value||'') ||
+    (current.gender||'') !== (AppState.gender||'') ||
+    (current.sns_type||'') !== (AppState.snsType||'') ||
+    (current.sns_id||'') !== (AppState.snsId||'');
+  setSavePatientBtnState(changed);
+}
+
 /* ── 휴대전화 자동 포맷 ── */
 function formatMobile(val) {
   const d = val.replace(/\D/g, '').slice(0, 11);
@@ -977,6 +1011,7 @@ function setGender(val) {
   const normalStyle  = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
   maleBtn.style.cssText  = val === '남' ? activeStyle : normalStyle;
   femaleBtn.style.cssText = val === '여' ? activeStyle : normalStyle;
+  checkPatientFormDirty();
 }
 
 /* ── 생년월일 드럼롤 ── */
@@ -1027,6 +1062,7 @@ function confirmBirth() {
   btn.classList.remove('empty');
   document.getElementById('birthDisplayText').textContent = `${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
   closeBirthModal();
+  checkPatientFormDirty();
 }
 
 /* ── SNS 모달 ── */
@@ -1051,6 +1087,7 @@ function confirmSns() {
   document.getElementById('snsPreviewArea').style.display = 'block';
   closeSnsModal();
   showToast('SNS 정보가 저장됐습니다.', 'success');
+  checkPatientFormDirty();
 }
 
 /* ── 태그 렌더링 ── */
@@ -1553,6 +1590,7 @@ async function savePatient() {
       fillPatientForm(AppState.patients[idx]);
       renderSelectedPatient();
       renderPatientList();
+      setSavePatientBtnState(false);
       showToast('환자 정보가 수정됐습니다.', 'success');
     } catch(e) { showToast(`수정 실패: ${e.message}`, 'warn'); }
     return;
@@ -1606,8 +1644,8 @@ function resetPatientForm() {
   document.getElementById('genderFemaleBtn').style.cssText = normalGenderStyle;
   AppState.currentPatientTags = [];
   renderTagChips();
-  // 선택 환자 해제
   AppState.selectedPatientId = null;
+  setSavePatientBtnState(false);
 }
 
 /* ── 환자 정보 폼에 데이터 채우기 (수정 모드) ── */
@@ -1652,6 +1690,7 @@ function fillPatientForm(p) {
   } else {
     document.getElementById('snsPreviewArea').style.display = 'none';
   }
+  setSavePatientBtnState(false);
 }
 
 /* ── Gemini AI 요약 ── */
@@ -1964,6 +2003,12 @@ function bindEvents() {
   document.getElementById('settingModalOverlay').addEventListener('click', e => {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
   });
+
+  // ── 환자 폼 변경 감지 (저장 버튼 활성화) ──
+  ['patientNameInput','patientMobileInput','patientChartInput','patientMemoInput'].forEach(id => {
+    document.getElementById(id).addEventListener('input', checkPatientFormDirty);
+  });
+  document.getElementById('patientStatusInput').addEventListener('change', checkPatientFormDirty);
 
   // 환자 등록
   document.getElementById('savePatientBtn').addEventListener('click', savePatient);
