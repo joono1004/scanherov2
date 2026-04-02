@@ -334,6 +334,58 @@
     .toast.success { background: var(--success); }
     .toast.warn { background: var(--warn); }
 
+    /* ── 상담 시작 팝업 ── */
+    .consult-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .consult-popup { background: var(--panel); border-radius: var(--radius-xl); width: 100%; max-width: 1100px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+    .cp-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0; gap: 12px; }
+    .cp-name { font-size: 17px; font-weight: 900; }
+    .cp-meta { font-size: 12px; color: var(--sub); }
+    .cp-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); border: 1px solid #bfd3ff; }
+    .cp-controls { display: flex; align-items: center; gap: 8px; }
+    .cp-rec-pill { font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--sub); }
+    .cp-rec-pill.recording { background: #fff7f7; border-color: #fca5a5; color: #dc2626; }
+    .cp-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; border: 1px solid var(--line); background: #fff; color: var(--text); cursor: pointer; white-space: nowrap; }
+    .cp-btn.start { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .cp-btn.stop { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .cp-btn.cost { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
+    .cp-btn.explain { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+    .cp-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: #f1f3f5; color: var(--sub); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    .cp-body-explain { display: grid; grid-template-columns: 210px 1fr; flex: 1; overflow: hidden; min-height: 0; }
+    .cp-sidebar { border-right: 1px solid var(--line); padding: 14px; overflow-y: auto; }
+    .cp-sidebar-label { font-size: 10px; font-weight: 800; color: var(--sub); letter-spacing: .08em; margin-bottom: 8px; display: block; }
+    .cp-cat-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+    .cp-cat { padding: 8px 11px; border-radius: 10px; font-size: 13px; font-weight: 800; color: var(--sub); border: none; background: transparent; text-align: left; cursor: pointer; width: 100%; }
+    .cp-cat.active { background: var(--dark); color: #fff; }
+    .cp-cat:hover:not(.active) { background: var(--primary-soft); color: var(--primary); }
+    .cp-tmpl-list { display: flex; flex-direction: column; gap: 6px; }
+    .cp-tmpl { padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; background: #fff; transition: .15s; }
+    .cp-tmpl.active { border-color: var(--primary); background: var(--primary-soft); }
+    .cp-tmpl:hover:not(.active) { background: #f8fbff; }
+    .cp-tmpl-name { font-size: 13px; font-weight: 800; color: var(--text); }
+    .cp-tmpl-sub { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+    .cp-main { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .cp-explain-card { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+    .cp-ec-head { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .cp-ec-title { font-size: 15px; font-weight: 900; }
+    .cp-ec-sub { font-size: 12px; color: var(--sub); margin-top: 3px; }
+    .cp-ec-body { padding: 16px; display: flex; gap: 16px; align-items: flex-start; }
+    .cp-ec-img { width: 150px; min-height: 130px; background: #f8fbff; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); }
+    .cp-ec-text p { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 8px; }
+    .cp-ec-text li { font-size: 13px; color: var(--sub); line-height: 1.9; }
+    .cp-upload-row { display: flex; gap: 8px; }
+    .cp-upload-box { flex: 1; border: 1.5px dashed var(--line); border-radius: 12px; padding: 14px; text-align: center; background: #f8fbff; cursor: pointer; transition: .15s; }
+    .cp-upload-box:hover { border-color: var(--primary); }
+    .cp-upload-box p { font-size: 12px; color: var(--sub); margin-top: 6px; }
+    .cp-photo { width: 80px; min-height: 60px; border-radius: 10px; border: 1px solid var(--line); background: #f1f3f5; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--sub); }
+
+    .cp-body-cost { display: none; padding: 18px; overflow-y: auto; flex: 1; min-height: 0; }
+    .cp-cost-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
+
+    .start-consult-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; background: var(--dark); color: #fff; border: none; cursor: pointer; white-space: nowrap; }
+    .start-consult-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
     @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -553,7 +605,7 @@
               <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
               <div class="summary-sub" id="selectedPatientSub">상단 [환자 N명] 칩을 클릭해서 환자를 선택해주세요.</div>
             </div>
-            <div id="selectedPatientBadge"></div>
+            <button class="start-consult-btn" id="startConsultBtn" disabled>▶ 상담 시작</button>
           </div>
           <div class="summary-grid" style="margin-top:10px;">
             <div class="info-box">
@@ -710,6 +762,164 @@
 
 <!-- 토스트 알림 -->
 <div class="toast" id="toastEl"></div>
+
+<!-- 상담 시작 팝업 -->
+<div class="consult-popup-overlay hidden" id="consultPopupOverlay">
+  <div class="consult-popup">
+
+    <!-- 헤더 -->
+    <div class="cp-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div>
+          <div class="cp-name" id="cpPatientName">환자명</div>
+          <div class="cp-meta" id="cpPatientMeta"></div>
+        </div>
+        <div class="cp-badge" id="cpPatientBadge"></div>
+      </div>
+      <div class="cp-controls">
+        <div class="cp-rec-pill" id="cpRecPill">대기 중</div>
+        <button class="cp-btn start" id="cpRecBtn">🎙 상담 시작</button>
+        <button class="cp-btn cost" id="cpModeBtn">💰 비용 상담</button>
+        <button class="cp-close" id="cpCloseBtn">✕</button>
+      </div>
+    </div>
+
+    <!-- 설명 상담 바디 -->
+    <div class="cp-body-explain" id="cpBodyExplain">
+
+      <!-- 좌: 카테고리 + 설명카드 목록 -->
+      <div class="cp-sidebar">
+        <span class="cp-sidebar-label">치료 카테고리</span>
+        <div class="cp-cat-list" id="cpCatList">
+          <button class="cp-cat active" data-cat="임플란트">임플란트</button>
+          <button class="cp-cat" data-cat="크라운">크라운</button>
+          <button class="cp-cat" data-cat="교정">교정</button>
+          <button class="cp-cat" data-cat="신경치료">신경치료</button>
+          <button class="cp-cat" data-cat="미백">미백</button>
+          <button class="cp-cat" data-cat="틀니">틀니</button>
+        </div>
+        <span class="cp-sidebar-label">설명 카드</span>
+        <div class="cp-tmpl-list" id="cpTmplList"></div>
+      </div>
+
+      <!-- 우: 설명 카드 + 사진 업로드 -->
+      <div class="cp-main">
+        <div class="cp-explain-card" id="cpExplainCard">
+          <div class="cp-ec-head">
+            <div class="cp-ec-title" id="cpCardTitle">카테고리를 선택하세요</div>
+            <div class="cp-ec-sub" id="cpCardSub"></div>
+          </div>
+          <div class="cp-ec-body">
+            <div class="cp-ec-img" id="cpCardImg">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                <circle cx="30" cy="30" r="28" stroke="#dbe4ee" stroke-width="1.5" fill="#f8fbff"/>
+                <text x="30" y="35" text-anchor="middle" font-size="11" fill="#9aabbc">카드 선택</text>
+              </svg>
+            </div>
+            <div class="cp-ec-text" id="cpCardText">
+              <p style="color:#b0bec5;">좌측에서 설명 카드를 선택하면 내용이 표시됩니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 사진 업로드 -->
+        <div class="cp-upload-row">
+          <div class="cp-upload-box" id="cpUploadBox">
+            <div style="font-size:22px;color:#9aabbc;">⊕</div>
+            <p>X-ray · 구강 사진 업로드<br><span style="font-size:11px;">클릭하거나 파일을 드래그하세요</span></p>
+            <input type="file" id="cpFileInput" accept="image/*" multiple style="display:none;" />
+          </div>
+          <div id="cpPhotoList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 비용 상담 바디 -->
+    <div class="cp-body-cost" id="cpBodyCost">
+      <div class="cp-cost-grid">
+        <!-- 좌: 견적 테이블 -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="label" style="margin:0;">견적 항목</span>
+            <div style="display:flex;gap:6px;">
+              <button class="soft-btn" id="cpOpenPricePickerBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 단가표에서 추가</button>
+              <button class="ghost-btn" id="cpAddDirectItemBtn" style="padding:6px 12px;border-radius:10px;font-size:12px;">+ 직접 입력</button>
+            </div>
+          </div>
+          <div class="price-picker hidden" id="cpPricePicker">
+            <div class="price-picker-cats" id="cpPricePickerCats"></div>
+            <div class="price-picker-items" id="cpPricePickerItems"></div>
+          </div>
+          <div class="direct-input-row hidden" id="cpDirectInputRow">
+            <input id="cpDirectItemName" placeholder="항목명" style="flex:1.5;" />
+            <input id="cpDirectItemPrice" type="number" placeholder="단가" style="flex:1;" />
+            <button class="primary-btn" id="cpAddDirectItemConfirm" style="padding:9px 12px;border-radius:12px;font-size:13px;">추가</button>
+          </div>
+          <div style="border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin-bottom:12px;">
+            <table class="estimate-table">
+              <thead>
+                <tr>
+                  <th style="width:40%;">항목</th>
+                  <th style="width:25%;text-align:right;">단가</th>
+                  <th style="width:20%;text-align:center;">수량</th>
+                  <th style="width:15%;text-align:right;"></th>
+                </tr>
+              </thead>
+              <tbody id="cpEstimateTableBody">
+                <tr><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">항목을 추가해주세요</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="estimate-summary">
+            <div class="estimate-summary-row">
+              <span style="color:var(--sub);">소계</span>
+              <span id="cpEstimateSubtotal" style="font-weight:900;">0원</span>
+            </div>
+            <div class="estimate-summary-row">
+              <span style="color:var(--sub);">할인</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span>-</span>
+                <input class="discount-input" id="cpDiscountInput" type="number" min="0" step="10000" value="0" />
+                <span>원</span>
+              </div>
+            </div>
+            <div class="estimate-summary-row total">
+              <span>최종 견적</span>
+              <span id="cpEstimateTotal">0원</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우: AI 요약 + 저장 -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="stt-box">
+            <div class="stt-box-header">
+              <div class="stt-badge">✦ AI 상담 요약</div>
+            </div>
+            <div class="stt-status" id="cpSttStatus">STT 녹음 후 AI가 상담 내용을 정리합니다.</div>
+            <div class="ai-summary-result" id="cpAiSummaryResult" style="display:none;">
+              <div class="ai-label">✦ Gemini AI 요약 결과</div>
+              <div class="ai-text" id="cpSttSummaryOutput"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <div style="flex:1;">
+              <label class="label" for="cpConsultPlan">다음 액션</label>
+              <select id="cpConsultPlan">
+                <option value="재상담 예정">재상담 예정</option>
+                <option value="견적 발송 예정">견적 발송 예정</option>
+                <option value="당일 결정 가능">당일 결정 가능</option>
+                <option value="치료 예약 유도">치료 예약 유도</option>
+              </select>
+            </div>
+            <button class="primary-btn" id="cpSaveBtn" style="padding:12px 20px;border-radius:14px;white-space:nowrap;">상담 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- 환자 목록 팝업 -->
 <div class="patient-popup-overlay hidden" id="patientPopupOverlay">
@@ -934,6 +1144,7 @@ function renderSelectedPatient() {
     document.getElementById('selectedPatientSub').textContent = '환자 목록에서 선택 후 상담을 진행할 수 있습니다.';
     document.getElementById('selectedPatientStatus').textContent = '-';
     document.getElementById('selectedPatientLastTotal').textContent = '-';
+    updateStartConsultBtn();
     return;
   }
   document.getElementById('selectedPatientName').textContent = p.name||'-';
@@ -941,6 +1152,7 @@ function renderSelectedPatient() {
     `${p.mobile||'-'}${p.sns_type?' · '+p.sns_type+' '+p.sns_id:''} · ${p.birth_date||'-'}<br>${p.memo||'메모 없음'}`;
   document.getElementById('selectedPatientStatus').textContent = p.status||'-';
   document.getElementById('selectedPatientLastTotal').textContent = formatKRW(p.last_total||0);
+  updateStartConsultBtn();
 }
 
 function setTab(t) {
@@ -1169,6 +1381,327 @@ async function addUserTag(category, value) {
   renderTagChips();
   document.getElementById('tagPicker').classList.add('hidden');
   AppState.tagPickerOpen = false;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   상담 시작 팝업
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const EXPLAIN_CARDS = {
+  '임플란트': [
+    { name:'임플란트 구조', sub:'픽스처·어버트먼트·크라운', text:'임플란트는 3가지 부품으로 구성됩니다.', points:['픽스처 — 뼈에 심는 나사 부분','어버트먼트 — 픽스처와 크라운을 연결','크라운 — 실제 치아처럼 보이는 부분'], svg:'implant' },
+    { name:'발치 후 과정', sub:'발치 → 치유 → 식립', text:'임플란트 시술 전 발치가 필요한 경우 과정입니다.', points:['발치 후 2~3개월 치유 기간','뼈 상태 확인 후 임플란트 식립','최종 크라운 장착까지 약 3~6개월'], svg:'extract' },
+    { name:'국산 vs 수입', sub:'브랜드별 특징 비교', text:'국산과 수입 임플란트의 차이를 설명합니다.', points:['국산 — 오스템·덴티움 등, 검증된 품질','수입 — 스트라우만·노벨 등, 글로벌 표준','AS 및 가격 차이 고려 필요'], svg:'compare' },
+    { name:'뼈이식 설명', sub:'골이식이 필요한 경우', text:'뼈의 양이 부족한 경우 뼈이식이 필요합니다.', points:['뼈이식재로 부족한 뼈를 보충','소량(소)/대량(대) 이식으로 구분','치유 후 임플란트 식립 진행'], svg:'bone' },
+  ],
+  '크라운': [
+    { name:'크라운 종류', sub:'지르코니아·PFM·골드', text:'크라운 재료에 따라 심미성과 내구성이 다릅니다.', points:['지르코니아 — 자연치와 유사, 심미적','PFM — 금속+도자기, 경제적','골드 — 내구성 최강, 금속 색상'], svg:'crown' },
+    { name:'크라운 과정', sub:'삭제 → 본뜨기 → 장착', text:'크라운 치료는 3단계로 진행됩니다.', points:['치아 일부 삭제 후 본뜨기','기공소 제작 (1~2주)','최종 크라운 접착·장착'], svg:'extract' },
+  ],
+  '교정': [
+    { name:'교정 종류', sub:'메탈·세라믹·인비절라인', text:'교정 방법에 따라 심미성과 기간이 다릅니다.', points:['메탈 교정 — 가장 경제적, 효과적','세라믹 교정 — 심미적, 메탈보다 비용↑','인비절라인 — 투명, 착탈 가능'], svg:'ortho' },
+  ],
+  '신경치료': [
+    { name:'신경치료 과정', sub:'감염 제거 → 충전', text:'신경(치수)이 감염된 경우 치료합니다.', points:['감염된 신경 제거 및 소독','근관 충전으로 공간 밀폐','치료 후 크라운 장착 권장'], svg:'nerve' },
+  ],
+  '미백': [
+    { name:'전문가 미백', sub:'광조사·약제 미백', text:'치과에서 시행하는 전문 미백 치료입니다.', points:['고농도 미백제 도포 후 광조사','1~2시간 내 시술 완료','2~3주 후 추가 시술 가능'], svg:'whitening' },
+  ],
+  '틀니': [
+    { name:'틀니 종류', sub:'부분·완전 틀니', text:'잔존 치아 수에 따라 틀니 종류가 다릅니다.', points:['부분 틀니 — 일부 치아 남은 경우','완전 틀니 — 모든 치아 상실 시','임플란트 틀니로 고정력 향상 가능'], svg:'denture' },
+  ],
+};
+
+function getSvg(type) {
+  const svgs = {
+    implant: `<svg width="80" height="120" viewBox="0 0 80 120" fill="none"><ellipse cx="40" cy="18" rx="24" ry="15" fill="#B5D4F4" stroke="#378ADD" stroke-width="1.5"/><text x="40" y="22" text-anchor="middle" font-size="10" fill="#0C447C">크라운</text><rect x="27" y="31" width="26" height="18" rx="4" fill="#85B7EB" stroke="#378ADD" stroke-width="1.2"/><text x="40" y="43" text-anchor="middle" font-size="9" fill="#0C447C">어버트</text><rect x="34" y="47" width="12" height="44" rx="5" fill="#378ADD" stroke="#185FA5" stroke-width="1.2"/><text x="40" y="73" text-anchor="middle" font-size="8" fill="#fff">픽스처</text><path d="M18 98 Q40 110 62 98" stroke="#888780" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/><text x="40" y="116" text-anchor="middle" font-size="9" fill="#888780">치조골</text></svg>`,
+    crown: `<svg width="90" height="100" viewBox="0 0 90 100" fill="none"><ellipse cx="45" cy="25" rx="30" ry="20" fill="#B5D4F4" stroke="#378ADD" stroke-width="1.5"/><text x="45" y="30" text-anchor="middle" font-size="11" fill="#0C447C">지르코니아</text><rect x="25" y="43" width="40" height="30" rx="5" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.2"/><text x="45" y="62" text-anchor="middle" font-size="10" fill="#185FA5">PFM</text><rect x="30" y="76" width="30" height="20" rx="4" fill="#FAC775" stroke="#BA7517" stroke-width="1.2"/><text x="45" y="90" text-anchor="middle" font-size="10" fill="#633806">골드</text></svg>`,
+    extract: `<svg width="80" height="110" viewBox="0 0 80 110" fill="none"><ellipse cx="40" cy="18" rx="22" ry="14" fill="#F7C1C1" stroke="#E24B4A" stroke-width="1.5"/><text x="40" y="22" text-anchor="middle" font-size="9" fill="#791F1F">발치</text><path d="M20 30 Q18 55 22 70 Q30 82 40 80 Q50 82 58 70 Q62 55 60 30" fill="#F7C1C1" stroke="#E24B4A" stroke-width="1.5"/><path d="M28 85 Q40 95 52 85" stroke="#9FE1CB" stroke-width="2" fill="none"/><text x="40" y="106" text-anchor="middle" font-size="9" fill="#1D9E75">치유 중</text></svg>`,
+    compare: `<svg width="100" height="90" viewBox="0 0 100 90" fill="none"><rect x="5" y="10" width="40" height="60" rx="8" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/><text x="25" y="35" text-anchor="middle" font-size="10" fill="#085041" font-weight="bold">국산</text><text x="25" y="50" text-anchor="middle" font-size="9" fill="#0F6E56">오스템</text><text x="25" y="63" text-anchor="middle" font-size="9" fill="#0F6E56">덴티움</text><rect x="55" y="10" width="40" height="60" rx="8" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/><text x="75" y="35" text-anchor="middle" font-size="10" fill="#0C447C" font-weight="bold">수입</text><text x="75" y="50" text-anchor="middle" font-size="9" fill="#185FA5">스트라우만</text><text x="75" y="63" text-anchor="middle" font-size="9" fill="#185FA5">노벨</text><line x1="50" y1="5" x2="50" y2="85" stroke="#dbe4ee" stroke-width="1" stroke-dasharray="3,2"/></svg>`,
+    bone: `<svg width="90" height="100" viewBox="0 0 90 100" fill="none"><ellipse cx="45" cy="20" rx="28" ry="16" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/><text x="45" y="24" text-anchor="middle" font-size="10" fill="#412402">뼈이식재</text><path d="M20 34 Q18 58 22 72 Q32 84 45 82 Q58 84 68 72 Q72 58 70 34" fill="#FAC775" stroke="#BA7517" stroke-width="1.5" opacity=".6"/><text x="45" y="62" text-anchor="middle" font-size="9" fill="#633806">골이식</text><text x="45" y="96" text-anchor="middle" font-size="9" fill="#888780">치유 후 임플란트</text></svg>`,
+    ortho: `<svg width="100" height="80" viewBox="0 0 100 80" fill="none"><rect x="10" y="20" width="80" height="40" rx="8" fill="#f8fbff" stroke="#dbe4ee" stroke-width="1.5"/><circle cx="25" cy="40" r="7" fill="#B5D4F4" stroke="#378ADD" stroke-width="1.5"/><circle cx="45" cy="40" r="7" fill="#B5D4F4" stroke="#378ADD" stroke-width="1.5"/><circle cx="65" cy="40" r="7" fill="#B5D4F4" stroke="#378ADD" stroke-width="1.5"/><line x1="25" y1="40" x2="65" y2="40" stroke="#378ADD" stroke-width="2"/><text x="50" y="72" text-anchor="middle" font-size="9" fill="#888780">교정 장치</text></svg>`,
+    nerve: `<svg width="80" height="110" viewBox="0 0 80 110" fill="none"><ellipse cx="40" cy="18" rx="22" ry="14" fill="#D3D1C7" stroke="#888780" stroke-width="1.5"/><path d="M20 30 Q18 55 22 70 Q30 82 40 80 Q50 82 58 70 Q62 55 60 30" fill="#D3D1C7" stroke="#888780" stroke-width="1.5"/><line x1="40" y1="32" x2="40" y2="76" stroke="#E24B4A" stroke-width="2" stroke-dasharray="3,2"/><text x="40" y="96" text-anchor="middle" font-size="9" fill="#E24B4A">신경(치수)</text></svg>`,
+    whitening: `<svg width="90" height="80" viewBox="0 0 90 80" fill="none"><ellipse cx="45" cy="35" rx="30" ry="25" fill="#fffef0" stroke="#FAC775" stroke-width="1.5"/><text x="45" y="38" text-anchor="middle" font-size="13" fill="#BA7517">✦ 미백</text><circle cx="20" cy="20" r="5" fill="#FAC775" opacity=".6"/><circle cx="70" cy="15" r="4" fill="#FAC775" opacity=".5"/><circle cx="75" cy="55" r="6" fill="#FAC775" opacity=".4"/><text x="45" y="70" text-anchor="middle" font-size="9" fill="#888780">광조사 미백</text></svg>`,
+    denture: `<svg width="100" height="80" viewBox="0 0 100 80" fill="none"><path d="M10 20 Q50 5 90 20 Q90 55 50 70 Q10 55 10 20Z" fill="#F5C4B3" stroke="#D85A30" stroke-width="1.5"/><rect x="22" y="28" width="12" height="20" rx="4" fill="#fff" stroke="#D85A30" stroke-width="1"/><rect x="38" y="24" width="12" height="24" rx="4" fill="#fff" stroke="#D85A30" stroke-width="1"/><rect x="54" y="24" width="12" height="24" rx="4" fill="#fff" stroke="#D85A30" stroke-width="1"/><rect x="66" y="28" width="12" height="20" rx="4" fill="#fff" stroke="#D85A30" stroke-width="1"/><text x="50" y="72" text-anchor="middle" font-size="9" fill="#888780">부분 틀니</text></svg>`,
+  };
+  return svgs[type] || svgs['implant'];
+}
+
+const ConsultPopupState = {
+  isOpen: false,
+  isRecording: false,
+  isCostMode: false,
+  currentCat: '임플란트',
+  currentTmpl: null,
+  estimateItems: [],
+  pricePickerOpen: false,
+  pricePickerCategory: null,
+  directInputOpen: false,
+  discount: 0,
+};
+
+function openConsultPopup() {
+  const p = getSelectedPatient();
+  if (!p) return;
+
+  // 환자 정보 세팅
+  document.getElementById('cpPatientName').textContent = p.name;
+  const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date)) / 31557600000) : null;
+  document.getElementById('cpPatientMeta').textContent = [age ? age+'세' : '', p.gender, p.status].filter(Boolean).join(' · ');
+  document.getElementById('cpPatientBadge').textContent = p.status || '초기 상담';
+
+  // 상태 초기화
+  ConsultPopupState.isRecording = false;
+  ConsultPopupState.isCostMode = false;
+  ConsultPopupState.estimateItems = [...AppState.estimateItems]; // 기존 견적 복사
+  ConsultPopupState.currentCat = '임플란트';
+  document.getElementById('cpRecBtn').textContent = '🎙 상담 시작';
+  document.getElementById('cpRecBtn').className = 'cp-btn start';
+  document.getElementById('cpRecPill').textContent = '대기 중';
+  document.getElementById('cpRecPill').className = 'cp-rec-pill';
+  document.getElementById('cpModeBtn').textContent = '💰 비용 상담';
+  document.getElementById('cpModeBtn').className = 'cp-btn cost';
+  document.getElementById('cpBodyExplain').style.display = 'grid';
+  document.getElementById('cpBodyCost').style.display = 'none';
+  document.getElementById('cpDiscountInput').value = '0';
+  document.getElementById('cpAiSummaryResult').style.display = 'none';
+
+  renderCpCategoryList();
+  renderCpTemplateList();
+  renderCpEstimateTable();
+  document.getElementById('consultPopupOverlay').classList.remove('hidden');
+  ConsultPopupState.isOpen = true;
+}
+
+function closeConsultPopup() {
+  document.getElementById('consultPopupOverlay').classList.add('hidden');
+  ConsultPopupState.isOpen = false;
+  // STT 녹음 중이면 중지
+  if (ConsultPopupState.isRecording) toggleCpRecording();
+}
+
+function toggleCpRecording() {
+  ConsultPopupState.isRecording = !ConsultPopupState.isRecording;
+  const btn = document.getElementById('cpRecBtn');
+  const pill = document.getElementById('cpRecPill');
+  if (ConsultPopupState.isRecording) {
+    btn.textContent = '⏹ 상담 종료';
+    btn.className = 'cp-btn stop';
+    pill.textContent = '🔴 녹음 중';
+    pill.className = 'cp-rec-pill recording';
+    startBrowserStt();
+  } else {
+    btn.textContent = '🎙 상담 시작';
+    btn.className = 'cp-btn start';
+    pill.textContent = '대기 중';
+    pill.className = 'cp-rec-pill';
+    stopBrowserStt();
+    // AI 요약이 있으면 팝업에도 표시
+    if (AppState.sttSummary) {
+      document.getElementById('cpSttSummaryOutput').textContent = AppState.sttSummary;
+      document.getElementById('cpAiSummaryResult').style.display = 'block';
+    }
+  }
+}
+
+function toggleCpMode() {
+  ConsultPopupState.isCostMode = !ConsultPopupState.isCostMode;
+  const btn = document.getElementById('cpModeBtn');
+  const explainBody = document.getElementById('cpBodyExplain');
+  const costBody = document.getElementById('cpBodyCost');
+  if (ConsultPopupState.isCostMode) {
+    btn.textContent = '📋 설명 상담';
+    btn.className = 'cp-btn explain';
+    explainBody.style.display = 'none';
+    costBody.style.display = 'block';
+    renderCpEstimateTable();
+  } else {
+    btn.textContent = '💰 비용 상담';
+    btn.className = 'cp-btn cost';
+    explainBody.style.display = 'grid';
+    costBody.style.display = 'none';
+  }
+}
+
+function renderCpCategoryList() {
+  document.querySelectorAll('.cp-cat').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === ConsultPopupState.currentCat);
+  });
+  renderCpTemplateList();
+}
+
+function renderCpTemplateList() {
+  const cards = EXPLAIN_CARDS[ConsultPopupState.currentCat] || [];
+  const list = document.getElementById('cpTmplList');
+  list.innerHTML = cards.map((c, i) => `
+    <div class="cp-tmpl${i === 0 ? ' active' : ''}" data-idx="${i}">
+      <div class="cp-tmpl-name">${c.name}</div>
+      <div class="cp-tmpl-sub">${c.sub}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.cp-tmpl').forEach(el => {
+    el.addEventListener('click', () => {
+      list.querySelectorAll('.cp-tmpl').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      renderCpCard(Number(el.dataset.idx));
+    });
+  });
+  if (cards.length) renderCpCard(0);
+}
+
+function renderCpCard(idx) {
+  const cards = EXPLAIN_CARDS[ConsultPopupState.currentCat] || [];
+  const card = cards[idx];
+  if (!card) return;
+  ConsultPopupState.currentTmpl = card;
+  document.getElementById('cpCardTitle').textContent = card.name;
+  document.getElementById('cpCardSub').textContent = card.sub;
+  document.getElementById('cpCardImg').innerHTML = getSvg(card.svg);
+  document.getElementById('cpCardText').innerHTML =
+    `<p>${card.text}</p><ul>${card.points.map(p=>`<li>${p}</li>`).join('')}</ul>`;
+}
+
+/* ── 팝업 견적 관리 ── */
+function renderCpEstimateTable() {
+  const tbody = document.getElementById('cpEstimateTableBody');
+  const items = ConsultPopupState.estimateItems;
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">항목을 추가해주세요</td></tr>`;
+    updateCpSummary(); return;
+  }
+  tbody.innerHTML = items.map(item => `
+    <tr>
+      <td style="font-weight:800;">${item.name}${item.unit?` <span style="font-size:11px;color:var(--sub);font-weight:400;">/${item.unit}</span>`:''}</td>
+      <td style="text-align:right;color:var(--primary);font-weight:800;">${formatKRW(item.unitPrice)}</td>
+      <td style="text-align:center;">
+        <button class="qty-btn" onclick="changeCpQty(${item.id},-1)">−</button>
+        <span class="qty-val">${item.qty}</span>
+        <button class="qty-btn" onclick="changeCpQty(${item.id},+1)">+</button>
+      </td>
+      <td style="text-align:right;">
+        <div style="font-size:12px;color:var(--sub);">${formatKRW(item.unitPrice*item.qty)}</div>
+        <button class="item-del-btn" onclick="removeCpItem(${item.id})">×</button>
+      </td>
+    </tr>
+  `).join('');
+  updateCpSummary();
+}
+
+function changeCpQty(id, delta) {
+  const item = ConsultPopupState.estimateItems.find(i=>i.id===id);
+  if(item) { item.qty = Math.max(1, item.qty+delta); renderCpEstimateTable(); }
+}
+function removeCpItem(id) {
+  ConsultPopupState.estimateItems = ConsultPopupState.estimateItems.filter(i=>i.id!==id);
+  renderCpEstimateTable();
+}
+function addCpEstimateItem(item) {
+  const existing = ConsultPopupState.estimateItems.find(i=>i.presetId&&i.presetId===item.presetId);
+  if(existing) { existing.qty++; renderCpEstimateTable(); return; }
+  ConsultPopupState.estimateItems.push({id:Date.now(), ...item});
+  renderCpEstimateTable();
+}
+function updateCpSummary() {
+  const sub = ConsultPopupState.estimateItems.reduce((s,i)=>s+i.unitPrice*i.qty, 0);
+  const disc = Number(document.getElementById('cpDiscountInput').value||0);
+  document.getElementById('cpEstimateSubtotal').textContent = formatKRW(sub);
+  document.getElementById('cpEstimateTotal').textContent = formatKRW(Math.max(0,sub-disc));
+}
+
+function toggleCpPricePicker() {
+  ConsultPopupState.pricePickerOpen = !ConsultPopupState.pricePickerOpen;
+  document.getElementById('cpPricePicker').classList.toggle('hidden', !ConsultPopupState.pricePickerOpen);
+  if (ConsultPopupState.pricePickerOpen) renderCpPricePicker();
+  ConsultPopupState.directInputOpen = false;
+  document.getElementById('cpDirectInputRow').classList.add('hidden');
+}
+function toggleCpDirectInput() {
+  ConsultPopupState.directInputOpen = !ConsultPopupState.directInputOpen;
+  document.getElementById('cpDirectInputRow').classList.toggle('hidden', !ConsultPopupState.directInputOpen);
+  ConsultPopupState.pricePickerOpen = false;
+  document.getElementById('cpPricePicker').classList.add('hidden');
+  if(ConsultPopupState.directInputOpen) document.getElementById('cpDirectItemName').focus();
+}
+function addCpDirectItem() {
+  const name = document.getElementById('cpDirectItemName').value.trim();
+  const price = Number(document.getElementById('cpDirectItemPrice').value||0);
+  if(!name){alert('항목명을 입력해주세요.');return;}
+  addCpEstimateItem({presetId:null,name,unitPrice:price,unit:'',qty:1});
+  document.getElementById('cpDirectItemName').value='';
+  document.getElementById('cpDirectItemPrice').value='';
+}
+function renderCpPricePicker() {
+  const cats = [...new Set(AppState.pricePresets.map(p=>p.category))];
+  if(!ConsultPopupState.pricePickerCategory) ConsultPopupState.pricePickerCategory = cats[0];
+  const catsEl = document.getElementById('cpPricePickerCats');
+  catsEl.innerHTML = cats.map(c=>`<button class="price-picker-cat${c===ConsultPopupState.pricePickerCategory?' active':''}" data-cat="${c}">${c}</button>`).join('');
+  catsEl.querySelectorAll('.price-picker-cat').forEach(btn=>{
+    btn.addEventListener('click',()=>{ConsultPopupState.pricePickerCategory=btn.dataset.cat;renderCpPricePicker();});
+  });
+  const items = AppState.pricePresets.filter(p=>p.category===ConsultPopupState.pricePickerCategory);
+  const itemsEl = document.getElementById('cpPricePickerItems');
+  itemsEl.innerHTML = items.map(p=>`
+    <div class="price-picker-item" data-preset-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
+      <span class="item-name">${p.name} <span style="font-size:11px;color:var(--sub);font-weight:400;">/ ${p.unit}</span></span>
+      <span class="item-price">${formatKRW(p.price)}</span>
+    </div>
+  `).join('');
+  itemsEl.querySelectorAll('.price-picker-item').forEach(el=>{
+    el.addEventListener('click',()=>addCpEstimateItem({presetId:el.dataset.presetId,name:el.dataset.name,unitPrice:Number(el.dataset.price),unit:el.dataset.unit,qty:1}));
+  });
+}
+
+async function saveCpConsultation() {
+  if(!AppState.connected){alert('Supabase 연결이 아직 완료되지 않았습니다.');return;}
+  const patient = getSelectedPatient();
+  if(!patient){alert('환자를 선택해주세요.');return;}
+  const discount = Number(document.getElementById('cpDiscountInput').value||0);
+  const subtotal = ConsultPopupState.estimateItems.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  const total = Math.max(0, subtotal-discount);
+  const payload = {
+    user_id: AppState.currentUser.id, patient_id: patient.id,
+    title: `${ConsultPopupState.currentCat} 상담`,
+    diagnosis_note: AppState.sttSummary || document.getElementById('consultDiagnosisInput').value.trim() || '-',
+    stt_raw: AppState.sttRaw||null, stt_summary: AppState.sttSummary||null,
+    estimated_total: total, next_action: document.getElementById('cpConsultPlan').value
+  };
+  try {
+    const{data,error}=await AppState.supabase.from('consultations').insert(payload).select().single();
+    if(error) throw error;
+    if(ConsultPopupState.estimateItems.length && data?.id) {
+      const itemPayloads = ConsultPopupState.estimateItems.map((item,idx)=>({
+        consultation_id:data.id, user_id:AppState.currentUser.id,
+        preset_id:item.presetId||null, item_name:item.name,
+        unit_price:item.unitPrice, quantity:item.qty, discount:0, display_order:idx
+      }));
+      if(itemPayloads.length>0) itemPayloads[itemPayloads.length-1].discount=discount;
+      await AppState.supabase.from('consultation_items').insert(itemPayloads);
+    }
+    await AppState.supabase.from('patients').update({status:payload.next_action,last_total:total}).eq('id',patient.id);
+    showToast('상담이 저장됐습니다.','success');
+    closeConsultPopup();
+    await loadPatients(); await loadTodayConsultCount(); await loadConsultations();
+    // 메인 견적도 동기화
+    AppState.estimateItems = [...ConsultPopupState.estimateItems];
+    renderEstimateTable();
+  } catch(e){alert(`저장 실패: ${e.message}`);}
+}
+
+/* ── 사진 업로드 ── */
+function handleCpPhotoUpload(files) {
+  const list = document.getElementById('cpPhotoList');
+  Array.from(files).forEach(file=>{
+    const url = URL.createObjectURL(file);
+    const div = document.createElement('div');
+    div.style.cssText='width:80px;height:70px;border-radius:10px;overflow:hidden;border:1px solid var(--line);flex-shrink:0;';
+    div.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;" />`;
+    list.appendChild(div);
+  });
+}
+
+/* ── 상담 시작 버튼 활성화 ── */
+function updateStartConsultBtn() {
+  const btn = document.getElementById('startConsultBtn');
+  if(btn) btn.disabled = !AppState.selectedPatientId;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2003,6 +2536,29 @@ function bindEvents() {
   document.getElementById('settingModalOverlay').addEventListener('click', e => {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
   });
+
+  // ── 상담 시작 팝업 ──
+  document.getElementById('startConsultBtn').addEventListener('click', openConsultPopup);
+  document.getElementById('cpCloseBtn').addEventListener('click', closeConsultPopup);
+  document.getElementById('consultPopupOverlay').addEventListener('click', e => {
+    if(e.target===document.getElementById('consultPopupOverlay')) closeConsultPopup();
+  });
+  document.getElementById('cpRecBtn').addEventListener('click', toggleCpRecording);
+  document.getElementById('cpModeBtn').addEventListener('click', toggleCpMode);
+  document.getElementById('cpSaveBtn').addEventListener('click', saveCpConsultation);
+  document.getElementById('cpDiscountInput').addEventListener('input', updateCpSummary);
+  document.getElementById('cpOpenPricePickerBtn').addEventListener('click', toggleCpPricePicker);
+  document.getElementById('cpAddDirectItemBtn').addEventListener('click', toggleCpDirectInput);
+  document.getElementById('cpAddDirectItemConfirm').addEventListener('click', addCpDirectItem);
+  document.getElementById('cpDirectItemPrice').addEventListener('keydown', e=>{ if(e.key==='Enter') addCpDirectItem(); });
+  document.querySelectorAll('.cp-cat').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      ConsultPopupState.currentCat = btn.dataset.cat;
+      renderCpCategoryList();
+    });
+  });
+  document.getElementById('cpUploadBox').addEventListener('click', ()=>document.getElementById('cpFileInput').click());
+  document.getElementById('cpFileInput').addEventListener('change', e=>handleCpPhotoUpload(e.target.files));
 
   // ── 환자 폼 변경 감지 (저장 버튼 활성화) ──
   ['patientNameInput','patientMobileInput','patientChartInput','patientMemoInput'].forEach(id => {
