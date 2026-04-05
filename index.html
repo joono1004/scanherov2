@@ -364,7 +364,10 @@
 
     .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; }
     .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; }
-    .canvas-wrap canvas { background: #fff; border-radius: 14px; border: 1px solid var(--line); cursor: crosshair; display: block; box-shadow: 0 4px 16px rgba(18,34,54,.07); max-width: 100%; max-height: 100%; }
+    .canvas-wrap .canvas-container { position: relative; border-radius: 14px; border: 1px solid #dde3ec; box-shadow: 0 4px 16px rgba(18,34,54,.07); overflow: hidden; max-width: 100%; max-height: 100%; }
+    .canvas-wrap canvas { display: block; cursor: crosshair; }
+    #bgCanvas  { position: absolute; top: 0; left: 0; background: #ffffff; pointer-events: none; }
+    #mainCanvas { position: relative; background: transparent; }
     .canvas-bottombar { background: #fff; border-top: 1px solid var(--line); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 
     .canvas-toolbar { background: #fff; border-left: 1px solid var(--line); padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; flex-shrink: 0; }
@@ -431,6 +434,49 @@
       .cost-screen-body { grid-template-columns: 1fr; }
       .patient-screen-body { grid-template-columns: 1fr; }
     }
+
+    /* ── 테마 선택 UI ── */
+    .theme-picker { display: flex; gap: 10px; margin: 8px 0; }
+    .theme-swatch { width: 44px; height: 44px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: .2s; position: relative; }
+    .theme-swatch.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+    .theme-swatch::after { content: attr(data-label); position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: var(--sub); white-space: nowrap; }
+
+    /* ── 카테고리 관리 모달 ── */
+    .cat-mgmt-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 400; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .cat-mgmt-modal { background: var(--panel); border-radius: var(--radius-xl); width: 100%; max-width: 780px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.18); }
+    .cat-mgmt-header { padding: 16px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .cat-mgmt-title { font-size: 17px; font-weight: 900; }
+    .cat-mgmt-body { display: grid; grid-template-columns: 220px 1fr; flex: 1; overflow: hidden; min-height: 0; }
+    .cat-mgmt-left { border-right: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+    .cat-mgmt-left-head { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .cat-mgmt-left-head span { font-size: 12px; font-weight: 800; color: var(--sub); }
+    .cat-list-mgmt { flex: 1; overflow-y: auto; padding: 8px; }
+    .cat-item-mgmt { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; cursor: pointer; transition: .15s; margin-bottom: 3px; border: 1px solid transparent; }
+    .cat-item-mgmt.active { background: var(--primary-soft); border-color: var(--primary); }
+    .cat-item-mgmt:hover:not(.active) { background: var(--bg); }
+    .cat-item-mgmt-name { flex: 1; font-size: 13px; font-weight: 800; color: var(--text); }
+    .cat-item-mgmt-actions { display: flex; gap: 4px; opacity: 0; transition: .15s; }
+    .cat-item-mgmt:hover .cat-item-mgmt-actions { opacity: 1; }
+    .cat-icon-btn { width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--sub); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .cat-icon-btn:hover { background: var(--bg); }
+    .cat-icon-btn.del:hover { background: #fff5f5; color: #e24b4a; border-color: #fca5a5; }
+    .cat-mgmt-right { display: flex; flex-direction: column; overflow: hidden; }
+    .cat-mgmt-right-head { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .cat-mgmt-right-head span { font-size: 12px; font-weight: 800; color: var(--sub); }
+    .tmpl-list-mgmt { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+    .tmpl-item-mgmt { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); transition: .15s; }
+    .tmpl-item-mgmt:hover { border-color: var(--primary); }
+    .tmpl-img-wrap { height: 90px; background: var(--bg); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; }
+    .tmpl-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .tmpl-img-wrap .tmpl-img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; opacity: 0; transition: .15s; color: #fff; font-size: 11px; font-weight: 800; }
+    .tmpl-img-wrap:hover .tmpl-img-overlay { opacity: 1; }
+    .tmpl-img-empty { color: var(--sub); font-size: 11px; text-align: center; }
+    .tmpl-item-foot { padding: 8px 10px; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); }
+    .tmpl-item-name-input { flex: 1; border: none; background: transparent; font-size: 12px; font-weight: 800; color: var(--text); outline: none; padding: 0; }
+    .tmpl-item-name-input:focus { background: var(--bg); border-radius: 5px; padding: 2px 5px; }
+    .tmpl-add-card { border: 1.5px dashed var(--line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; min-height: 130px; transition: .15s; color: var(--sub); }
+    .tmpl-add-card:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .no-cat-selected { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 14px; }
 
     /* ── 상담 시작 버튼 (화면 내) ── */
     .start-consult-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; background: var(--dark); color: #fff; border: none; cursor: pointer; white-space: nowrap; }
@@ -542,6 +588,22 @@
     <div class="setting-modal-sub" id="settingUserEmail"></div>
 
     <div class="setting-section">
+      <div class="setting-label">테마 선택</div>
+      <div class="theme-picker" id="themePicker">
+        <div class="theme-swatch" data-theme="A" data-label="클리니컬" style="background:#f8f9fb;border-color:#e8eaf0;" title="클리니컬 화이트">
+          <span style="font-size:12px;font-weight:900;color:#1a1a2e;">A</span>
+        </div>
+        <div class="theme-swatch" data-theme="C" data-label="슬레이트골드" style="background:#f7f6f3;border-color:#e8e4da;" title="슬레이트 골드">
+          <span style="font-size:12px;font-weight:900;color:#292524;">C</span>
+        </div>
+        <div class="theme-swatch" data-theme="G" data-label="모닝스카이" style="background:#f0f7ff;border-color:#c8dff7;" title="모닝 스카이">
+          <span style="font-size:12px;font-weight:900;color:#1e4e8c;">G</span>
+        </div>
+      </div>
+      <div style="margin-top:24px;"></div>
+    </div>
+
+    <div class="setting-section">
       <div class="setting-label">치과명</div>
       <div class="setting-input-row">
         <input id="settingClinicInput" placeholder="예: 스마일치과" style="flex:1;" />
@@ -559,6 +621,14 @@
       <div style="font-size:12px;color:#b0bec5;margin-top:6px;">
         aistudio.google.com 에서 발급 · AES-256 암호화 저장
       </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="setting-label">상담 카테고리 관리</div>
+      <button class="soft-btn" id="openCatMgmtBtn" style="width:100%;border-radius:12px;padding:11px;font-size:13px;font-weight:800;">
+        🗂 카테고리 · 템플릿 관리
+      </button>
+      <div style="font-size:12px;color:#b0bec5;margin-top:6px;">치료 상담 화면의 카테고리와 설명 템플릿을 추가·수정할 수 있습니다.</div>
     </div>
 
     <div style="display:flex;gap:10px;margin-top:8px;">
@@ -625,7 +695,10 @@
       <!-- 중앙: 캔버스 -->
       <div class="canvas-center">
         <div class="canvas-wrap">
-          <canvas id="mainCanvas"></canvas>
+          <div class="canvas-container">
+            <canvas id="bgCanvas"></canvas>
+            <canvas id="mainCanvas"></canvas>
+          </div>
         </div>
         <div class="canvas-bottombar">
           <div style="display:flex;gap:8px;">
@@ -942,6 +1015,39 @@
 
 <!-- 토스트 알림 -->
 <div class="toast" id="toastEl"></div>
+
+<!-- 카테고리 관리 모달 -->
+<div class="cat-mgmt-overlay hidden" id="catMgmtOverlay">
+  <div class="cat-mgmt-modal">
+    <div class="cat-mgmt-header">
+      <span class="cat-mgmt-title">🗂 상담 카테고리 · 템플릿 관리</span>
+      <button class="cat-icon-btn" id="catMgmtCloseBtn" style="width:30px;height:30px;border-radius:50%;">✕</button>
+    </div>
+    <div class="cat-mgmt-body">
+
+      <!-- 좌: 카테고리 목록 -->
+      <div class="cat-mgmt-left">
+        <div class="cat-mgmt-left-head">
+          <span>카테고리</span>
+          <button class="soft-btn" id="addCatBtn" style="padding:5px 10px;border-radius:8px;font-size:12px;">+ 추가</button>
+        </div>
+        <div class="cat-list-mgmt" id="catListMgmt"></div>
+      </div>
+
+      <!-- 우: 템플릿 목록 -->
+      <div class="cat-mgmt-right">
+        <div class="cat-mgmt-right-head">
+          <span id="catMgmtRightTitle">카테고리를 선택하세요</span>
+          <button class="soft-btn hidden" id="addTmplBtn" style="padding:5px 10px;border-radius:8px;font-size:12px;">+ 템플릿 추가</button>
+        </div>
+        <div class="tmpl-list-mgmt" id="tmplListMgmt">
+          <div class="no-cat-selected">← 카테고리를 선택하세요</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- 상담 시작 팝업 -->
 <div class="consult-popup-overlay hidden" id="consultPopupOverlay">
@@ -1578,17 +1684,39 @@ const CanvasState = {
   lastLw: 2,        // pressure 보간용 현재 굵기
 };
 
+function getBgCtx() {
+  const canvas = document.getElementById('bgCanvas');
+  return canvas ? { canvas, ctx: canvas.getContext('2d') } : null;
+}
+
 function initCanvas() {
   const canvas = document.getElementById('mainCanvas');
-  if (!canvas) return;
-  const wrap = canvas.parentElement;
-  const w = Math.min(wrap.offsetWidth - 32, 900);
-  const h = Math.min(wrap.offsetHeight - 32, 600);
-  canvas.width = w > 0 ? w : 700;
-  canvas.height = h > 0 ? h : 480;
+  const bgCanvas = document.getElementById('bgCanvas');
+  if (!canvas || !bgCanvas) return;
+  const wrap = canvas.parentElement; // .canvas-container
+  const outerWrap = wrap.parentElement; // .canvas-wrap
+  const w = Math.min(outerWrap.offsetWidth - 32, 900);
+  const h = Math.min(outerWrap.offsetHeight - 32, 600);
+  const cw = w > 0 ? w : 700;
+  const ch = h > 0 ? h : 480;
+
+  // 두 캔버스 동일 크기
+  canvas.width = bgCanvas.width = cw;
+  canvas.height = bgCanvas.height = ch;
+
+  // 컨테이너 크기 명시
+  wrap.style.width = cw + 'px';
+  wrap.style.height = ch + 'px';
+
+  // 배경 캔버스: 흰색
+  const bgCtx = bgCanvas.getContext('2d');
+  bgCtx.fillStyle = '#fff';
+  bgCtx.fillRect(0, 0, cw, ch);
+
+  // 드로잉 캔버스: 투명
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, cw, ch);
+
   saveCanvasHistory(canvas);
   renderCanvasTmplList();
 }
@@ -1613,53 +1741,82 @@ function undoCanvas() {
 }
 
 function clearCanvas() {
+  // 드로잉 레이어만 지움 (배경 이미지 유지)
   const r = getCanvasCtx();
   if (!r) return;
-  r.ctx.fillStyle = '#fff';
-  r.ctx.fillRect(0, 0, r.canvas.width, r.canvas.height);
+  r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
   saveCanvasHistory(r.canvas);
 }
 
 function drawTemplateOnCanvas(tmplData) {
+  // 배경 레이어에 템플릿 그리기
+  const bg = getBgCtx();
   const r = getCanvasCtx();
-  if (!r) return;
-  const { canvas, ctx } = r;
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (!bg || !r) return;
 
-  if (!tmplData || tmplData.type === 'blank') { saveCanvasHistory(canvas); return; }
+  // 배경 초기화 (흰색)
+  bg.ctx.fillStyle = '#fff';
+  bg.ctx.fillRect(0, 0, bg.canvas.width, bg.canvas.height);
 
-  const cx = canvas.width / 2, cy = canvas.height / 2;
-  ctx.save();
-  ctx.globalAlpha = 0.15;
-  ctx.strokeStyle = '#246bff';
-  ctx.fillStyle = '#eaf1ff';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([]);
+  // 드로잉 레이어 초기화
+  r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
+
+  if (!tmplData || tmplData.type === 'blank') { saveCanvasHistory(r.canvas); return; }
+
+  const cx = bg.canvas.width / 2, cy = bg.canvas.height / 2;
+  bg.ctx.save();
+  bg.ctx.globalAlpha = 0.15;
+  bg.ctx.strokeStyle = '#246bff';
+  bg.ctx.fillStyle = '#eaf1ff';
+  bg.ctx.lineWidth = 1.5;
+  bg.ctx.setLineDash([]);
 
   if (tmplData.type === 'implant') {
-    ctx.beginPath(); ctx.ellipse(cx, cy-80, 55, 35, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.fillRect(cx-22, cy-45, 44, 30); ctx.strokeRect(cx-22, cy-45, 44, 30);
-    ctx.beginPath(); ctx.roundRect(cx-10, cy-18, 20, 80, 6); ctx.fill(); ctx.stroke();
-    ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx-80,cy+62); ctx.lineTo(cx+80,cy+62); ctx.stroke();
-    ctx.globalAlpha = 0.25; ctx.setLineDash([]);
-    ctx.fillStyle = '#9aabbc'; ctx.font = '11px Arial'; ctx.textAlign = 'center';
-    ctx.globalAlpha = 0.4;
-    ctx.fillText('크라운', cx, cy-75);
-    ctx.fillText('어버트먼트', cx, cy-20);
-    ctx.fillText('픽스처', cx, cy+40);
-    ctx.fillText('치조골', cx, cy+80);
+    bg.ctx.beginPath(); bg.ctx.ellipse(cx, cy-80, 55, 35, 0, 0, Math.PI*2); bg.ctx.fill(); bg.ctx.stroke();
+    bg.ctx.fillRect(cx-22, cy-45, 44, 30); bg.ctx.strokeRect(cx-22, cy-45, 44, 30);
+    bg.ctx.beginPath(); bg.ctx.roundRect(cx-10, cy-18, 20, 80, 6); bg.ctx.fill(); bg.ctx.stroke();
+    bg.ctx.setLineDash([5,4]); bg.ctx.beginPath(); bg.ctx.moveTo(cx-80,cy+62); bg.ctx.lineTo(cx+80,cy+62); bg.ctx.stroke();
+    bg.ctx.globalAlpha = 0.4; bg.ctx.setLineDash([]);
+    bg.ctx.fillStyle = '#9aabbc'; bg.ctx.font = '11px Arial'; bg.ctx.textAlign = 'center';
+    bg.ctx.fillText('크라운', cx, cy-75);
+    bg.ctx.fillText('어버트먼트', cx, cy-20);
+    bg.ctx.fillText('픽스처', cx, cy+40);
+    bg.ctx.fillText('치조골', cx, cy+80);
   } else if (tmplData.type === 'teeth_row') {
     const toothW = 36, gap = 6, count = 8;
     const startX = cx - (toothW + gap) * count / 2;
     for (let i = 0; i < count; i++) {
       const tx = startX + i * (toothW + gap);
-      ctx.beginPath(); ctx.roundRect(tx, cy - 40, toothW, 70, 5); ctx.fill(); ctx.stroke();
+      bg.ctx.beginPath(); bg.ctx.roundRect(tx, cy - 40, toothW, 70, 5); bg.ctx.fill(); bg.ctx.stroke();
     }
   }
+  bg.ctx.restore();
+  saveCanvasHistory(r.canvas);
+}
 
-  ctx.restore();
-  saveCanvasHistory(canvas);
+function drawImageTemplateOnCanvas(url) {
+  const bg = getBgCtx();
+  const r = getCanvasCtx();
+  if (!bg || !r) return;
+
+  // 배경 흰색 초기화
+  bg.ctx.fillStyle = '#fff';
+  bg.ctx.fillRect(0, 0, bg.canvas.width, bg.canvas.height);
+
+  // 드로잉 레이어 초기화
+  r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    bg.ctx.save();
+    bg.ctx.globalAlpha = 0.15;
+    bg.ctx.drawImage(img, 0, 0, bg.canvas.width, bg.canvas.height);
+    bg.ctx.restore();
+    saveCanvasHistory(r.canvas);
+  };
+  img.onerror = () => saveCanvasHistory(r.canvas);
+  img.src = url;
 }
 
 const CANVAS_TEMPLATES = {
@@ -1715,7 +1872,7 @@ function bindCanvasEvents() {
       CanvasState.penPts = [{ x, y, t: Date.now() }];
       CanvasState.lastLw = CanvasState.lw;
     } else if (CanvasState.tool === 'eraser') {
-      ctx.beginPath(); ctx.moveTo(x, y);
+      CanvasState.penPts = [{ x, y, t: Date.now() }]; // 경로 추적용
     } else if (CanvasState.tool === 'text') {
       const text = prompt('텍스트 입력:');
       if (text) {
@@ -1770,10 +1927,21 @@ function bindCanvasEvents() {
       ctx.stroke();
 
     } else if (CanvasState.tool === 'eraser') {
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 20 + CanvasState.lw * 3;
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      ctx.lineTo(x, y); ctx.stroke();
+      // 이전 포인트와 현재 포인트 사이를 clearRect로 지움 → 배경 완전 보존
+      CanvasState.penPts.push({ x, y, t: Date.now() });
+      const pts = CanvasState.penPts;
+      const eraserSize = 16 + CanvasState.lw * 4;
+      const half = eraserSize / 2;
+      // 두 점 사이 경로를 따라 clearRect 반복 (끊김 없이)
+      if (pts.length >= 2) {
+        const prev = pts[pts.length - 2];
+        const steps = Math.max(1, Math.ceil(Math.hypot(x - prev.x, y - prev.y) / (half / 2)));
+        for (let i = 0; i <= steps; i++) {
+          const tx = prev.x + (x - prev.x) * (i / steps);
+          const ty = prev.y + (y - prev.y) * (i / steps);
+          ctx.clearRect(tx - half, ty - half, eraserSize, eraserSize);
+        }
+      }
 
     } else {
       // 도형/화살표: snapshot으로 되돌리고 다시 그리기
@@ -1866,9 +2034,10 @@ function bindCanvasEvents() {
 
   // 저장
   document.getElementById('canvasSaveBtn').addEventListener('click', () => {
+    const merged = getMergedCanvas();
     const link = document.createElement('a');
     link.download = `상담_${new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','')}_.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = merged.toDataURL('image/png');
     link.click();
     showToast('캔버스가 저장됐습니다.', 'success');
   });
@@ -1877,9 +2046,20 @@ function bindCanvasEvents() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    캔버스 상단 STT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MediaRecorder (오디오 녹음 → 기기 저장)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+// 두 레이어를 합성한 최종 캔버스 반환
+function getMergedCanvas() {
+  const bg = document.getElementById('bgCanvas');
+  const fg = document.getElementById('mainCanvas');
+  if (!bg || !fg) return fg;
+  const merged = document.createElement('canvas');
+  merged.width = fg.width; merged.height = fg.height;
+  const ctx = merged.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, merged.width, merged.height);
+  ctx.drawImage(bg, 0, 0);
+  ctx.drawImage(fg, 0, 0);
+  return merged;
+}
 const RecordState = {
   mediaRecorder: null,
   chunks: [],
@@ -1925,14 +2105,16 @@ function stopMediaRecorderAndDownload(patientName) {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function uploadCanvasImage() {
   if (!AppState.connected || !AppState.currentUser) return null;
-  const canvas = document.getElementById('mainCanvas');
+  const canvas = getMergedCanvas();
   if (!canvas) return null;
   try {
-    // 캔버스가 비어있는지 확인 (흰 배경만 있으면 저장 생략)
-    const ctx = canvas.getContext('2d');
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    const isEmpty = Array.from(data).every((v, i) => i % 4 === 3 ? true : v === 255);
-    if (isEmpty) return null;  // 빈 캔버스면 업로드 생략
+    // 빈 캔버스 체크 (드로잉 레이어 기준)
+    const fg = document.getElementById('mainCanvas');
+    if (fg) {
+      const data = fg.getContext('2d').getImageData(0, 0, fg.width, fg.height).data;
+      const hasDrawing = Array.from(data).some((v, i) => i % 4 === 3 && v > 0);
+      if (!hasDrawing) return null;
+    }
 
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
     if (!blob || blob.size < 1000) return null;  // 너무 작으면 생략
@@ -2006,6 +2188,352 @@ async function saveConsultOnEnd() {
   } else {
     await saveRecord(null);
   }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   카테고리 · 템플릿 관리
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const CatMgmtState = {
+  categories: [],      // DB에서 로드한 카테고리
+  templates: {},       // { category_id: [...templates] }
+  selectedCatId: null,
+};
+
+// ── 모달 열기/닫기 ──
+async function openCatMgmt() {
+  document.getElementById('catMgmtOverlay').classList.remove('hidden');
+  await loadCatMgmt();
+}
+function closeCatMgmt() {
+  document.getElementById('catMgmtOverlay').classList.add('hidden');
+  // 캔버스 카테고리도 갱신
+  loadCanvasCategories();
+}
+
+// ── DB에서 카테고리 + 템플릿 로드 ──
+async function loadCatMgmt() {
+  if (!AppState.connected) return;
+  const { data: cats } = await AppState.supabase
+    .from('canvas_categories')
+    .select('*')
+    .eq('user_id', AppState.currentUser.id)
+    .eq('is_active', true)
+    .order('display_order');
+  CatMgmtState.categories = cats || [];
+  renderCatListMgmt();
+  if (CatMgmtState.selectedCatId) loadTmplMgmt(CatMgmtState.selectedCatId);
+}
+
+// ── 카테고리 목록 렌더 ──
+function renderCatListMgmt() {
+  const list = document.getElementById('catListMgmt');
+  const cats = CatMgmtState.categories;
+  if (!cats.length) {
+    list.innerHTML = `<div style="padding:16px;font-size:13px;color:var(--sub);text-align:center;">카테고리가 없습니다.<br>+ 추가 버튼을 눌러주세요.</div>`;
+    return;
+  }
+  list.innerHTML = cats.map(c => `
+    <div class="cat-item-mgmt${c.id === CatMgmtState.selectedCatId ? ' active' : ''}" data-id="${c.id}">
+      <span class="cat-item-mgmt-name">${c.name}</span>
+      <div class="cat-item-mgmt-actions">
+        <button class="cat-icon-btn" data-action="rename" data-id="${c.id}" data-name="${c.name}" title="이름 변경">✏️</button>
+        <button class="cat-icon-btn del" data-action="delete-cat" data-id="${c.id}" data-name="${c.name}" title="삭제">🗑</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.cat-item-mgmt').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-action]')) return;
+      CatMgmtState.selectedCatId = el.dataset.id;
+      renderCatListMgmt();
+      loadTmplMgmt(el.dataset.id);
+    });
+  });
+  list.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); handleCatAction(btn); });
+  });
+}
+
+async function handleCatAction(btn) {
+  const action = btn.dataset.action;
+  if (action === 'rename') {
+    const newName = prompt('카테고리 이름 변경:', btn.dataset.name);
+    if (!newName?.trim() || newName.trim() === btn.dataset.name) return;
+    await AppState.supabase.from('canvas_categories')
+      .update({ name: newName.trim() }).eq('id', btn.dataset.id);
+    showToast('카테고리 이름이 변경됐습니다.', 'success');
+    await loadCatMgmt();
+  } else if (action === 'delete-cat') {
+    if (!confirm(`"${btn.dataset.name}" 카테고리와 모든 템플릿을 삭제할까요?`)) return;
+    await AppState.supabase.from('canvas_categories').update({ is_active: false }).eq('id', btn.dataset.id);
+    if (CatMgmtState.selectedCatId === btn.dataset.id) CatMgmtState.selectedCatId = null;
+    showToast('카테고리가 삭제됐습니다.', 'success');
+    await loadCatMgmt();
+  }
+}
+
+// ── 카테고리 추가 ──
+async function addCategory() {
+  const name = prompt('새 카테고리 이름을 입력하세요:');
+  if (!name?.trim()) return;
+  const order = CatMgmtState.categories.length;
+  const { data, error } = await AppState.supabase.from('canvas_categories')
+    .insert({ user_id: AppState.currentUser.id, name: name.trim(), display_order: order })
+    .select().single();
+  if (error) { showToast('추가 실패: ' + error.message, 'warn'); return; }
+  showToast('카테고리가 추가됐습니다.', 'success');
+  CatMgmtState.selectedCatId = data.id;
+  await loadCatMgmt();
+  loadTmplMgmt(data.id);
+}
+
+// ── 템플릿 목록 로드 ──
+async function loadTmplMgmt(catId) {
+  const cat = CatMgmtState.categories.find(c => c.id === catId);
+  document.getElementById('catMgmtRightTitle').textContent = cat ? `📋 ${cat.name} 템플릿` : '';
+  document.getElementById('addTmplBtn').classList.remove('hidden');
+
+  const { data: tmpls } = await AppState.supabase
+    .from('canvas_templates')
+    .select('*')
+    .eq('category_id', catId)
+    .eq('is_active', true)
+    .order('display_order');
+  CatMgmtState.templates[catId] = tmpls || [];
+  renderTmplListMgmt(catId);
+}
+
+// ── 템플릿 목록 렌더 ──
+function renderTmplListMgmt(catId) {
+  const list = document.getElementById('tmplListMgmt');
+  const tmpls = CatMgmtState.templates[catId] || [];
+
+  const cards = tmpls.map(t => `
+    <div class="tmpl-item-mgmt" data-id="${t.id}">
+      <div class="tmpl-img-wrap" data-id="${t.id}">
+        ${t.image_url
+          ? `<img src="${t.image_url}" alt="${t.name}" />`
+          : `<div class="tmpl-img-empty">📄<br>이미지 없음</div>`}
+        <div class="tmpl-img-overlay">📷 이미지 변경</div>
+        <input type="file" accept="image/*" style="display:none;" class="tmpl-img-file" data-id="${t.id}" />
+      </div>
+      <div class="tmpl-item-foot">
+        <input class="tmpl-item-name-input" value="${t.name}" data-id="${t.id}" placeholder="템플릿 이름" />
+        <button class="cat-icon-btn del" data-action="delete-tmpl" data-id="${t.id}" title="삭제">🗑</button>
+      </div>
+    </div>
+  `).join('');
+
+  const addCard = `
+    <div class="tmpl-add-card" id="tmplAddCard">
+      <span style="font-size:24px;">+</span>
+      <span style="font-size:12px;font-weight:800;">템플릿 추가</span>
+    </div>
+  `;
+
+  list.innerHTML = cards + addCard;
+
+  // 이미지 클릭 → 파일 선택
+  list.querySelectorAll('.tmpl-img-wrap').forEach(wrap => {
+    const fileInput = wrap.querySelector('.tmpl-img-file');
+    wrap.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => uploadTmplImage(e.target.files[0], wrap.dataset.id, catId));
+  });
+
+  // 이름 변경 (blur 저장)
+  list.querySelectorAll('.tmpl-item-name-input').forEach(input => {
+    input.addEventListener('blur', async () => {
+      const name = input.value.trim();
+      if (!name) return;
+      await AppState.supabase.from('canvas_templates').update({ name }).eq('id', input.dataset.id);
+      showToast('이름이 저장됐습니다.', 'success');
+    });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+  });
+
+  // 삭제
+  list.querySelectorAll('[data-action="delete-tmpl"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('템플릿을 삭제할까요?')) return;
+      await AppState.supabase.from('canvas_templates').update({ is_active: false }).eq('id', btn.dataset.id);
+      showToast('삭제됐습니다.', 'success');
+      await loadTmplMgmt(catId);
+    });
+  });
+
+  // 추가 카드
+  document.getElementById('tmplAddCard')?.addEventListener('click', () => addTemplate(catId));
+}
+
+// ── 템플릿 추가 ──
+async function addTemplate(catId) {
+  const name = prompt('템플릿 이름을 입력하세요:', '새 템플릿');
+  if (!name?.trim()) return;
+  const order = (CatMgmtState.templates[catId] || []).length;
+  const { error } = await AppState.supabase.from('canvas_templates')
+    .insert({ user_id: AppState.currentUser.id, category_id: catId, name: name.trim(), display_order: order });
+  if (error) { showToast('추가 실패: ' + error.message, 'warn'); return; }
+  showToast('템플릿이 추가됐습니다.', 'success');
+  await loadTmplMgmt(catId);
+}
+
+// ── 템플릿 이미지 업로드 ──
+async function uploadTmplImage(file, tmplId, catId) {
+  if (!file) return;
+  showToast('이미지 업로드 중...', '');
+  try {
+    const ext = file.name.split('.').pop();
+    const path = `${AppState.currentUser.id}/tmpl_${tmplId}.${ext}`;
+    const { error: upErr } = await AppState.supabase.storage
+      .from('dental-templates')
+      .upload(path, file, { contentType: file.type, upsert: true });
+    if (upErr) throw upErr;
+    const { data: urlData } = AppState.supabase.storage.from('dental-templates').getPublicUrl(path);
+    const imageUrl = urlData?.publicUrl;
+    await AppState.supabase.from('canvas_templates').update({ image_url: imageUrl }).eq('id', tmplId);
+    showToast('이미지가 업로드됐습니다.', 'success');
+    await loadTmplMgmt(catId);
+  } catch(e) { showToast('업로드 실패: ' + e.message, 'warn'); }
+}
+
+// ── 캔버스 카테고리 로드 (DB → 사이드바 갱신) ──
+async function loadCanvasCategories() {
+  if (!AppState.connected) return;
+  const { data: cats } = await AppState.supabase
+    .from('canvas_categories')
+    .select('*, canvas_templates(*)')
+    .eq('user_id', AppState.currentUser.id)
+    .eq('is_active', true)
+    .order('display_order');
+
+  if (!cats || !cats.length) {
+    // DB에 없으면 기본 카테고리 사용 (기존 하드코딩)
+    renderCanvasTmplList();
+    return;
+  }
+
+  // 사이드바 카테고리 버튼 갱신
+  const catListEl = document.getElementById('canvasCatList');
+  catListEl.innerHTML = cats.map((c, i) => `
+    <button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat-id="${c.id}" data-cat="${c.name}">${c.name}</button>
+  `).join('');
+
+  // 카테고리 클릭 이벤트 재바인딩
+  catListEl.querySelectorAll('.canvas-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      catListEl.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      CanvasState.currentCat = btn.dataset.cat;
+      CanvasState.currentTmpl = 0;
+      renderCanvasTmplListFromDB(cats.find(c => c.id === btn.dataset.catId));
+    });
+  });
+
+  // 첫 번째 카테고리 템플릿 로드
+  if (cats.length) renderCanvasTmplListFromDB(cats[0]);
+}
+
+// ── DB 템플릿으로 캔버스 사이드바 렌더 ──
+function renderCanvasTmplListFromDB(cat) {
+  const list = document.getElementById('canvasTmplList');
+  if (!cat) return;
+  const tmpls = (cat.canvas_templates || []).filter(t => t.is_active).sort((a,b) => a.display_order - b.display_order);
+  const allTmpls = [
+    ...tmpls,
+    { id: 'blank', name: '빈 노트', image_url: null } // 항상 빈 노트 추가
+  ];
+  list.innerHTML = allTmpls.map((t, i) => `
+    <div class="canvas-tmpl${i === 0 ? ' active' : ''}" data-idx="${i}" data-img="${t.image_url || ''}">
+      <div class="canvas-tmpl-name">${t.name}</div>
+      <div class="canvas-tmpl-sub">${t.image_url ? '이미지 템플릿' : '자유 드로잉'}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.canvas-tmpl').forEach(el => {
+    el.addEventListener('click', () => {
+      list.querySelectorAll('.canvas-tmpl').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      const imgUrl = el.dataset.img;
+      if (imgUrl) drawImageTemplateOnCanvas(imgUrl);
+      else drawTemplateOnCanvas({ type: 'blank' });
+    });
+  });
+  // 첫 번째 자동 적용
+  if (allTmpls[0]?.image_url) drawImageTemplateOnCanvas(allTmpls[0].image_url);
+  else drawTemplateOnCanvas({ type: 'blank' });
+}
+
+// ── 이미지 URL을 캔버스 배경으로 적용 ──
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   테마 시스템 (캔버스 영역 제외)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const THEMES = {
+  A: {
+    name: '클리니컬 화이트',
+    vars: {
+      '--bg':           '#f8f9fb',
+      '--panel':        '#ffffff',
+      '--line':         '#e8eaf0',
+      '--text':         '#1a1a2e',
+      '--sub':          '#8492a6',
+      '--primary':      '#2563eb',
+      '--primary-soft': '#eff6ff',
+      '--dark':         '#1a1a2e',
+      '--success':      '#059669',
+      '--warn':         '#d97706',
+      '--shadow':       '0 12px 28px rgba(26,26,46,.07)',
+    }
+  },
+  C: {
+    name: '슬레이트 골드',
+    vars: {
+      '--bg':           '#f7f6f3',
+      '--panel':        '#ffffff',
+      '--line':         '#e8e4da',
+      '--text':         '#1e1b16',
+      '--sub':          '#78716c',
+      '--primary':      '#92400e',
+      '--primary-soft': '#fef3c7',
+      '--dark':         '#292524',
+      '--success':      '#065f46',
+      '--warn':         '#b45309',
+      '--shadow':       '0 12px 28px rgba(30,27,22,.07)',
+    }
+  },
+  G: {
+    name: '모닝 스카이',
+    vars: {
+      '--bg':           '#f0f7ff',
+      '--panel':        '#ffffff',
+      '--line':         '#c8dff7',
+      '--text':         '#0f2d52',
+      '--sub':          '#5a8fc2',
+      '--primary':      '#1e6ab8',
+      '--primary-soft': '#dbeeff',
+      '--dark':         '#0f2d52',
+      '--success':      '#065f46',
+      '--warn':         '#b45309',
+      '--shadow':       '0 12px 28px rgba(15,45,82,.07)',
+    }
+  },
+};
+
+function applyTheme(themeId) {
+  const theme = THEMES[themeId];
+  if (!theme) return;
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  // localStorage에 저장
+  localStorage.setItem('ddTheme', themeId);
+  // 선택 표시 업데이트
+  document.querySelectorAll('.theme-swatch').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === themeId);
+  });
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem('ddTheme') || 'G';
+  applyTheme(saved);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2679,7 +3207,7 @@ async function showMainApp(user) {
   await loadPatients();
   await loadTodayConsultCount();
   resetPatientForm();
-  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); renderCostScreen(); }, 100);
+  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); renderCostScreen(); loadCanvasCategories(); }, 100);
 }
 
 async function loadUserProfile() {
@@ -2705,9 +3233,20 @@ async function loadUserProfile() {
 async function handleLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pw = document.getElementById('loginPassword').value;
-  const msg = document.getElementById('authMsg');
   if (!email || !pw) { setAuthMsg('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
   setAuthMsg('로그인 중...', '');
+
+  // Supabase 연결 안 되어 있으면 먼저 연결 시도
+  if (!AppState.supabase) {
+    try {
+      AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      AppState.connected = true;
+    } catch(e) {
+      setAuthMsg('서버 연결 실패. 새로고침 해주세요.', 'error');
+      return;
+    }
+  }
+
   try {
     const { data, error } = await AppState.supabase.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
@@ -2722,10 +3261,20 @@ async function handleSignup() {
   if (!email || !pw) { setAuthMsg('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
   if (pw.length < 6) { setAuthMsg('비밀번호는 6자 이상이어야 합니다.', 'error'); return; }
   setAuthMsg('가입 중...', '');
+
+  if (!AppState.supabase) {
+    try {
+      AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      AppState.connected = true;
+    } catch(e) {
+      setAuthMsg('서버 연결 실패. 새로고침 해주세요.', 'error');
+      return;
+    }
+  }
+
   try {
     const { data, error } = await AppState.supabase.auth.signUp({ email, password: pw });
     if (error) throw error;
-    // 치과명 업데이트
     if (clinic && data.user) {
       await AppState.supabase.from('user_profiles').update({ clinic_name: clinic }).eq('id', data.user.id);
     }
@@ -2812,7 +3361,6 @@ async function connectSupabase() {
     AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     AppState.connected = true;
 
-    // 기존 세션 확인 (새로고침 시 자동 로그인)
     const { data: { session } } = await AppState.supabase.auth.getSession();
     if (session?.user) {
       await showMainApp(session.user);
@@ -2820,7 +3368,6 @@ async function connectSupabase() {
       showAuthScreen();
     }
 
-    // 세션 변경 감지
     AppState.supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         await showMainApp(session.user);
@@ -2828,7 +3375,11 @@ async function connectSupabase() {
         showAuthScreen();
       }
     });
-  } catch(e) { AppState.connected = false; console.error('Supabase 연결 실패:', e.message); }
+  } catch(e) {
+    AppState.connected = false;
+    console.error('Supabase 연결 실패:', e.message);
+    setAuthMsg('서버 연결에 실패했습니다. 새로고침 해주세요.', 'error');
+  }
 }
 
 async function loadPatients() {
@@ -3365,6 +3916,18 @@ function bindEvents() {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
   });
 
+  // ── 카테고리 관리 ──
+  document.getElementById('openCatMgmtBtn').addEventListener('click', () => { closeSettingModal(); openCatMgmt(); });
+  document.getElementById('catMgmtCloseBtn').addEventListener('click', closeCatMgmt);
+  document.getElementById('catMgmtOverlay').addEventListener('click', e => { if (e.target === document.getElementById('catMgmtOverlay')) closeCatMgmt(); });
+  document.getElementById('addCatBtn').addEventListener('click', addCategory);
+  document.getElementById('addTmplBtn').addEventListener('click', () => { if (CatMgmtState.selectedCatId) addTemplate(CatMgmtState.selectedCatId); });
+
+  // ── 테마 선택 ──
+  document.querySelectorAll('.theme-swatch').forEach(el => {
+    el.addEventListener('click', () => applyTheme(el.dataset.theme));
+  });
+
   // ── 네비게이션 탭 ──
   document.querySelectorAll('.nav-tab').forEach(btn =>
     btn.addEventListener('click', () => switchScreen(btn.dataset.screen)));
@@ -3485,11 +4048,12 @@ function bindEvents() {
   document.getElementById('sttRawInput').addEventListener('input', e=>{ AppState.sttRaw=e.target.value; AppState.sttRawFinal=e.target.value; });
 }
 
+loadSavedTheme();
 bindEvents();
 document.getElementById('authScreen').style.display = 'flex';
 document.getElementById('mainApp').style.display = 'none';
 renderPatientCount(); renderPatientList(); renderSelectedPatient();
-renderSttState(); renderEstimateTable(); setConsultTab('estimate');
+renderSttState(); renderEstimateTable(); setConsultTab('history');
 connectSupabase();
 </script>
 </body>
