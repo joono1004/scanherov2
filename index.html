@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>똑똑치과상담실장</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -200,8 +200,8 @@
 
     .birth-display { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 9px 10px; background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-size: 13px; }
     .birth-display.empty { color: #9aabbc; }
-    .birth-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
-    .birth-modal { background: #fff; border-radius: 24px 24px 0 0; padding: 20px; width: 100%; max-width: 400px; }
+    .birth-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 700; display: flex; align-items: center; justify-content: center; }
+    .birth-modal { background: #fff; border-radius: 20px; padding: 20px; width: 100%; max-width: 360px; }
     .birth-modal-title { text-align: center; font-weight: 900; font-size: 16px; margin-bottom: 16px; }
     .drum-wrap { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
     .drum-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
@@ -246,7 +246,7 @@
     .api-key-status.set { background: #f0fdf4; color: var(--success); border: 1px solid #a7f3d0; }
     .api-key-status.unset { background: #fff7ed; color: var(--warn); border: 1px solid #fed7aa; }
 
-    .sns-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
+    .sns-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 700; display: flex; align-items: center; justify-content: center; }
     .sns-modal { background: #fff; border-radius: 22px; padding: 22px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,.15); }
     .sns-modal-title { font-weight: 900; font-size: 17px; margin-bottom: 16px; }
     .sns-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
@@ -368,17 +368,33 @@
     .canvas-wrap canvas { display: block; cursor: crosshair; }
     #bgCanvas  { position: absolute; top: 0; left: 0; background: #ffffff; pointer-events: none; }
     #mainCanvas { position: relative; background: transparent; }
-    .canvas-bottombar { background: #fff; border-top: 1px solid var(--line); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-
-    .canvas-toolbar { background: #fff; border-left: 1px solid var(--line); padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; flex-shrink: 0; }
-    .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; }
+    .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; flex-shrink: 0; }
     .tool-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
-    .tool-btn:hover:not(.active) { background: #f4f7fb; }
-    .tool-sep { width: 22px; height: 1px; background: var(--line); margin: 3px 0; }
-    .color-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: .15s; }
-    .color-swatch.active { border-color: var(--primary); transform: scale(1.15); }
-    .lw-btn { width: 32px; height: 22px; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .15s; }
+    .tool-btn:hover:not(.active) { background: var(--bg); }
+    .tool-sep { width: 22px; height: 1px; background: var(--line); margin: 2px 0; flex-shrink: 0; }
+    .color-swatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: .15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .color-swatch::after { content: ''; width: 18px; height: 18px; border-radius: 50%; display: block; }
+    .color-swatch[data-color="#122236"]::after { background: #122236; }
+    .color-swatch[data-color="#dc2626"]::after { background: #dc2626; }
+    .color-swatch[data-color="#246bff"]::after { background: #246bff; }
+    .color-swatch[data-color="#12995a"]::after { background: #12995a; }
+    .color-swatch[data-color="#c97a00"]::after { background: #c97a00; }
+    .color-swatch.active { border-color: var(--primary); background: var(--primary-soft); }
+    .lw-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .15s; flex-shrink: 0; }
     .lw-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
+
+    /* 배경 투명도 툴팁 */
+    .opacity-btn-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 32px; flex-shrink: 0; }
+    .opacity-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .15s; flex-shrink: 0; }
+    .opacity-btn.active { background: var(--primary-soft); border-color: var(--primary); }
+    .opacity-tooltip { display: none; position: absolute; right: 42px; top: 50%; transform: translateY(-50%); background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; box-shadow: 0 4px 20px rgba(18,34,54,.12); z-index: 200; width: 160px; }
+    .opacity-tooltip.show { display: block; }
+    .opacity-tooltip-title { font-size: 11px; font-weight: 800; color: var(--sub); margin-bottom: 8px; white-space: nowrap; }
+    .opacity-value { font-size: 13px; font-weight: 900; color: var(--text); text-align: center; margin-bottom: 6px; }
+    .opacity-slider { width: 100%; accent-color: var(--primary); cursor: pointer; }
+    .opacity-presets { display: flex; gap: 4px; margin-top: 8px; }
+    .opacity-preset { flex: 1; padding: 4px 0; border-radius: 6px; border: 1px solid var(--line); background: #fff; font-size: 10px; font-weight: 800; color: var(--sub); cursor: pointer; text-align: center; transition: .15s; }
+    .opacity-preset:hover { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
 
     /* ── 의료진 패널 (슬라이드) ── */
     .mgmt-panel { position: fixed; top: 0; right: -820px; width: 820px; height: 100vh; background: var(--bg); box-shadow: -8px 0 32px rgba(18,34,54,.12); z-index: 250; transition: right .3s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; }
@@ -439,10 +455,72 @@
     /* ── 환자정보 화면 ── */
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
 
-    @media (max-width: 900px) {
-      .treat-body { grid-template-columns: 150px 1fr 40px; }
+    /* ── 카테고리 드롭다운 ── */
+    .cat-dropdown-wrap { position: relative; width: 100%; margin-bottom: 2px; }
+    .cat-dropdown-btn { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--dark); color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 4px; transition: .15s; }
+    .cat-dropdown-btn svg { flex-shrink: 0; opacity: .7; transition: transform .2s; }
+    .cat-dropdown-btn.open svg { transform: rotate(180deg); }
+    .cat-dropdown-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(18,34,54,.13); z-index: 100; padding: 4px; }
+    .cat-dropdown-list.hidden { display: none; }
+    #canvasCatList { display: flex; flex-direction: column; gap: 2px; }
+
+    /* ── 상담 시작 버튼 ── */
+
+    /* 기본: 데스크탑/태블릿 가로 (834px 이상) */
+    .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
+    .cost-screen-body { display: grid; grid-template-columns: 180px 1fr; flex: 1; overflow: hidden; min-height: 0; }
+    .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
+
+    /* 태블릿 세로 / 소형 태블릿 (834px 미만) */
+    @media (max-width: 834px) {
+      /* 네비게이션 */
+      .app-nav { padding: 0 10px; gap: 6px; height: 48px; }
+      .nav-brand-name { font-size: 13px; }
+      .nav-tab { padding: 5px 10px; font-size: 12px; }
+      .nav-pt-search { min-width: 120px; max-width: 150px; }
+
+      /* 치료 상담 - 사이드바 숨기고 하단 시트로 */
+      .treat-body { grid-template-columns: 0 1fr 40px; }
+      .canvas-sidebar { display: none; }
+      .canvas-toolbar { padding: 4px; gap: 3px; }
+      .tool-btn { width: 28px; height: 28px; font-size: 13px; }
+      .color-swatch { width: 18px; height: 18px; }
+      .lw-btn { width: 28px; height: 18px; }
+
+      /* 비용 상담 */
       .cost-screen-body { grid-template-columns: 1fr; }
-      .patient-screen-body { grid-template-columns: 1fr; }
+      .cost-sidebar { display: none; }
+      .cost-main { padding: 12px; }
+
+      /* 환자정보 */
+      .patient-screen-body { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
+
+      /* 모달 */
+      .pt-reg-modal { max-width: 95vw; }
+      .cat-mgmt-modal { max-width: 95vw; max-height: 92vh; }
+      .cat-mgmt-body { grid-template-columns: 180px 1fr; }
+    }
+
+    /* 소형 태블릿 세로 (768px 미만) */
+    @media (max-width: 768px) {
+      .nav-tabs { gap: 1px; }
+      .nav-tab { padding: 5px 8px; font-size: 11px; }
+      .patient-screen-body { padding: 8px; gap: 8px; }
+    }
+
+    /* 터치 최적화 */
+    @media (pointer: coarse) {
+      /* 터치 타겟 최소 44px */
+      .nav-tab { min-height: 36px; display: flex; align-items: center; }
+      .canvas-cat { min-height: 40px; font-size: 13px; }
+      .tool-btn { width: 36px; height: 36px; font-size: 15px; }
+      .color-swatch { width: 24px; height: 24px; }
+      .lw-btn { width: 36px; height: 24px; }
+      .canvas-btn { padding: 10px 16px; font-size: 14px; }
+      .drum-item { height: 48px; line-height: 48px; font-size: 17px; }
+      input, select, textarea { font-size: 16px; } /* iOS 자동 확대 방지 */
+      .patient-card { padding: 14px; }
+      .opacity-tooltip { right: 48px; }
     }
 
     /* ── 테마 선택 UI ── */
@@ -488,7 +566,28 @@
     .tmpl-add-card:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
     .no-cat-selected { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 14px; }
 
-    /* ── 상담 시작 버튼 (화면 내) ── */
+    /* ── 환자등록 팝업 ── */
+    .pt-reg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .pt-reg-modal { background: var(--panel); border-radius: var(--radius-xl); width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.18); }
+    .pt-reg-header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .pt-reg-title { font-size: 16px; font-weight: 900; }
+    .pt-reg-body { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .pt-reg-footer { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* 태블릿 세로: 캔버스 위 카테고리 바 */
+    .canvas-cat-bar { display: none; background: var(--panel); border-bottom: 1px solid var(--line); padding: 6px 10px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; gap: 6px; scrollbar-width: none; }
+    .canvas-cat-bar::-webkit-scrollbar { display: none; }
+    .canvas-cat-bar .canvas-cat { display: inline-flex; margin-right: 4px; }
+
+    @media (max-width: 834px) {
+      .canvas-cat-bar { display: flex; }
+    }
+
+    /* 캔버스 하단바 태블릿 */
+    @media (max-width: 834px) {
+    }
+
+    /* ━━━ 상담 시작 버튼 ━━━ */
     .start-consult-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; background: var(--dark); color: #fff; border: none; cursor: pointer; white-space: nowrap; }
     .start-consult-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .consult-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -664,18 +763,18 @@
       <span class="nav-pt-icon" id="navPtIcon">👤</span>
       <input id="navPtInput" placeholder="환자 검색" autocomplete="off" />
     </div>
+    <button id="openPtRegBtn" style="padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.15s;flex-shrink:0;">+ 환자등록</button>
 
     <!-- 탭 -->
     <div class="nav-tabs">
       <button class="nav-tab active" data-screen="treat">치료 상담</button>
       <button class="nav-tab" data-screen="cost">비용 상담</button>
-      <button class="nav-tab" data-screen="patient">상담 이력</button>
+      <button class="nav-tab" data-screen="patient">상담 내용</button>
     </div>
 
     <!-- 우측 -->
     <div class="nav-right">
       <button class="canvas-btn rec-start" id="sessionStartBtn" style="padding:6px 14px;border-radius:10px;font-size:13px;">🎙 상담 시작</button>
-      <div class="chip patient-count-chip" id="patientCountChip">환자 0명</div>
       <button class="ghost-btn" id="openSettingBtn" style="border-radius:10px;padding:6px 12px;">⚙️</button>
       <button id="navLogoutBtn" title="로그아웃" onclick="if(confirm('로그아웃 하시겠습니까?')) handleLogout();" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub);transition:.15s;flex-shrink:0;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -690,21 +789,32 @@
 
   <!-- ══ 화면 1: 치료 상담 (캔버스) ══ -->
   <div class="screen active" id="screen-treat">
+
+    <!-- 태블릿 세로용 카테고리 가로 바 -->
+    <div class="canvas-cat-bar" id="canvasCatBar">
+      <button class="canvas-cat active" data-cat="임플란트">임플란트</button>
+      <button class="canvas-cat" data-cat="크라운">크라운</button>
+      <button class="canvas-cat" data-cat="교정">교정</button>
+      <button class="canvas-cat" data-cat="신경치료">신경치료</button>
+      <button class="canvas-cat" data-cat="미백">미백</button>
+      <button class="canvas-cat" data-cat="틀니">틀니</button>
+    </div>
+
     <div class="treat-body">
 
-      <!-- 좌: 카테고리 + 템플릿 -->
+      <!-- 좌: 카테고리(드롭다운) + 템플릿 -->
       <div class="canvas-sidebar">
-        <span class="canvas-sidebar-label">치료 카테고리</span>
-        <div style="display:flex;flex-direction:column;gap:2px;" id="canvasCatList">
-          <button class="canvas-cat active" data-cat="임플란트">임플란트</button>
-          <button class="canvas-cat" data-cat="크라운">크라운</button>
-          <button class="canvas-cat" data-cat="교정">교정</button>
-          <button class="canvas-cat" data-cat="신경치료">신경치료</button>
-          <button class="canvas-cat" data-cat="미백">미백</button>
-          <button class="canvas-cat" data-cat="틀니">틀니</button>
+        <div class="cat-dropdown-wrap">
+          <button class="cat-dropdown-btn" id="catDropdownBtn">
+            <span id="catDropdownLabel">카테고리 선택</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="cat-dropdown-list hidden" id="catDropdownList">
+            <div id="canvasCatList"></div>
+          </div>
         </div>
-        <span class="canvas-sidebar-label" style="margin-top:14px;">설명 템플릿</span>
-        <div id="canvasTmplList"></div>
+        <span class="canvas-sidebar-label" style="margin-top:10px;">템플릿</span>
+        <div id="canvasTmplList"><div style="font-size:12px;color:var(--sub);padding:8px 4px;">카테고리를 선택해주세요.</div></div>
       </div>
 
       <!-- 중앙: 캔버스 -->
@@ -715,16 +825,17 @@
             <canvas id="mainCanvas"></canvas>
           </div>
         </div>
-        <div class="canvas-bottombar">
-          <div style="display:flex;gap:8px;">
-            <button class="canvas-btn" id="canvasSaveBtn">💾 저장</button>
-            <button class="canvas-btn" id="canvasClearBtn">🔄 초기화</button>
-          </div>
-        </div>
       </div>
 
       <!-- 우: 툴바 -->
       <div class="canvas-toolbar">
+
+        <!-- 저장 -->
+        <button class="tool-btn" id="canvasSaveBtn" title="저장">💾</button>
+
+        <div class="tool-sep"></div>
+
+        <!-- 도구 -->
         <button class="tool-btn active" data-tool="pen" title="펜">✏️</button>
         <button class="tool-btn" data-tool="line" title="직선">╱</button>
         <button class="tool-btn" data-tool="circle" title="원">○</button>
@@ -733,25 +844,84 @@
         <button class="tool-btn" data-tool="text" title="텍스트">T</button>
         <div class="tool-sep"></div>
         <button class="tool-btn" data-tool="eraser" title="지우개">🧹</button>
+
         <div class="tool-sep"></div>
-        <div class="color-swatch active" data-color="#122236" style="background:#122236;"></div>
-        <div class="color-swatch" data-color="#dc2626" style="background:#dc2626;"></div>
-        <div class="color-swatch" data-color="#246bff" style="background:#246bff;"></div>
-        <div class="color-swatch" data-color="#12995a" style="background:#12995a;"></div>
-        <div class="color-swatch" data-color="#c97a00" style="background:#c97a00;"></div>
+
+        <!-- 색상 -->
+        <div class="color-swatch active" data-color="#122236"></div>
+        <div class="color-swatch" data-color="#dc2626"></div>
+        <div class="color-swatch" data-color="#246bff"></div>
+        <div class="color-swatch" data-color="#12995a"></div>
+        <div class="color-swatch" data-color="#c97a00"></div>
+
         <div class="tool-sep"></div>
-        <button class="lw-btn active" data-lw="2" title="얇게"><div style="width:12px;height:1.5px;background:#122236;border-radius:1px;"></div></button>
-        <button class="lw-btn" data-lw="4" title="중간"><div style="width:12px;height:3px;background:#122236;border-radius:1px;"></div></button>
-        <button class="lw-btn" data-lw="8" title="굵게"><div style="width:12px;height:5px;background:#122236;border-radius:1px;"></div></button>
+
+        <!-- 선 굵기 (툴팁) -->
+        <div class="opacity-btn-wrap">
+          <button class="opacity-btn" id="lwTooltipBtn" title="선 굵기">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="opacity-tooltip" id="lwTooltip">
+            <div class="opacity-tooltip-title">선 굵기</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+              <button class="lw-btn active" data-lw="2" style="width:100%;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <div style="width:32px;height:1.5px;background:var(--text);border-radius:1px;"></div>
+                <span style="font-size:11px;color:var(--sub);">얇게</span>
+              </button>
+              <button class="lw-btn" data-lw="4" style="width:100%;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <div style="width:32px;height:3px;background:var(--text);border-radius:1px;"></div>
+                <span style="font-size:11px;color:var(--sub);">중간</span>
+              </button>
+              <button class="lw-btn" data-lw="8" style="width:100%;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <div style="width:32px;height:5px;background:var(--text);border-radius:1px;"></div>
+                <span style="font-size:11px;color:var(--sub);">굵게</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="tool-sep"></div>
+
+        <!-- 되돌리기 / 초기화 -->
         <button class="tool-btn" id="canvasUndoBtn" title="되돌리기">↩</button>
-        <button class="tool-btn" id="canvasTrashBtn" title="전체지우기">🗑</button>
+        <button class="tool-btn" id="canvasTrashBtn" title="전체 초기화">🔄</button>
+
+        <div class="tool-sep"></div>
+
+        <!-- 배경 투명도 -->
+        <div class="opacity-btn-wrap">
+          <button class="opacity-btn" id="opacityBtn" title="배경 투명도">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a10 10 0 0 1 0 20"/>
+            </svg>
+          </button>
+          <div class="opacity-tooltip" id="opacityTooltip">
+            <div class="opacity-tooltip-title">배경 이미지 투명도</div>
+            <div class="opacity-value" id="opacityValue">15%</div>
+            <input type="range" class="opacity-slider" id="opacitySlider" min="0" max="100" value="15" step="5" />
+            <div class="opacity-presets">
+              <button class="opacity-preset" data-opacity="0">숨김</button>
+              <button class="opacity-preset" data-opacity="15">가이드</button>
+              <button class="opacity-preset" data-opacity="100">선명</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
   <!-- ══ 화면 2: 비용 상담 ══ -->
   <div class="screen" id="screen-cost">
+
+    <!-- 태블릿 세로용 단가 카테고리 가로 바 -->
+    <div class="canvas-cat-bar" id="costCatBar" style="display:none;"></div>
+
     <div class="cost-screen-body">
 
       <!-- 좌: 단가표 카테고리 -->
@@ -1020,6 +1190,88 @@
   <div class="mgmt-panel" id="mgmtPanel" style="display:none;"></div>
 
 </div><!-- /#mainApp -->
+
+<!-- 환자등록 팝업 -->
+<div class="pt-reg-overlay hidden" id="ptRegOverlay">
+  <div class="pt-reg-modal">
+    <div class="pt-reg-header">
+      <span class="pt-reg-title" id="ptRegTitle">👤 환자 등록</span>
+      <button class="cat-icon-btn" id="ptRegCloseBtn" style="width:30px;height:30px;border-radius:50%;">✕</button>
+    </div>
+    <div class="pt-reg-body">
+
+      <div class="field">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1.2;display:flex;flex-direction:column;">
+            <label class="label">환자명 <span style="color:#e24b4a">*</span></label>
+            <input id="popPatientNameInput" placeholder="예: 김민수" />
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <label class="label">차트번호</label>
+            <input id="popPatientChartInput" placeholder="전자차트 연동" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <label class="label">휴대전화 <span style="color:#e24b4a">*</span></label>
+            <input id="popPatientMobileInput" placeholder="010-1234-5678" />
+          </div>
+          <div style="display:flex;flex-direction:column;flex-shrink:0;">
+            <label class="label" style="visibility:hidden;">x</label>
+            <button id="popSnsAddBtn" type="button" title="SNS 등록" style="width:44px;height:44px;border-radius:14px;border:1px solid #B8860B;background:#FEE500;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <svg width="26" height="24" viewBox="0 0 40 36" fill="none"><path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/></svg>
+            </button>
+          </div>
+          <div style="display:flex;flex-direction:column;flex-shrink:0;">
+            <label class="label">성별 <span style="color:#e24b4a">*</span></label>
+            <div style="display:flex;gap:4px;">
+              <button type="button" id="popGenderMaleBtn" data-gender="남" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:14px;cursor:pointer;">남</button>
+              <button type="button" id="popGenderFemaleBtn" data-gender="여" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:14px;cursor:pointer;">여</button>
+            </div>
+          </div>
+        </div>
+        <div id="popSnsPreviewArea" style="margin-top:6px;display:none;">
+          <div class="sns-preview" id="popSnsPreviewText"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <label class="label">생년월일</label>
+            <button class="birth-display empty" id="popBirthDisplayBtn" type="button">
+              <span id="popBirthDisplayText">생년월일 선택</span>
+              <span style="color:#9aabbc;font-size:16px;">📅</span>
+            </button>
+            <input type="hidden" id="popPatientBirthInput" />
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <label class="label">상담 상태</label>
+            <select id="popPatientStatusInput">
+              <option value="초기 상담">초기 상담</option>
+              <option value="고민 중">고민 중</option>
+              <option value="재내원 예정">재내원 예정</option>
+              <option value="당일 결정 가능">당일 결정 가능</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">메모</label>
+        <textarea id="popPatientMemoInput" placeholder="상담 전 참고사항, 특이사항 등" style="min-height:60px;"></textarea>
+      </div>
+
+    </div>
+    <div class="pt-reg-footer">
+      <button class="ghost-btn" id="ptRegCancelBtn" style="flex:1;border-radius:12px;">취소</button>
+      <button class="primary-btn" id="ptRegSaveBtn" style="flex:2;border-radius:12px;">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- 토스트 알림 -->
 <div class="toast" id="toastEl"></div>
@@ -1381,7 +1633,8 @@ async function loadTodayConsultCount() {
 
 /* ── 환자 수 ── */
 function renderPatientCount() {
-  document.getElementById('patientCountChip').textContent = `환자 ${AppState.patients.length}명`;
+  const el = document.getElementById('patientCountChip');
+  if (el) el.textContent = `환자 ${AppState.patients.length}명`;
 }
 
 /* ── 환자 목록 ── */
@@ -1545,11 +1798,24 @@ function setGender(val) {
 }
 
 /* ── 생년월일 드럼롤 ── */
+function updateBirthConfirmBtn() {
+  const btn = document.getElementById('birthConfirmBtn');
+  if (!btn) return;
+  const ok = AppState.birthYear && AppState.birthMonth && AppState.birthDay;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.35';
+}
+
 function buildDrumRoll() {
   const now = new Date();
-  const selY = AppState.birthYear || now.getFullYear()-30;
-  const selM = AppState.birthMonth || 1;
-  const selD = AppState.birthDay || 1;
+  const selY = AppState.birthYear || null;
+  const selM = AppState.birthMonth || null;
+  const selD = AppState.birthDay || null;
+
+  // 초기화 (이전 값 유지 안 함)
+  AppState.birthYear = selY;
+  AppState.birthMonth = selM;
+  AppState.birthDay = selD;
 
   const years = [], months = [], days = [];
   for(let y=now.getFullYear(); y>=1930; y--) years.push(y);
@@ -1560,8 +1826,10 @@ function buildDrumRoll() {
     el.innerHTML = '<div style="height:60px;"></div>' +
       items.map(v=>`<div class="drum-item${v===selected?' selected':''}" data-val="${v}">${v}${unit}</div>`).join('') +
       '<div style="height:60px;"></div>';
-    const idx = items.indexOf(selected);
-    if(idx>=0) setTimeout(()=>{ el.scrollTop = idx*40; }, 50);
+    if (selected !== null) {
+      const idx = items.indexOf(selected);
+      if(idx>=0) setTimeout(()=>{ el.scrollTop = idx*40; }, 50);
+    }
     el.addEventListener('click', e=>{
       const item = e.target.closest('.drum-item');
       if(!item) return;
@@ -1571,36 +1839,59 @@ function buildDrumRoll() {
       if(unit==='년') AppState.birthYear = val;
       if(unit==='월') AppState.birthMonth = val;
       if(unit==='일') AppState.birthDay = val;
+      updateBirthConfirmBtn();
     });
   }
   fill(document.getElementById('drumYear'), years, selY, '년');
   fill(document.getElementById('drumMonth'), months, selM, '월');
   fill(document.getElementById('drumDay'), days, selD, '일');
+  updateBirthConfirmBtn();
 }
 
-function openBirthModal() {
+let birthCallerContext = 'main';
+
+function openBirthModal(context = 'main') {
+  birthCallerContext = context;
+  // 이전 선택값 초기화
+  AppState.birthYear = null;
+  AppState.birthMonth = null;
+  AppState.birthDay = null;
   buildDrumRoll();
   document.getElementById('birthModalOverlay').classList.remove('hidden');
 }
 function closeBirthModal() { document.getElementById('birthModalOverlay').classList.add('hidden'); }
 function confirmBirth() {
   const y = AppState.birthYear, m = AppState.birthMonth, d = AppState.birthDay;
-  if(!y||!m||!d) { closeBirthModal(); return; }
+  if (!y || !m || !d) { closeBirthModal(); return; }
   const str = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  document.getElementById('patientBirthInput').value = str;
-  const btn = document.getElementById('birthDisplayBtn');
-  btn.classList.remove('empty');
-  document.getElementById('birthDisplayText').textContent = `${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
+  const display = `${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}`;
+  if (birthCallerContext === 'popup') {
+    document.getElementById('popPatientBirthInput').value = str;
+    const btn = document.getElementById('popBirthDisplayBtn');
+    if (btn) { btn.classList.remove('empty'); }
+    const txt = document.getElementById('popBirthDisplayText');
+    if (txt) txt.textContent = display;
+  } else {
+    document.getElementById('patientBirthInput').value = str;
+    const btn = document.getElementById('birthDisplayBtn');
+    if (btn) btn.classList.remove('empty');
+    document.getElementById('birthDisplayText').textContent = display;
+    checkPatientFormDirty();
+  }
   closeBirthModal();
-  checkPatientFormDirty();
 }
 
 /* ── SNS 모달 ── */
-function openSnsModal() {
+let popSnsType = '';
+let popSnsId = '';
+let snsCallerContext = 'main'; // 'main' | 'popup'
+
+function openSnsModal(context = 'main') {
+  snsCallerContext = context;
   AppState.snsType = null; AppState.snsId = '';
   document.getElementById('snsIdInput').value = '';
   document.getElementById('snsModalPreview').textContent = 'SNS 종류를 선택하고 아이디를 입력해주세요.';
-  document.querySelectorAll('.sns-type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sns-type-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('snsModalOverlay').classList.remove('hidden');
 }
 function closeSnsModal() { document.getElementById('snsModalOverlay').classList.add('hidden'); }
@@ -1611,13 +1902,25 @@ function updateSnsPreview() {
 }
 function confirmSns() {
   const t = AppState.snsType, id = document.getElementById('snsIdInput').value.trim();
-  if(!t || !id) { alert('SNS 종류와 아이디를 모두 입력해주세요.'); return; }
+  if (!t || !id) { alert('SNS 종류와 아이디를 모두 입력해주세요.'); return; }
   AppState.snsId = id;
-  document.getElementById('snsPreviewText').textContent = `${t} · ${id}`;
-  document.getElementById('snsPreviewArea').style.display = 'block';
+
+  if (snsCallerContext === 'popup') {
+    // 환자등록 팝업용
+    popSnsType = t; popSnsId = id;
+    const previewArea = document.getElementById('popSnsPreviewArea');
+    const previewText = document.getElementById('popSnsPreviewText');
+    if (previewText) previewText.textContent = `${t} · ${id}`;
+    if (previewArea) previewArea.style.display = 'block';
+  } else {
+    // 기존 환자정보 폼용
+    document.getElementById('snsPreviewText').textContent = `${t} · ${id}`;
+    document.getElementById('snsPreviewArea').style.display = 'block';
+    checkPatientFormDirty();
+  }
+
   closeSnsModal();
   showToast('SNS 정보가 저장됐습니다.', 'success');
-  checkPatientFormDirty();
 }
 
 /* ── 태그 렌더링 ── */
@@ -1724,10 +2027,10 @@ function initCanvas() {
   const canvas = document.getElementById('mainCanvas');
   const bgCanvas = document.getElementById('bgCanvas');
   if (!canvas || !bgCanvas) return;
-  const wrap = canvas.parentElement; // .canvas-container
-  const outerWrap = wrap.parentElement; // .canvas-wrap
-  const w = Math.min(outerWrap.offsetWidth - 32, 900);
-  const h = Math.min(outerWrap.offsetHeight - 32, 600);
+  const wrap = canvas.parentElement;
+  const outerWrap = wrap.parentElement;
+  const w = Math.min(outerWrap.offsetWidth - 24, isTabletPortrait() ? window.innerWidth - 80 : 900);
+  const h = Math.min(outerWrap.offsetHeight - 24, isTabletPortrait() ? window.innerHeight - 200 : 600);
   const cw = w > 0 ? w : 700;
   const ch = h > 0 ? h : 480;
 
@@ -1792,11 +2095,14 @@ function drawTemplateOnCanvas(tmplData) {
   // 드로잉 레이어 초기화
   r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
 
-  if (!tmplData || tmplData.type === 'blank') { saveCanvasHistory(r.canvas); return; }
+  if (!tmplData || tmplData.type === 'blank') {
+    currentBgUrl = null;
+    saveCanvasHistory(r.canvas); return;
+  }
 
   const cx = bg.canvas.width / 2, cy = bg.canvas.height / 2;
   bg.ctx.save();
-  bg.ctx.globalAlpha = 0.15;
+  bg.ctx.globalAlpha = bgOpacity > 0 ? bgOpacity : 0.15;
   bg.ctx.strokeStyle = '#246bff';
   bg.ctx.fillStyle = '#eaf1ff';
   bg.ctx.lineWidth = 1.5;
@@ -1830,18 +2136,17 @@ function drawImageTemplateOnCanvas(url) {
   const r = getCanvasCtx();
   if (!bg || !r) return;
 
-  // 배경 흰색 초기화
+  currentBgUrl = url; // 현재 URL 저장 (투명도 재적용용)
+
   bg.ctx.fillStyle = '#fff';
   bg.ctx.fillRect(0, 0, bg.canvas.width, bg.canvas.height);
-
-  // 드로잉 레이어 초기화
   r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
 
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
     bg.ctx.save();
-    bg.ctx.globalAlpha = 0.15;
+    bg.ctx.globalAlpha = bgOpacity;
     bg.ctx.drawImage(img, 0, 0, bg.canvas.width, bg.canvas.height);
     bg.ctx.restore();
     saveCanvasHistory(r.canvas);
@@ -1850,38 +2155,14 @@ function drawImageTemplateOnCanvas(url) {
   img.src = url;
 }
 
-const CANVAS_TEMPLATES = {
-  '임플란트': [
-    { name: '임플란트 구조', sub: '크라운·어버트·픽스처', type: 'implant' },
-    { name: '빈 노트', sub: '자유 드로잉', type: 'blank' },
-  ],
-  '크라운': [{ name: '치아 배열', sub: '상악 치아 8개', type: 'teeth_row' }, { name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
-  '교정': [{ name: '치아 배열', sub: '교정 설명용', type: 'teeth_row' }, { name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
-  '신경치료': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
-  '미백': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
-  '틀니': [{ name: '빈 노트', sub: '자유 드로잉', type: 'blank' }],
-};
+// DB 카테고리 전용 - 하드코딩 제거
+// renderCanvasTmplList는 DB 방식인 renderCanvasTmplListFromDB로 대체됨
 
 function renderCanvasTmplList() {
+  // DB 카테고리가 로드되면 renderCanvasTmplListFromDB가 처리
+  // 아직 DB 로드 전이면 빈 상태 표시
   const list = document.getElementById('canvasTmplList');
-  if (!list) return;
-  const tmpls = CANVAS_TEMPLATES[CanvasState.currentCat] || [];
-  list.innerHTML = tmpls.map((t, i) => `
-    <div class="canvas-tmpl${i === CanvasState.currentTmpl ? ' active' : ''}" data-idx="${i}">
-      <div class="canvas-tmpl-name">${t.name}</div>
-      <div class="canvas-tmpl-sub">${t.sub}</div>
-    </div>
-  `).join('');
-  list.querySelectorAll('.canvas-tmpl').forEach(el => {
-    el.addEventListener('click', () => {
-      list.querySelectorAll('.canvas-tmpl').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      CanvasState.currentTmpl = Number(el.dataset.idx);
-      drawTemplateOnCanvas(tmpls[CanvasState.currentTmpl]);
-    });
-  });
-  // 첫 번째 템플릿 자동 적용
-  if (tmpls.length) drawTemplateOnCanvas(tmpls[CanvasState.currentTmpl]);
+  if (list) list.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:8px 4px;">카테고리를 선택해주세요.</div>';
 }
 
 function bindCanvasEvents() {
@@ -2043,25 +2324,80 @@ function bindCanvasEvents() {
   document.querySelectorAll('[data-lw]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-lw]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active'); CanvasState.lw = Number(btn.dataset.lw);
+      btn.classList.add('active');
+      CanvasState.lw = Number(btn.dataset.lw);
+      // 툴팁 닫기
+      document.getElementById('lwTooltip')?.classList.remove('show');
+      document.getElementById('lwTooltipBtn')?.classList.remove('active');
     });
   });
 
-  // 카테고리
-  document.querySelectorAll('.canvas-cat').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      CanvasState.currentCat = btn.dataset.cat;
-      CanvasState.currentTmpl = 0;
-      renderCanvasTmplList();
-    });
+  // 카테고리 드롭다운
+  const catDropBtn = document.getElementById('catDropdownBtn');
+  const catDropList = document.getElementById('catDropdownList');
+
+  // 드롭다운 열기/닫기
+  catDropBtn?.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = !catDropList.classList.contains('hidden');
+    catDropList.classList.toggle('hidden', isOpen);
+    catDropBtn.classList.toggle('open', !isOpen);
+  });
+
+  // 카테고리 선택 (이벤트 위임 - DB/하드코딩 모두 처리)
+  catDropList?.addEventListener('click', e => {
+    const btn = e.target.closest('.canvas-cat');
+    if (!btn) return;
+
+    catDropList.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 라벨 업데이트
+    document.getElementById('catDropdownLabel').textContent = btn.dataset.cat;
+
+    // 드롭다운 닫기
+    catDropList.classList.add('hidden');
+    catDropBtn.classList.remove('open');
+
+    // 카테고리 변경
+    CanvasState.currentCat = btn.dataset.cat;
+    CanvasState.currentTmpl = 0;
+
+    // DB 카테고리가 저장돼 있으면 DB 방식, 아니면 하드코딩 방식
+    const dbCats = catDropList._dbCats;
+    if (dbCats && btn.dataset.catId) {
+      const cat = dbCats.find(c => c.id === btn.dataset.catId);
+      if (cat) { renderCanvasTmplListFromDB(cat); return; }
+    }
+    renderCanvasTmplList();
+  });
+
+  // 외부 클릭 시 닫기
+  document.addEventListener('click', () => {
+    catDropList?.classList.add('hidden');
+    catDropBtn?.classList.remove('open');
   });
 
   // 되돌리기 / 전체지우기
+  // 선 굵기 툴팁
+  const lwBtn = document.getElementById('lwTooltipBtn');
+  const lwTooltip = document.getElementById('lwTooltip');
+  if (lwBtn && lwTooltip) {
+    lwBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      lwTooltip.classList.toggle('show');
+      lwBtn.classList.toggle('active', lwTooltip.classList.contains('show'));
+    });
+    document.addEventListener('click', e => {
+      if (!lwTooltip.contains(e.target) && e.target !== lwBtn) {
+        lwTooltip.classList.remove('show');
+        lwBtn.classList.remove('active');
+      }
+    });
+  }
   document.getElementById('canvasUndoBtn').addEventListener('click', undoCanvas);
   document.getElementById('canvasTrashBtn').addEventListener('click', () => { if(confirm('캔버스를 초기화할까요?')) clearCanvas(); });
-  document.getElementById('canvasClearBtn').addEventListener('click', () => { if(confirm('캔버스를 초기화할까요?')) clearCanvas(); });
+  document.getElementById('canvasClearBtn')?.addEventListener('click', () => { if(confirm('캔버스를 초기화할까요?')) clearCanvas(); });
 
   // 저장
   document.getElementById('canvasSaveBtn').addEventListener('click', () => {
@@ -2077,6 +2413,170 @@ function bindCanvasEvents() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    캔버스 상단 STT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   환자등록 팝업
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let popGender = '';
+
+function openPtRegPopup() {
+  // 폼 초기화
+  ['popPatientNameInput','popPatientChartInput','popPatientMobileInput',
+   'popPatientBirthInput','popPatientMemoInput'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  const statusEl = document.getElementById('popPatientStatusInput');
+  if (statusEl) statusEl.value = '초기 상담';
+  popGender = '';
+  popSnsType = ''; popSnsId = '';
+  const popBirthBtn = document.getElementById('popBirthDisplayBtn');
+  if (popBirthBtn) { popBirthBtn.classList.add('empty'); }
+  const popBirthTxt = document.getElementById('popBirthDisplayText');
+  if (popBirthTxt) popBirthTxt.textContent = '생년월일 선택';
+  document.getElementById('popPatientBirthInput').value = '';
+  document.getElementById('popGenderMaleBtn').style.background = 'var(--panel)';
+  document.getElementById('popGenderMaleBtn').style.color = 'var(--text)';
+  document.getElementById('popGenderFemaleBtn').style.background = 'var(--panel)';
+  document.getElementById('popGenderFemaleBtn').style.color = 'var(--text)';
+  const popSnsArea = document.getElementById('popSnsPreviewArea');
+  if (popSnsArea) popSnsArea.style.display = 'none';
+  document.getElementById('ptRegOverlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('popPatientNameInput')?.focus(), 100);
+}
+
+function closePtRegPopup() {
+  document.getElementById('ptRegOverlay').classList.add('hidden');
+}
+
+async function savePtRegPopup() {
+  if (!AppState.connected) { alert('Supabase 연결이 아직 완료되지 않았습니다.'); return; }
+
+  const name = document.getElementById('popPatientNameInput')?.value.trim();
+  const mobile = document.getElementById('popPatientMobileInput')?.value.trim();
+
+  const missing = [];
+  if (!name) missing.push('환자명');
+  if (!mobile) missing.push('휴대전화');
+  if (!popGender) missing.push('성별');
+  if (missing.length) {
+    alert(`다음 필수 항목을 입력해주세요.\n\n• ${missing.join('\n• ')}`);
+    return;
+  }
+
+  const saveBtn = document.getElementById('ptRegSaveBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '저장 중...'; }
+
+  const payload = {
+    user_id: AppState.currentUser.id,
+    name,
+    chart_number: document.getElementById('popPatientChartInput')?.value.trim() || null,
+    mobile: document.getElementById('popPatientMobileInput')?.value.trim() || null,
+    gender: popGender || null,
+    birth_date: document.getElementById('popPatientBirthInput')?.value.trim() || null,
+    status: document.getElementById('popPatientStatusInput')?.value || '초기 상담',
+    memo: document.getElementById('popPatientMemoInput')?.value.trim() || null,
+    sns_type: popSnsType || null,
+    sns_id: popSnsId || null,
+    last_total: 0,
+  };
+
+  try {
+    const { error: insertError } = await AppState.supabase.from('patients').insert(payload);
+    if (insertError) throw insertError;
+
+    const { data: newPts, error: selectError } = await AppState.supabase
+      .from('patients').select('*')
+      .eq('user_id', AppState.currentUser.id)
+      .eq('name', name)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (selectError) throw selectError;
+
+    const newPt = newPts?.[0];
+    if (newPt) {
+      AppState.patients.unshift(newPt);
+      AppState.selectedPatientId = newPt.id;
+      fillPatientForm(newPt);
+      renderSelectedPatient();
+      updateCanvasPatientName();
+    }
+
+    renderPatientCount();
+    renderPatientList();
+    closePtRegPopup();
+    showToast(`${name} 환자가 등록됐습니다.`, 'success');
+  } catch(e) {
+    console.error('환자 등록 실패:', e);
+    alert(`저장 실패: ${e.message}`);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '저장'; }
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   배경 이미지 투명도 조절
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let bgOpacity = 0.15;
+let currentBgUrl = null;
+
+function applyBgOpacity(opacity) {
+  bgOpacity = opacity;
+  const bg = getBgCtx();
+  if (!bg) return;
+  bg.ctx.fillStyle = '#fff';
+  bg.ctx.fillRect(0, 0, bg.canvas.width, bg.canvas.height);
+  if (currentBgUrl) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      bg.ctx.save();
+      bg.ctx.globalAlpha = bgOpacity;
+      bg.ctx.drawImage(img, 0, 0, bg.canvas.width, bg.canvas.height);
+      bg.ctx.restore();
+    };
+    img.src = currentBgUrl;
+  } else {
+    // 배경 흰색으로 초기화만
+    bg.ctx.fillStyle = '#fff';
+    bg.ctx.fillRect(0, 0, bg.canvas.width, bg.canvas.height);
+  }
+}
+
+function bindOpacityControls() {
+  const btn = document.getElementById('opacityBtn');
+  const tooltip = document.getElementById('opacityTooltip');
+  const slider = document.getElementById('opacitySlider');
+  const valueEl = document.getElementById('opacityValue');
+  if (!btn || !tooltip || !slider) return;
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    tooltip.classList.toggle('show');
+    btn.classList.toggle('active', tooltip.classList.contains('show'));
+  });
+
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value);
+    valueEl.textContent = `${v}%`;
+    applyBgOpacity(v / 100);
+  });
+
+  document.querySelectorAll('.opacity-preset').forEach(preset => {
+    preset.addEventListener('click', () => {
+      const v = Number(preset.dataset.opacity);
+      slider.value = v;
+      valueEl.textContent = `${v}%`;
+      applyBgOpacity(v / 100);
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!tooltip.contains(e.target) && e.target !== btn) {
+      tooltip.classList.remove('show');
+      btn.classList.remove('active');
+    }
+  });
+}
+
 // 두 레이어를 합성한 최종 캔버스 반환
 function getMergedCanvas() {
   const bg = document.getElementById('bgCanvas');
@@ -2438,31 +2938,31 @@ async function loadCanvasCategories() {
     .eq('is_active', true)
     .order('display_order');
 
+  const catListEl = document.getElementById('canvasCatList');
+  if (!catListEl) return;
+
   if (!cats || !cats.length) {
-    // DB에 없으면 기본 카테고리 사용 (기존 하드코딩)
-    renderCanvasTmplList();
+    const label = document.getElementById('catDropdownLabel');
+    if (label) label.textContent = '카테고리 없음';
+    const list = document.getElementById('canvasTmplList');
+    if (list) list.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:8px 4px;">설정에서 카테고리를 추가해주세요.</div>';
     return;
   }
 
-  // 사이드바 카테고리 버튼 갱신
-  const catListEl = document.getElementById('canvasCatList');
+  // DB 카테고리 있음 → 버튼 교체 + _dbCats 저장
   catListEl.innerHTML = cats.map((c, i) => `
     <button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat-id="${c.id}" data-cat="${c.name}">${c.name}</button>
   `).join('');
 
-  // 카테고리 클릭 이벤트 재바인딩
-  catListEl.querySelectorAll('.canvas-cat').forEach(btn => {
-    btn.addEventListener('click', () => {
-      catListEl.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      CanvasState.currentCat = btn.dataset.cat;
-      CanvasState.currentTmpl = 0;
-      renderCanvasTmplListFromDB(cats.find(c => c.id === btn.dataset.catId));
-    });
-  });
+  // 드롭다운 라벨 + 상태 업데이트
+  const label = document.getElementById('catDropdownLabel');
+  if (label) label.textContent = cats[0].name;
+  CanvasState.currentCat = cats[0].name;
 
-  // 첫 번째 카테고리 템플릿 로드
-  if (cats.length) renderCanvasTmplListFromDB(cats[0]);
+  // 이벤트 위임 핸들러에서 DB 카테고리 참조용
+  document.getElementById('catDropdownList')._dbCats = cats;
+
+  renderCanvasTmplListFromDB(cats[0]);
 }
 
 // ── DB 템플릿으로 캔버스 사이드바 렌더 ──
@@ -2568,6 +3068,60 @@ function loadSavedTheme() {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   태블릿 반응형 처리
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function isTabletPortrait() { return window.innerWidth <= 834; }
+
+function syncCatBars() {
+  if (!isTabletPortrait()) return;
+
+  // 치료상담 가로 바 → 사이드바 카테고리 동기화
+  const sidebarCats = document.getElementById('canvasCatList');
+  const topBar = document.getElementById('canvasCatBar');
+  if (sidebarCats && topBar) {
+    topBar.querySelectorAll('.canvas-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // 사이드바 카테고리도 같이 활성화
+        sidebarCats.querySelectorAll('.canvas-cat').forEach(b => {
+          b.classList.toggle('active', b.dataset.cat === btn.dataset.cat);
+        });
+        topBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        CanvasState.currentCat = btn.dataset.cat;
+        CanvasState.currentTmpl = 0;
+        renderCanvasTmplList();
+      });
+    });
+  }
+
+  // 비용상담 가로 바 표시
+  const costBar = document.getElementById('costCatBar');
+  if (costBar) {
+    costBar.style.display = 'flex';
+    const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
+    costBar.innerHTML = cats.map((c, i) =>
+      `<button class="canvas-cat${i===0?' active':''}" data-cat="${c}" style="margin-right:4px;">${c}</button>`
+    ).join('');
+    costBar.querySelectorAll('.canvas-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        costBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // 사이드바 카테고리도 동기화
+        document.getElementById('costCatList')?.querySelectorAll('.cost-cat').forEach(b => {
+          b.classList.toggle('active', b.dataset.cat === btn.dataset.cat);
+        });
+        renderCostPresets(btn.dataset.cat);
+      });
+    });
+  }
+}
+
+// 화면 회전 시 재처리
+window.addEventListener('resize', () => {
+  if (isTabletPortrait()) syncCatBars();
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    화면 전환 (3탭)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function switchScreen(name) {
@@ -2670,6 +3224,13 @@ function closeMgmtPanel() {
   document.getElementById('mgmtOverlay').classList.remove('open');
 }
 
+function updateCatDropdownLabel() {
+  const label = document.getElementById('catDropdownLabel');
+  if (label) label.textContent = CanvasState.currentCat;
+  document.getElementById('catDropdownList')?.classList.add('hidden');
+  document.getElementById('catDropdownBtn')?.classList.remove('open');
+}
+
 function renderCostScreen() {
   // 좌측 카테고리 목록
   const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
@@ -2725,7 +3286,8 @@ function updateCanvasPatientName() {
       const age = p.birth_date
         ? Math.floor((Date.now() - new Date(p.birth_date)) / 31557600000)
         : null;
-      navInput.value = age ? `${p.name} (${age}세)` : p.name;
+      const shortName = p.name.length > 6 ? p.name.slice(0, 6) + '…' : p.name;
+      navInput.value = age ? `${shortName} (${age}세)` : shortName;
     } else {
       navInput.value = '';
     }
@@ -3239,14 +3801,12 @@ function showAuthScreen() {
 }
 
 async function handleLogout() {
-  // 로그아웃 플래그 먼저 저장 (reload 후에도 sessionStorage는 유지됨)
   sessionStorage.setItem('ddLoggedOut', '1');
-  try {
-    if (AppState.supabase) {
-      await AppState.supabase.auth.signOut({ scope: 'local' });
-    }
-  } catch(e) { console.warn('signOut error:', e); }
-  localStorage.clear();
+  // Supabase 관련 키만 제거 (테마 등 앱 설정은 유지)
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('sb-') || k.startsWith('supabase')) localStorage.removeItem(k);
+  });
+  try { AppState.supabase?.auth.signOut({ scope: 'local' }); } catch(e) {}
   location.reload();
 }
 
@@ -3262,7 +3822,7 @@ async function showMainApp(user) {
   resetPatientForm();
   renderPatientCount(); renderPatientList(); renderSelectedPatient();
   renderSttState(); renderEstimateTable(); setConsultTab('history');
-  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); renderCostScreen(); loadCanvasCategories(); }, 100);
+  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); bindOpacityControls(); renderCostScreen(); loadCanvasCategories(); syncCatBars(); }, 100);
 }
 
 async function loadUserProfile() {
@@ -3408,10 +3968,9 @@ async function connectSupabase() {
     AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     AppState.connected = true;
 
-    // 로그아웃 후 재진입 시 세션 무시하고 바로 로그인 화면
+    // 로그아웃 후 재진입 시 바로 로그인 화면
     if (sessionStorage.getItem('ddLoggedOut') === '1') {
       sessionStorage.removeItem('ddLoggedOut');
-      await AppState.supabase.auth.signOut({ scope: 'local' });
       showAuthScreen();
       return;
     }
@@ -3440,10 +3999,12 @@ async function connectSupabase() {
 async function loadPatients() {
   if(!AppState.connected) return;
   try {
-    const { data, error } = await AppState.supabase.from('patients').select('*').order('created_at',{ascending:false});
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 10000));
+    const query = AppState.supabase.from('patients').select('*').order('created_at',{ascending:false});
+    const { data, error } = await Promise.race([query, timeout]);
     if(error) throw error;
     AppState.patients = data||[];
-    // 자동으로 첫 환자 선택 안 함 - 선택된 환자 있을 때만 갱신
     renderPatientCount(); renderPatientList();
     if (AppState.selectedPatientId) {
       renderSelectedPatient();
@@ -3523,25 +4084,36 @@ async function savePatient() {
   // ── 신규 등록 모드 ──
   const payload = { user_id: AppState.currentUser.id, ...newData, last_total: 0 };
   try {
-    const { data, error } = await AppState.supabase.from('patients').insert(payload).select().single();
-    if (error) throw error;
+    const { error: insertError } = await AppState.supabase.from('patients').insert(payload);
+    if (insertError) throw insertError;
+
+    // 새로 등록된 환자 조회
+    const { data: newPts, error: selectError } = await AppState.supabase
+      .from('patients').select('*')
+      .eq('user_id', AppState.currentUser.id)
+      .eq('name', newData.name)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (selectError) throw selectError;
+    const data = newPts?.[0];
+
     // 임시 태그 저장
-    const tmpTags = AppState.currentPatientTags.filter(t => t.patient_id === null && !t.is_deleted);
-    for (const t of tmpTags) {
-      await AppState.supabase.from('patient_tags').insert({
-        patient_id: data.id, user_id: AppState.currentUser.id,
-        category_name: t.category_name, tag_value: t.tag_value,
-        source: t.source, is_locked: t.is_locked
-      });
+    if (data?.id) {
+      const tmpTags = AppState.currentPatientTags.filter(t => t.patient_id === null && !t.is_deleted);
+      for (const t of tmpTags) {
+        await AppState.supabase.from('patient_tags').insert({
+          patient_id: data.id, user_id: AppState.currentUser.id,
+          category_name: t.category_name, tag_value: t.tag_value,
+          source: t.source, is_locked: t.is_locked
+        });
+      }
+      AppState.selectedPatientId = data.id;
     }
     showToast('환자가 등록됐습니다.', 'success');
     await loadPatients();
     await loadTodayConsultCount();
-    if (data?.id) {
-      AppState.selectedPatientId = data.id;
-      fillPatientForm(getSelectedPatient());
-      renderSelectedPatient(); renderPatientList();
-    }
+    fillPatientForm(getSelectedPatient());
+    renderSelectedPatient(); renderPatientList();
   } catch(e) { alert(`등록 실패: ${e.message}`); }
 }
 
@@ -3972,6 +4544,44 @@ function bindEvents() {
   document.getElementById('saveApiKeyBtn')?.addEventListener('click', saveApiKey);
   document.getElementById('settingModalOverlay')?.addEventListener('click', e => {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
+  });
+
+  // ── 환자등록 팝업 ──
+  document.getElementById('openPtRegBtn')?.addEventListener('click', openPtRegPopup);
+  document.getElementById('ptRegCloseBtn')?.addEventListener('click', closePtRegPopup);
+  document.getElementById('ptRegCancelBtn')?.addEventListener('click', closePtRegPopup);
+  document.getElementById('ptRegSaveBtn')?.addEventListener('click', savePtRegPopup);
+  document.getElementById('ptRegOverlay')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('ptRegOverlay')) closePtRegPopup();
+  });
+  document.getElementById('popSnsAddBtn')?.addEventListener('click', () => openSnsModal('popup'));
+  document.getElementById('popBirthDisplayBtn')?.addEventListener('click', () => openBirthModal('popup'));
+  // 성별 버튼
+  document.getElementById('popGenderMaleBtn')?.addEventListener('click', () => {
+    popGender = '남';
+    document.getElementById('popGenderMaleBtn').style.background = 'var(--dark)';
+    document.getElementById('popGenderMaleBtn').style.color = '#fff';
+    document.getElementById('popGenderFemaleBtn').style.background = 'var(--panel)';
+    document.getElementById('popGenderFemaleBtn').style.color = 'var(--text)';
+  });
+  document.getElementById('popGenderFemaleBtn')?.addEventListener('click', () => {
+    popGender = '여';
+    document.getElementById('popGenderFemaleBtn').style.background = 'var(--dark)';
+    document.getElementById('popGenderFemaleBtn').style.color = '#fff';
+    document.getElementById('popGenderMaleBtn').style.background = 'var(--panel)';
+    document.getElementById('popGenderMaleBtn').style.color = 'var(--text)';
+  });
+  // 휴대전화 자동 포맷
+  document.getElementById('popPatientMobileInput')?.addEventListener('input', e => {
+    e.target.value = formatMobile(e.target.value);
+  });
+  // Enter로 저장
+  document.getElementById('ptRegOverlay')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.id !== 'ptRegSaveBtn') {
+      e.preventDefault();
+      document.getElementById('ptRegSaveBtn')?.click();
+    }
+    if (e.key === 'Escape') closePtRegPopup();
   });
 
   // ── 카테고리 관리 ──
