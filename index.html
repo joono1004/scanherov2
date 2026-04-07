@@ -216,7 +216,7 @@
     .drum-confirm { background: var(--primary); color: #fff; }
 
     /* ── 로그인 화면 ── */
-    .auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: flex; align-items: center; justify-content: center; }
+    .auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; }
     .auth-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); padding: 36px 32px; width: 380px; }
     .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
     .auth-logo-mark { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg,#d9e7ff,#fff); border: 1px solid #bfd3fb; display: grid; place-items: center; font-size: 20px; }
@@ -317,7 +317,7 @@
 
     .patient-count-chip { cursor: pointer; transition: .15s; }
     .patient-count-chip:hover { background: var(--primary-soft); color: var(--primary); border-color: #bfd3ff; }
-    .patient-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; }
+    .patient-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500; display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; }
     .patient-popup { background: #fff; border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,.18); width: 420px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
     .patient-popup-header { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
     .patient-popup-header h3 { margin: 0; font-size: 18px; font-weight: 900; }
@@ -392,15 +392,25 @@
 
     /* ── 상단 네비게이션 ── */
     .app-nav { background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; height: 52px; flex-shrink: 0; }
-    .nav-brand { display: flex; align-items: center; gap: 8px; }
-    .nav-brand-name { font-size: 15px; font-weight: 900; }
-    .nav-tabs { display: flex; gap: 2px; background: #f4f7fb; border-radius: 10px; padding: 3px; }
-    .nav-tab { padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--sub); border: none; background: transparent; cursor: pointer; transition: .15s; white-space: nowrap; }
-    .nav-tab.active { background: #fff; color: var(--text); box-shadow: 0 1px 4px rgba(18,34,54,.08); }
-    .nav-right { display: flex; align-items: center; gap: 8px; }
-    .nav-pt-select { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: #f8fbff; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--sub); transition: .15s; }
-    .nav-pt-select:hover { border-color: var(--primary); color: var(--primary); }
-    .nav-pt-select .pt-name { color: var(--text); }
+    .app-nav { background: var(--panel); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 52px; flex-shrink: 0; }
+    .nav-brand { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+    .nav-brand-name { font-size: 14px; font-weight: 900; white-space: nowrap; }
+    #navLogoutBtn:hover { background: #fff5f5; border-color: #fca5a5; color: #e24b4a; }
+
+    /* 환자 검색박스 */
+    .nav-pt-search { display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); height: 34px; min-width: 160px; max-width: 200px; cursor: text; transition: .15s; flex-shrink: 0; }
+    .nav-pt-search:focus-within { border-color: var(--primary); background: var(--panel); }
+    .nav-pt-search input { border: none; background: transparent; outline: none; font-size: 13px; font-weight: 700; color: var(--text); width: 100%; }
+    .nav-pt-search input::placeholder { color: var(--sub); font-weight: 400; }
+    .nav-pt-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
+
+    /* 탭 */
+    .nav-tabs { display: flex; gap: 2px; background: var(--bg); border-radius: 10px; padding: 3px; flex-shrink: 0; }
+    .nav-tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--sub); border: none; background: transparent; cursor: pointer; transition: .15s; white-space: nowrap; }
+    .nav-tab.active { background: var(--panel); color: var(--text); box-shadow: 0 1px 4px rgba(18,34,54,.08); }
+
+    /* 우측 영역 */
+    .nav-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
 
     /* ── 세션 상태 바 ── */
     .session-bar { display: none; background: var(--dark); color: #fff; padding: 8px 18px; font-size: 13px; font-weight: 800; flex-shrink: 0; align-items: center; justify-content: space-between; gap: 12px; }
@@ -642,36 +652,41 @@
 
   <!-- ══ 상단 네비게이션 ══ -->
   <nav class="app-nav">
+
+    <!-- 로고 + 치과명 + 로그아웃 -->
     <div class="nav-brand">
       <div class="brand-mark">🦷</div>
       <span class="nav-brand-name" id="navClinicName">똑똑치과상담실장</span>
     </div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-screen="treat">🖊 치료 상담</button>
-      <button class="nav-tab" data-screen="cost">💰 비용 상담</button>
-      <button class="nav-tab" data-screen="patient">👤 환자정보</button>
-    </div>
-    <div class="nav-right">
-      <div class="nav-pt-select" id="navPtSelect">
-        👤 <span class="pt-name" id="navPtName">환자 선택 ▾</span>
-      </div>
-      <div class="chip patient-count-chip" id="patientCountChip">환자 0명</div>
-      <button class="ghost-btn" id="openSettingBtn" style="border-radius:10px;padding:7px 12px;">⚙️</button>
-    </div>
-  </nav>
 
-  <!-- ══ 세션 상태 바 ══ -->
-  <div class="session-bar" id="sessionBar">
-    <div class="session-bar-left">
-      <div class="session-dot"></div>
-      <span class="session-timer" id="sessionTimer">00:00</span>
-      <span class="session-patient" id="sessionPatientLabel">상담 진행 중</span>
+    <!-- 환자 검색 인풋 -->
+    <div class="nav-pt-search" id="navPtSelect">
+      <span class="nav-pt-icon" id="navPtIcon">👤</span>
+      <input id="navPtInput" placeholder="환자 검색" autocomplete="off" />
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-size:12px;color:#9aabbc;" id="sessionSttStatus">STT 대기 중</span>
-      <button class="session-end-btn" id="sessionEndBtn">■ 상담 종료</button>
+
+    <!-- 탭 -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-screen="treat">치료 상담</button>
+      <button class="nav-tab" data-screen="cost">비용 상담</button>
+      <button class="nav-tab" data-screen="patient">상담 이력</button>
     </div>
-  </div>
+
+    <!-- 우측 -->
+    <div class="nav-right">
+      <button class="canvas-btn rec-start" id="sessionStartBtn" style="padding:6px 14px;border-radius:10px;font-size:13px;">🎙 상담 시작</button>
+      <div class="chip patient-count-chip" id="patientCountChip">환자 0명</div>
+      <button class="ghost-btn" id="openSettingBtn" style="border-radius:10px;padding:6px 12px;">⚙️</button>
+      <button id="navLogoutBtn" title="로그아웃" onclick="if(confirm('로그아웃 하시겠습니까?')) handleLogout();" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub);transition:.15s;flex-shrink:0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+  </nav>
 
   <!-- ══ 화면 1: 치료 상담 (캔버스) ══ -->
   <div class="screen active" id="screen-treat">
@@ -704,10 +719,6 @@
           <div style="display:flex;gap:8px;">
             <button class="canvas-btn" id="canvasSaveBtn">💾 저장</button>
             <button class="canvas-btn" id="canvasClearBtn">🔄 초기화</button>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button class="canvas-btn" id="goCostBtn">💰 비용 상담 →</button>
-            <button class="canvas-btn rec-start" id="treatStartBtn">🎙 상담 시작</button>
           </div>
         </div>
       </div>
@@ -758,9 +769,6 @@
         <!-- 헤더 -->
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <h2 style="font-size:18px;font-weight:900;margin:0;">비용 상담</h2>
-          <div style="display:flex;gap:8px;">
-            <button class="canvas-btn" id="costStartBtn">🎙 상담 시작</button>
-          </div>
         </div>
 
         <!-- 직접 입력 -->
@@ -1384,11 +1392,11 @@ function renderPatientList() {
     `${p.name||''} ${p.mobile||''} ${p.memo||''}`.includes(keyword)
   );
   if (!filtered.length) {
-    list.innerHTML = `<div class="status-line">등록된 환자가 없습니다. 좌측에서 먼저 등록해주세요.</div>`;
+    list.innerHTML = `<div class="status-line">등록된 환자가 없습니다.</div>`;
     return;
   }
   list.innerHTML = filtered.map(p => `
-    <article class="patient-card ${p.id===AppState.selectedPatientId?'active':''}" data-patient-id="${p.id}">
+    <article class="patient-card ${p.id===AppState.selectedPatientId?'active':''}" data-patient-id="${p.id}" style="cursor:pointer;">
       <div class="patient-head">
         <div>
           <div class="patient-name">${p.name||'-'}</div>
@@ -1402,23 +1410,33 @@ function renderPatientList() {
       </div>
       <div class="patient-foot">
         <div class="estimate-value">${formatKRW(p.last_total||0)}</div>
-        <button class="mini-btn" type="button">상담 선택</button>
       </div>
     </article>
   `).join('');
-  document.querySelectorAll('[data-patient-id]').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (card.dataset.patientId !== AppState.selectedPatientId) {
-        resetConsultationForm();
-        AppState.currentPatientTags = [];
-        renderTagChips();
-      }
-      AppState.selectedPatientId = card.dataset.patientId;
-      const p = getSelectedPatient();
-      if (p) fillPatientForm(p);
-      renderSelectedPatient(); renderPatientList(); loadConsultations(); loadPatientTags();
-      if (e.target.closest('.mini-btn')) closePatientPopup();
-    });
+}
+
+// 환자 목록 클릭 이벤트 위임 (한 번만 등록)
+function bindPatientListClick() {
+  const list = document.getElementById('patientList');
+  list.addEventListener('click', e => {
+    const card = e.target.closest('[data-patient-id]');
+    if (!card) return;
+    const patientId = card.dataset.patientId;
+    if (patientId !== AppState.selectedPatientId) {
+      resetConsultationForm();
+      AppState.currentPatientTags = [];
+      renderTagChips();
+    }
+    AppState.selectedPatientId = patientId;
+    const p = getSelectedPatient();
+    if (p) fillPatientForm(p);
+    renderSelectedPatient();   // 환자정보 패널 업데이트
+    updateCanvasPatientName(); // 사이드바 환자정보 업데이트
+    renderPatientList();
+    loadConsultations();
+    loadPatientTags();
+    closePatientPopup();
+    showToast(`${p ? p.name : ''} 선택됐습니다.`, 'success');
   });
 }
 
@@ -1498,8 +1516,21 @@ function formatMobile(val) {
 }
 
 /* ── 환자목록 팝업 ── */
-function openPatientPopup() { document.getElementById('patientPopupOverlay').classList.remove('hidden'); }
-function closePatientPopup() { document.getElementById('patientPopupOverlay').classList.add('hidden'); }
+function openPatientPopup() {
+  // 검색 인풋 초기화
+  const navInput = document.getElementById('navPtInput');
+  if (navInput) { navInput.value = ''; navInput.placeholder = '환자 검색'; }
+  const searchEl = document.getElementById('patientSearchInput');
+  if (searchEl) searchEl.value = '';
+  renderPatientList();
+  document.getElementById('patientPopupOverlay').classList.remove('hidden');
+}
+function closePatientPopup() {
+  document.getElementById('patientPopupOverlay').classList.add('hidden');
+  document.getElementById('navPtInput')?.blur();
+  // 선택된 환자 이름 복원
+  updateCanvasPatientName();
+}
 
 /* ── 성별 선택 ── */
 function setGender(val) {
@@ -2563,49 +2594,40 @@ function startSession() {
   SessionState.startedAt = Date.now();
   SessionState.patientId = AppState.selectedPatientId;
 
-  // 세션 바 표시
-  const bar = document.getElementById('sessionBar');
-  bar.classList.add('active');
-
-  // 환자명 표시
-  const p = getSelectedPatient();
-  document.getElementById('sessionPatientLabel').textContent =
-    p ? `${p.name} 상담 진행 중` : '상담 진행 중 (환자 미지정)';
+  // 버튼을 타이머+종료 버튼으로 전환
+  const btn = document.getElementById('sessionStartBtn');
+  if (btn) {
+    btn.className = 'canvas-btn';
+    btn.style.cssText = 'padding:6px 14px;border-radius:10px;font-size:13px;background:#6b7280;color:#fff;border-color:#6b7280;min-width:90px;';
+    btn.onclick = endSession;
+  }
 
   // 타이머
   SessionState.timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - SessionState.startedAt) / 1000);
     const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
     const s = String(elapsed % 60).padStart(2, '0');
-    document.getElementById('sessionTimer').textContent = `${m}:${s}`;
+    if (btn) btn.textContent = `■ ${m}:${s}`;
   }, 1000);
 
-  // STT + 녹음 시작
   startBrowserStt();
   startMediaRecorder();
-
-  // 버튼 상태 변경
-  ['treatStartBtn', 'costStartBtn'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) { btn.textContent = '진행 중...'; btn.disabled = true; btn.style.opacity = '0.5'; }
-  });
-
-  document.getElementById('sessionSttStatus').textContent = '🎙 STT 녹음 중';
   showToast('상담이 시작됐습니다.', 'success');
 }
 
 async function endSession() {
   if (!SessionState.isActive) return;
   SessionState.isActive = false;
-
   clearInterval(SessionState.timerInterval);
-  document.getElementById('sessionBar').classList.remove('active');
 
-  // 버튼 복원
-  ['treatStartBtn', 'costStartBtn'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) { btn.textContent = '🎙 상담 시작'; btn.disabled = false; btn.style.opacity = ''; }
-  });
+  // 버튼 원래대로 복원
+  const btn = document.getElementById('sessionStartBtn');
+  if (btn) {
+    btn.className = 'canvas-btn rec-start';
+    btn.style.cssText = 'padding:6px 14px;border-radius:10px;font-size:13px;';
+    btn.textContent = '🎙 상담 시작';
+    btn.onclick = startSession;
+  }
 
   stopBrowserStt();
   await saveConsultOnEnd();
@@ -2615,18 +2637,18 @@ async function endSession() {
    캔버스 STT 바인딩 (수정)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function bindCanvasTopbar() {
-  // 치료상담 시작 버튼
-  const treatBtn = document.getElementById('treatStartBtn');
-  if (treatBtn) treatBtn.addEventListener('click', startSession);
-  // 비용상담 시작 버튼
-  const costBtn = document.getElementById('costStartBtn');
-  if (costBtn) costBtn.addEventListener('click', startSession);
-  // 세션 종료 버튼
-  document.getElementById('sessionEndBtn').addEventListener('click', endSession);
-  // 비용상담으로 이동
-  document.getElementById('goCostBtn').addEventListener('click', () => switchScreen('cost'));
-  // 환자 선택
-  document.getElementById('navPtSelect').addEventListener('click', openPatientPopup);
+  // 상담 시작 버튼 (onclick으로 startSession/endSession 전환)
+  const btn = document.getElementById('sessionStartBtn');
+  if (btn) btn.onclick = startSession;
+
+  // 환자 검색 인풋
+  document.getElementById('navPtInput')?.addEventListener('focus', openPatientPopup);
+  document.getElementById('navPtInput')?.addEventListener('input', e => {
+    openPatientPopup();
+    const searchEl = document.getElementById('patientSearchInput');
+    if (searchEl) { searchEl.value = e.target.value.trim(); renderPatientList(); }
+  });
+  document.getElementById('navPtSelect')?.addEventListener('click', openPatientPopup);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2688,8 +2710,26 @@ function renderCostPresets(cat) {
 /* ── 치과명 업데이트 (네비게이션) ── */
 function updateCanvasPatientName() {
   const p = getSelectedPatient();
-  const el = document.getElementById('navPtName');
-  if (el) el.textContent = p ? `${p.name} · ${p.status||'초기상담'} ▾` : '환자 선택 ▾';
+
+  // 상단 네비 검색 인풋 + 성별 아이콘
+  const navInput = document.getElementById('navPtInput');
+  const navIcon = document.getElementById('navPtIcon');
+  if (navIcon) {
+    if (!p) navIcon.textContent = '👤';
+    else if (p.gender === '남') navIcon.textContent = '👨';
+    else if (p.gender === '여') navIcon.textContent = '👩';
+    else navIcon.textContent = '👤';
+  }
+  if (navInput) {
+    if (p) {
+      const age = p.birth_date
+        ? Math.floor((Date.now() - new Date(p.birth_date)) / 31557600000)
+        : null;
+      navInput.value = age ? `${p.name} (${age}세)` : p.name;
+    } else {
+      navInput.value = '';
+    }
+  }
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3022,7 +3062,6 @@ function setConsultTab(tabName) {
     btn.classList.toggle('active', btn.dataset.consultTab === tabName));
   document.querySelectorAll('.consult-tab-section').forEach(sec =>
     sec.classList.toggle('active', sec.id === `ctab-${tabName}`));
-  // 이력 탭 진입 시 자동 로드
   if (tabName === 'history') loadConsultations();
 }
 
@@ -3063,18 +3102,18 @@ async function loadPricePresets() {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function togglePricePicker() {
   AppState.pricePickerOpen = !AppState.pricePickerOpen;
-  document.getElementById('pricePicker').classList.toggle('hidden', !AppState.pricePickerOpen);
+  document.getElementById('costPricePicker')?.classList.toggle('hidden', !AppState.pricePickerOpen);
   if (AppState.pricePickerOpen) renderPricePicker();
-  // 직접입력 닫기
   AppState.directInputOpen = false;
-  document.getElementById('directInputRow').classList.add('hidden');
+  document.getElementById('costDirectInputRow')?.classList.add('hidden');
 }
 
 function renderPricePicker() {
   const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
   if (!AppState.pricePickerCategory) AppState.pricePickerCategory = cats[0];
 
-  const catsEl = document.getElementById('pricePickerCats');
+  const catsEl = document.getElementById('costPricePickerCats');
+  if (!catsEl) return;
   catsEl.innerHTML = cats.map(c =>
     `<button class="price-picker-cat${c === AppState.pricePickerCategory ? ' active' : ''}" data-cat="${c}">${c}</button>`
   ).join('');
@@ -3086,7 +3125,8 @@ function renderPricePicker() {
   });
 
   const items = AppState.pricePresets.filter(p => p.category === AppState.pricePickerCategory);
-  const itemsEl = document.getElementById('pricePickerItems');
+  const itemsEl = document.getElementById('costPricePickerItems');
+  if (!itemsEl) return;
   itemsEl.innerHTML = items.map(p => `
     <div class="price-picker-item" data-preset-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
       <span class="item-name">${p.name} <span style="font-size:11px;color:var(--sub);font-weight:400;">/ ${p.unit}</span></span>
@@ -3173,28 +3213,41 @@ function updateEstimateSummary() {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function toggleDirectInput() {
   AppState.directInputOpen = !AppState.directInputOpen;
-  document.getElementById('directInputRow').classList.toggle('hidden', !AppState.directInputOpen);
-  // 단가표 피커 닫기
+  document.getElementById('costDirectInputRow')?.classList.toggle('hidden', !AppState.directInputOpen);
   AppState.pricePickerOpen = false;
-  document.getElementById('pricePicker').classList.add('hidden');
-  if (AppState.directInputOpen) document.getElementById('directItemName').focus();
+  document.getElementById('costPricePicker')?.classList.add('hidden');
+  if (AppState.directInputOpen) document.getElementById('costDirectItemName')?.focus();
 }
 
 function addDirectItem() {
-  const name = document.getElementById('directItemName').value.trim();
-  const price = Number(document.getElementById('directItemPrice').value || 0);
+  const name = document.getElementById('costDirectItemName')?.value.trim();
+  const price = Number(document.getElementById('costDirectItemPrice')?.value || 0);
   if (!name) { alert('항목명을 입력해주세요.'); return; }
   addEstimateItem({ presetId: null, name, unitPrice: price, unit: '', qty: 1 });
-  document.getElementById('directItemName').value = '';
-  document.getElementById('directItemPrice').value = '';
+  document.getElementById('costDirectItemName').value = '';
+  document.getElementById('costDirectItemPrice').value = '';
+  document.getElementById('costDirectInputRow')?.classList.add('hidden');
+  AppState.directInputOpen = false;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    상담 저장 (견적 항목 포함)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function showAuthScreen() {
-  document.getElementById('authScreen').style.display = 'flex';
-  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authScreen').style.cssText = 'display:flex !important;';
+  document.getElementById('mainApp').style.cssText = 'display:none !important;';
+}
+
+async function handleLogout() {
+  // 로그아웃 플래그 먼저 저장 (reload 후에도 sessionStorage는 유지됨)
+  sessionStorage.setItem('ddLoggedOut', '1');
+  try {
+    if (AppState.supabase) {
+      await AppState.supabase.auth.signOut({ scope: 'local' });
+    }
+  } catch(e) { console.warn('signOut error:', e); }
+  localStorage.clear();
+  location.reload();
 }
 
 async function showMainApp(user) {
@@ -3207,6 +3260,8 @@ async function showMainApp(user) {
   await loadPatients();
   await loadTodayConsultCount();
   resetPatientForm();
+  renderPatientCount(); renderPatientList(); renderSelectedPatient();
+  renderSttState(); renderEstimateTable(); setConsultTab('history');
   setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); renderCostScreen(); loadCanvasCategories(); }, 100);
 }
 
@@ -3282,14 +3337,6 @@ async function handleSignup() {
   } catch(e) { setAuthMsg(`가입 실패: ${e.message}`, 'error'); }
 }
 
-async function handleLogout() {
-  await AppState.supabase.auth.signOut();
-  AppState.currentUser = null; AppState.userProfile = null; AppState.geminiApiKey = null;
-  AppState.patients = []; AppState.selectedPatientId = null;
-  closeSettingModal();
-  showAuthScreen();
-}
-
 function setAuthMsg(msg, type) {
   const el = document.getElementById('authMsg');
   el.textContent = msg;
@@ -3326,7 +3373,7 @@ async function saveClinicName() {
   try {
     await AppState.supabase.from('user_profiles').update({ clinic_name: clinic }).eq('id', AppState.currentUser.id);
     AppState.userProfile.clinic_name = clinic;
-    document.getElementById('clinicNameSub').textContent = clinic ? `${clinic} · AI 상담 요약` : 'AI 상담 요약 버전 · Gemini API 연결';
+    document.getElementById('clinicNameSub') && (document.getElementById('clinicNameSub').textContent = clinic ? `${clinic} · AI 상담 요약` : 'AI 상담 요약 버전');
     alert('치과명이 저장됐습니다.');
   } catch(e) { alert('저장 실패: ' + e.message); }
 }
@@ -3360,6 +3407,14 @@ async function connectSupabase() {
   try {
     AppState.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     AppState.connected = true;
+
+    // 로그아웃 후 재진입 시 세션 무시하고 바로 로그인 화면
+    if (sessionStorage.getItem('ddLoggedOut') === '1') {
+      sessionStorage.removeItem('ddLoggedOut');
+      await AppState.supabase.auth.signOut({ scope: 'local' });
+      showAuthScreen();
+      return;
+    }
 
     const { data: { session } } = await AppState.supabase.auth.getSession();
     if (session?.user) {
@@ -3716,23 +3771,26 @@ function stopBrowserStt() {
 }
 
 function resetConsultationForm() {
-  ['consultTitleInput','consultDiagnosisInput'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('consultPlanInput').value='재상담 예정';
-  document.getElementById('discountInput').value='0';
+  ['consultTitleInput','consultDiagnosisInput'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  const planEl = document.getElementById('consultPlanInput'); if(planEl) planEl.value = '재상담 예정';
+  const discEl = document.getElementById('discountInput'); if(discEl) discEl.value = '0';
   AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.sttSummary='';
   AppState.sttDialogSeparated=''; AppState.lastInterimTranscript='';
   const rawEl = document.getElementById('sttRawInput');
-  rawEl.value = ''; rawEl.style.color = '';
+  if(rawEl) { rawEl.value=''; rawEl.style.color=''; }
   AppState.estimateItems=[];
-  document.getElementById('aiSummaryResult').style.display='none';
-  document.getElementById('pricePicker').classList.add('hidden');
-  document.getElementById('directInputRow').classList.add('hidden');
+  const aiEl = document.getElementById('aiSummaryResult'); if(aiEl) aiEl.style.display='none';
+  // 비용상담 피커/직접입력 닫기
+  document.getElementById('costPricePicker')?.classList.add('hidden');
+  document.getElementById('costDirectInputRow')?.classList.add('hidden');
   AppState.pricePickerOpen=false; AppState.directInputOpen=false;
   renderEstimateTable(); renderSttState();
 }
 
 function updateEstimatePreview() {
-  document.getElementById('consultEstimatePreview').textContent = formatKRW(document.getElementById('consultEstimateInput').value||0);
+  // 구 팝업 제거됨 - 사용 안 함
 }
 
 async function saveConsultation() {
@@ -3875,53 +3933,53 @@ async function loadConsultations() {
 /* ── 이벤트 바인딩 ── */
 function bindEvents() {
   // ── 환자목록 팝업 ──
-  document.getElementById('patientCountChip').addEventListener('click', openPatientPopup);
-  document.getElementById('patientPopupClose').addEventListener('click', closePatientPopup);
-  document.getElementById('patientPopupOverlay').addEventListener('click', e => {
+  document.getElementById('patientCountChip')?.addEventListener('click', openPatientPopup);
+  document.getElementById('patientPopupClose')?.addEventListener('click', closePatientPopup);
+  document.getElementById('patientPopupOverlay')?.addEventListener('click', e => {
     if (e.target === document.getElementById('patientPopupOverlay')) closePatientPopup();
   });
 
   // ── 휴대전화 자동 포맷 ──
-  document.getElementById('patientMobileInput').addEventListener('input', e => {
+  document.getElementById('patientMobileInput')?.addEventListener('input', e => {
     const pos = e.target.selectionStart;
     const formatted = formatMobile(e.target.value);
     e.target.value = formatted;
   });
-  document.getElementById('loginTab').addEventListener('click', () => {
+  document.getElementById('loginTab')?.addEventListener('click', () => {
     document.getElementById('loginTab').classList.add('active');
     document.getElementById('signupTab').classList.remove('active');
     document.getElementById('authLoginForm').classList.remove('hidden');
     document.getElementById('authSignupForm').classList.add('hidden');
     setAuthMsg('', '');
   });
-  document.getElementById('signupTab').addEventListener('click', () => {
+  document.getElementById('signupTab')?.addEventListener('click', () => {
     document.getElementById('signupTab').classList.add('active');
     document.getElementById('loginTab').classList.remove('active');
     document.getElementById('authSignupForm').classList.remove('hidden');
     document.getElementById('authLoginForm').classList.add('hidden');
     setAuthMsg('', '');
   });
-  document.getElementById('loginBtn').addEventListener('click', handleLogin);
-  document.getElementById('signupBtn').addEventListener('click', handleSignup);
-  document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
-  document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+  document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
+  document.getElementById('signupBtn')?.addEventListener('click', handleSignup);
+  document.getElementById('loginEmail')?.addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+  document.getElementById('loginPassword')?.addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
 
   // ── 설정 ──
-  document.getElementById('openSettingBtn').addEventListener('click', openSettingModal);
-  document.getElementById('settingCloseBtn').addEventListener('click', closeSettingModal);
-  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-  document.getElementById('saveClinicBtn').addEventListener('click', saveClinicName);
-  document.getElementById('saveApiKeyBtn').addEventListener('click', saveApiKey);
-  document.getElementById('settingModalOverlay').addEventListener('click', e => {
+  document.getElementById('openSettingBtn')?.addEventListener('click', openSettingModal);
+  document.getElementById('settingCloseBtn')?.addEventListener('click', closeSettingModal);
+  document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+  document.getElementById('saveClinicBtn')?.addEventListener('click', saveClinicName);
+  document.getElementById('saveApiKeyBtn')?.addEventListener('click', saveApiKey);
+  document.getElementById('settingModalOverlay')?.addEventListener('click', e => {
     if(e.target === document.getElementById('settingModalOverlay')) closeSettingModal();
   });
 
   // ── 카테고리 관리 ──
-  document.getElementById('openCatMgmtBtn').addEventListener('click', () => { closeSettingModal(); openCatMgmt(); });
-  document.getElementById('catMgmtCloseBtn').addEventListener('click', closeCatMgmt);
-  document.getElementById('catMgmtOverlay').addEventListener('click', e => { if (e.target === document.getElementById('catMgmtOverlay')) closeCatMgmt(); });
-  document.getElementById('addCatBtn').addEventListener('click', addCategory);
-  document.getElementById('addTmplBtn').addEventListener('click', () => { if (CatMgmtState.selectedCatId) addTemplate(CatMgmtState.selectedCatId); });
+  document.getElementById('openCatMgmtBtn')?.addEventListener('click', () => { closeSettingModal(); openCatMgmt(); });
+  document.getElementById('catMgmtCloseBtn')?.addEventListener('click', closeCatMgmt);
+  document.getElementById('catMgmtOverlay')?.addEventListener('click', e => { if (e.target === document.getElementById('catMgmtOverlay')) closeCatMgmt(); });
+  document.getElementById('addCatBtn')?.addEventListener('click', addCategory);
+  document.getElementById('addTmplBtn')?.addEventListener('click', () => { if (CatMgmtState.selectedCatId) addTemplate(CatMgmtState.selectedCatId); });
 
   // ── 테마 선택 ──
   document.querySelectorAll('.theme-swatch').forEach(el => {
@@ -3936,47 +3994,47 @@ function bindEvents() {
 
   // ── 상담 시작 팝업 ──
   document.getElementById('startConsultBtn')?.addEventListener('click', openConsultPopup);
-  document.getElementById('cpCloseBtn').addEventListener('click', closeConsultPopup);
-  document.getElementById('consultPopupOverlay').addEventListener('click', e => {
+  document.getElementById('cpCloseBtn')?.addEventListener('click', closeConsultPopup);
+  document.getElementById('consultPopupOverlay')?.addEventListener('click', e => {
     if(e.target===document.getElementById('consultPopupOverlay')) closeConsultPopup();
   });
-  document.getElementById('cpRecBtn').addEventListener('click', toggleCpRecording);
-  document.getElementById('cpModeBtn').addEventListener('click', toggleCpMode);
-  document.getElementById('cpSaveBtn').addEventListener('click', saveCpConsultation);
-  document.getElementById('cpDiscountInput').addEventListener('input', updateCpSummary);
-  document.getElementById('cpOpenPricePickerBtn').addEventListener('click', toggleCpPricePicker);
-  document.getElementById('cpAddDirectItemBtn').addEventListener('click', toggleCpDirectInput);
-  document.getElementById('cpAddDirectItemConfirm').addEventListener('click', addCpDirectItem);
-  document.getElementById('cpDirectItemPrice').addEventListener('keydown', e=>{ if(e.key==='Enter') addCpDirectItem(); });
+  document.getElementById('cpRecBtn')?.addEventListener('click', toggleCpRecording);
+  document.getElementById('cpModeBtn')?.addEventListener('click', toggleCpMode);
+  document.getElementById('cpSaveBtn')?.addEventListener('click', saveCpConsultation);
+  document.getElementById('cpDiscountInput')?.addEventListener('input', updateCpSummary);
+  document.getElementById('cpOpenPricePickerBtn')?.addEventListener('click', toggleCpPricePicker);
+  document.getElementById('cpAddDirectItemBtn')?.addEventListener('click', toggleCpDirectInput);
+  document.getElementById('cpAddDirectItemConfirm')?.addEventListener('click', addCpDirectItem);
+  document.getElementById('cpDirectItemPrice')?.addEventListener('keydown', e=>{ if(e.key==='Enter') addCpDirectItem(); });
   document.querySelectorAll('.cp-cat').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       ConsultPopupState.currentCat = btn.dataset.cat;
       renderCpCategoryList();
     });
   });
-  document.getElementById('cpUploadBox').addEventListener('click', ()=>document.getElementById('cpFileInput').click());
-  document.getElementById('cpFileInput').addEventListener('change', e=>handleCpPhotoUpload(e.target.files));
+  document.getElementById('cpUploadBox')?.addEventListener('click', ()=>document.getElementById('cpFileInput').click());
+  document.getElementById('cpFileInput')?.addEventListener('change', e=>handleCpPhotoUpload(e.target.files));
 
   // ── 환자 폼 변경 감지 (저장 버튼 활성화) ──
   ['patientNameInput','patientMobileInput','patientChartInput','patientMemoInput'].forEach(id => {
     document.getElementById(id).addEventListener('input', checkPatientFormDirty);
   });
-  document.getElementById('patientStatusInput').addEventListener('change', checkPatientFormDirty);
+  document.getElementById('patientStatusInput')?.addEventListener('change', checkPatientFormDirty);
 
   // 환자 등록
-  document.getElementById('savePatientBtn').addEventListener('click', savePatient);
-  document.getElementById('resetPatientFormBtn').addEventListener('click', resetPatientForm);
+  document.getElementById('savePatientBtn')?.addEventListener('click', savePatient);
+  document.getElementById('resetPatientFormBtn')?.addEventListener('click', resetPatientForm);
 
   // 생년월일
-  document.getElementById('birthDisplayBtn').addEventListener('click', openBirthModal);
-  document.getElementById('birthCancelBtn').addEventListener('click', closeBirthModal);
-  document.getElementById('birthConfirmBtn').addEventListener('click', confirmBirth);
-  document.getElementById('birthModalOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('birthModalOverlay')) closeBirthModal(); });
+  document.getElementById('birthDisplayBtn')?.addEventListener('click', openBirthModal);
+  document.getElementById('birthCancelBtn')?.addEventListener('click', closeBirthModal);
+  document.getElementById('birthConfirmBtn')?.addEventListener('click', confirmBirth);
+  document.getElementById('birthModalOverlay')?.addEventListener('click', e=>{ if(e.target===document.getElementById('birthModalOverlay')) closeBirthModal(); });
 
   // SNS
-  document.getElementById('snsAddBtn').addEventListener('click', openSnsModal);
-  document.getElementById('snsCancelBtn').addEventListener('click', closeSnsModal);
-  document.getElementById('snsConfirmBtn').addEventListener('click', confirmSns);
+  document.getElementById('snsAddBtn')?.addEventListener('click', openSnsModal);
+  document.getElementById('snsCancelBtn')?.addEventListener('click', closeSnsModal);
+  document.getElementById('snsConfirmBtn')?.addEventListener('click', confirmSns);
   document.querySelectorAll('.sns-type-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.sns-type-btn').forEach(b=>b.classList.remove('active'));
@@ -3985,11 +4043,11 @@ function bindEvents() {
       updateSnsPreview();
     });
   });
-  document.getElementById('snsIdInput').addEventListener('input', updateSnsPreview);
-  document.getElementById('snsModalOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('snsModalOverlay')) closeSnsModal(); });
+  document.getElementById('snsIdInput')?.addEventListener('input', updateSnsPreview);
+  document.getElementById('snsModalOverlay')?.addEventListener('click', e=>{ if(e.target===document.getElementById('snsModalOverlay')) closeSnsModal(); });
 
   // 태그 피커
-  document.getElementById('addTagBtn').addEventListener('click', ()=>{
+  document.getElementById('addTagBtn')?.addEventListener('click', ()=>{
     AppState.tagPickerOpen = !AppState.tagPickerOpen;
     const picker = document.getElementById('tagPicker');
     if(AppState.tagPickerOpen) { picker.classList.remove('hidden'); initTagPicker(); }
@@ -3997,63 +4055,47 @@ function bindEvents() {
   });
 
   // 상단 버튼
-  document.getElementById('reloadAllBtn').addEventListener('click', async()=>{
-    if(AppState.connected){ await loadPatients(); await loadTodayConsultCount(); }
-  });
-  document.getElementById('patientSearchInput').addEventListener('input', renderPatientList);
+  // reloadAllBtn 제거됨
+
+
+  document.getElementById('patientSearchInput')?.addEventListener('input', renderPatientList);
+  bindPatientListClick();
 
   // 상담 탭
   document.querySelectorAll('[data-consult-tab]').forEach(btn =>
     btn.addEventListener('click', () => setConsultTab(btn.dataset.consultTab)));
 
   // 비용상담 화면
-  document.getElementById('costStartBtn')?.addEventListener('click', startSession);
-  document.getElementById('treatStartBtn')?.addEventListener('click', startSession);
-  document.getElementById('costDirectItemConfirm')?.addEventListener('click', () => {
-    const name = document.getElementById('costDirectItemName')?.value.trim();
-    const price = Number(document.getElementById('costDirectItemPrice')?.value || 0);
-    if (!name) { alert('항목명을 입력해주세요.'); return; }
-    addEstimateItem({ presetId: null, name, unitPrice: price, unit: '', qty: 1 });
-    document.getElementById('costDirectItemName').value = '';
-    document.getElementById('costDirectItemPrice').value = '';
-    document.getElementById('costDirectInputRow').classList.add('hidden');
-  });
-
-  // 견적
-  document.getElementById('openPricePickerBtn').addEventListener('click', togglePricePicker);
-  document.getElementById('addDirectItemBtn').addEventListener('click', toggleDirectInput);
-  document.getElementById('addDirectItemConfirm').addEventListener('click', addDirectItem);
-  document.getElementById('discountInput').addEventListener('input', updateEstimateSummary);
-  document.getElementById('directItemPrice').addEventListener('keydown', e => { if(e.key==='Enter') addDirectItem(); });
-  document.getElementById('directItemName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('directItemPrice').focus(); });
+  document.getElementById('openPricePickerBtn')?.addEventListener('click', togglePricePicker);
+  document.getElementById('addDirectItemBtn')?.addEventListener('click', toggleDirectInput);
+  document.getElementById('discountInput')?.addEventListener('input', updateEstimateSummary);
 
   // 상담
-  document.getElementById('saveConsultationBtn').addEventListener('click', saveConsultation);
-  document.getElementById('resetConsultationBtn').addEventListener('click', resetConsultationForm);
+  document.getElementById('resetConsultationBtn')?.addEventListener('click', resetConsultationForm);
 
   // STT
-  document.getElementById('startSttBtn').addEventListener('click', startBrowserStt);
-  document.getElementById('stopSttBtn').addEventListener('click', stopBrowserStt);
-  document.getElementById('mockSttBtn').addEventListener('click', ()=>{
+  document.getElementById('startSttBtn')?.addEventListener('click', startBrowserStt);
+  document.getElementById('stopSttBtn')?.addEventListener('click', stopBrowserStt);
+  document.getElementById('mockSttBtn')?.addEventListener('click', ()=>{
     AppState.sttRaw=mockSttText; AppState.sttRawFinal=mockSttText; AppState.lastInterimTranscript=''; renderSttState();
   });
-  document.getElementById('summarizeSttBtn').addEventListener('click', ()=>{
+  document.getElementById('summarizeSttBtn')?.addEventListener('click', ()=>{
     AppState.sttRaw=document.getElementById('sttRawInput').value;
     summarizeWithClaude(AppState.sttRaw);
   });
-  document.getElementById('applySttSummaryBtn').addEventListener('click', ()=>{
+  document.getElementById('applySttSummaryBtn')?.addEventListener('click', ()=>{
     if(AppState.sttSummary.trim()) document.getElementById('consultDiagnosisInput').value=AppState.sttSummary;
     else alert('먼저 AI 요약을 실행해주세요.');
   });
-  document.getElementById('sttRawInput').addEventListener('input', e=>{ AppState.sttRaw=e.target.value; AppState.sttRawFinal=e.target.value; });
+  document.getElementById('sttRawInput')?.addEventListener('input', e=>{ AppState.sttRaw=e.target.value; AppState.sttRawFinal=e.target.value; });
 }
 
 loadSavedTheme();
-bindEvents();
+// 로그인 화면 먼저 표시 (Supabase 연결 전)
 document.getElementById('authScreen').style.display = 'flex';
 document.getElementById('mainApp').style.display = 'none';
-renderPatientCount(); renderPatientList(); renderSelectedPatient();
-renderSttState(); renderEstimateTable(); setConsultTab('history');
+bindEvents();
+// Supabase 연결 (세션 있으면 자동으로 showMainApp 호출됨)
 connectSupabase();
 </script>
 </body>
