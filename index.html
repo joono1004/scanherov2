@@ -472,6 +472,8 @@
     .cost-item-price { font-size: 14px; font-weight: 900; color: var(--text); min-width: 90px; text-align: right; }
     .cost-item-del { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: #ccc; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: .15s; }
     .cost-item-del:hover { color: #e24b4a; background: #fff5f5; }
+    .cost-item-copy-btn { padding: 3px 8px; border-radius: 8px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-size: 10px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: .15s; flex-shrink: 0; }
+    .cost-item-copy-btn:hover { background: var(--primary); color: #fff; }
 
     /* 금액 요약 (하단 고정) */
     .cost-summary-area { flex-shrink: 0; border-top: 1px solid var(--line); background: var(--panel); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
@@ -497,7 +499,8 @@
     .direct-cancel-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--sub); font-size: 12px; cursor: pointer; }
 
     /* 가격 인라인 편집 */
-    .cost-item-price-edit { border: none; border-bottom: 1.5px solid var(--primary); outline: none; font-size: 14px; font-weight: 900; text-align: right; width: 110px; background: transparent; color: var(--primary); }
+    .cost-item-price-edit { border: none; border-bottom: 1.5px solid var(--primary); outline: none; font-size: 14px; font-weight: 900; text-align: right; width: 110px; background: transparent; color: var(--primary); -moz-appearance: textfield; }
+    .cost-item-price-edit::-webkit-inner-spin-button, .cost-item-price-edit::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .cost-item-name-custom { cursor: pointer; }
     .cost-item-name-edit { border: none; border-bottom: 1.5px solid var(--primary); outline: none; font-size: 14px; font-weight: 800; flex: 1; background: transparent; color: var(--primary); min-width: 0; }
 
@@ -3780,13 +3783,13 @@ function renderCostItems() {
     row.className = 'cost-item-row';
     const isCustom = !!item.isCustom;
     row.innerHTML = `
-      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" title="${isCustom ? '두 번 탭하면 이름 수정' : ''}">${item.name}</div>
+      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" title="${isCustom ? '클릭하면 이름 수정' : ''}">${item.name}</div>
       <div class="cost-item-qty">
         <button onclick="changeCostItemQty(${item.id},-1)">−</button>
         <span>${item.qty}</span>
         <button onclick="changeCostItemQty(${item.id},+1)">+</button>
       </div>
-      <div class="cost-item-price" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+      <div class="cost-item-price" title="클릭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
       <button class="cost-item-del" onclick="removeCostItem(${item.id})">✕</button>`;
 
     if (isCustom) {
@@ -3892,8 +3895,19 @@ function renderCompare() {
             <span>${item.qty}</span>
             <button onclick="changeCostItemQtyQ(${qi},${item.id},+1)">+</button>
           </div>
-          <div class="cost-item-price" style="font-size:12px;" data-qi="${qi}" data-id="${item.id}" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+          <div class="cost-item-price" style="font-size:12px;" data-qi="${qi}" data-id="${item.id}" title="클릭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+          ${qi === 0 ? `<button class="cost-item-copy-btn" title="견적 B에 동일 항목 추가">동일</button>` : ''}
           <button class="cost-item-del" onclick="removeCostItemQ(${qi},${item.id})">✕</button>`;
+
+        // 동일 버튼 (견적A → 견적B 복사)
+        if (qi === 0) {
+          rowDiv.querySelector('.cost-item-copy-btn')?.addEventListener('click', () => {
+            if (quotes.length < 2) return;
+            const copied = { id: Date.now(), name: item.name, unitPrice: item.unitPrice, qty: item.qty, unit: item.unit || '', presetId: item.presetId || null, isCustom: item.isCustom || false };
+            quotes[1].items.push(copied);
+            renderCostAll();
+          });
+        }
 
         // 이름 편집 (추가항목만)
         if (isCustom) {
