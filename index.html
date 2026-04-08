@@ -4253,14 +4253,12 @@ function changeQty(id, delta) {
 
 function renderEstimateTable() {
   const tbody = document.getElementById('estimateTableBody');
+  if (!tbody) return; // 구 화면 없으면 스킵
   const items = AppState.estimateItems;
-
   if (!items.length) {
     tbody.innerHTML = `<tr id="estimateEmptyRow"><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">항목을 추가해주세요</td></tr>`;
-    updateEstimateSummary();
     return;
   }
-
   tbody.innerHTML = items.map(item => `
     <tr>
       <td style="font-weight:800;">${item.name}${item.unit ? ` <span style="font-size:11px;color:var(--sub);font-weight:400;">/${item.unit}</span>` : ''}</td>
@@ -4276,16 +4274,18 @@ function renderEstimateTable() {
       </td>
     </tr>
   `).join('');
-
-  updateEstimateSummary();
 }
 
 function updateEstimateSummary() {
+  // 구 화면 호환 (없으면 스킵)
   const subtotal = AppState.estimateItems.reduce((s, i) => s + i.unitPrice * i.qty, 0);
-  const discount = Number(document.getElementById('discountInput').value || 0);
+  const discountEl = document.getElementById('discountInput');
+  const discount = discountEl ? Number(discountEl.value || 0) : 0;
   const total = Math.max(0, subtotal - discount);
-  document.getElementById('estimateSubtotal').textContent = formatKRW(subtotal);
-  document.getElementById('estimateTotal').textContent = formatKRW(total);
+  const subtotalEl = document.getElementById('estimateSubtotal');
+  const totalEl = document.getElementById('estimateTotal');
+  if (subtotalEl) subtotalEl.textContent = formatKRW(subtotal);
+  if (totalEl) totalEl.textContent = formatKRW(total);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4890,7 +4890,7 @@ async function saveConsultation() {
   if(!patient){alert('상담할 환자를 먼저 선택해주세요.');return;}
 
   const subtotal = AppState.estimateItems.reduce((s,i)=>s+i.unitPrice*i.qty,0);
-  const discount = Number(document.getElementById('discountInput').value||0);
+  const discount = Number(document.getElementById('discountInput')?.value || costDiscountRate > 0 ? Math.round(subtotal * costDiscountRate / 100) : 0);
   const total = Math.max(0, subtotal - discount);
 
   const payload={
