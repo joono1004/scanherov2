@@ -3761,6 +3761,10 @@ function renderCostAll() {
     renderCostItems();
     renderCostSummary();
   }
+  // 활성 카테고리 재렌더 (비교모드 안내 갱신)
+  const activeCat = document.querySelector('.cost-quick-cat.active');
+  if (activeCat) renderCostQuickItems(activeCat.dataset.cat);
+
   // 기존 호환
   AppState.estimateItems = getActiveQuote().items;
 }
@@ -3877,8 +3881,18 @@ function renderCompare() {
     const { subtotal, discountAmt, total } = calcQuote(q);
     const isActive = activeQuoteIdx === qi;
     const colorCls = qi === 0 ? '#185FA5' : '#3B6D11';
+    const activeBg = isActive ? (qi === 0 ? '#E6F1FB' : '#EAF3DE') : 'transparent';
 
-    col.innerHTML = `<div class="compare-col-label" style="color:${colorCls};border-bottom:1.5px solid ${colorCls};padding-bottom:4px;margin-bottom:6px;">${q.label} ${isActive ? '✏️' : ''}</div>`;
+    col.innerHTML = `<div class="compare-col-label" data-qi="${qi}" style="color:${colorCls};border-bottom:2px solid ${colorCls};padding-bottom:6px;margin-bottom:6px;cursor:pointer;background:${activeBg};border-radius:6px 6px 0 0;padding:6px 4px 6px;display:flex;align-items:center;justify-content:space-between;">
+      <span>${q.label}</span>
+      ${isActive ? `<span style="font-size:10px;background:${colorCls};color:#fff;padding:2px 6px;border-radius:10px;">입력 중</span>` : `<span style="font-size:10px;color:${colorCls};opacity:.6;">탭하여 선택</span>`}
+    </div>`;
+
+    // 컬럼 헤더 클릭 → 활성 견적 전환
+    col.querySelector('[data-qi]')?.addEventListener('click', () => {
+      activeQuoteIdx = qi;
+      renderCostAll();
+    });
 
     if (!q.items.length) {
       col.innerHTML += `<div style="font-size:12px;color:var(--sub);padding:8px 0;">항목을 선택하세요</div>`;
@@ -4124,7 +4138,11 @@ function renderCostQuickItems(cat) {
     el.innerHTML = '<span style="font-size:12px;color:var(--sub);padding:10px 0;">항목이 없습니다</span>';
     return;
   }
-  el.innerHTML = items.map(p => `
+
+  // 비교모드일 때 어느 견적에 추가되는지 안내
+  const targetLabel = isCompareMode() ? `<div style="font-size:10px;color:var(--sub);width:100%;margin-bottom:4px;">▶ <b>${quotes[activeQuoteIdx]?.label}</b>에 추가됩니다</div>` : '';
+
+  el.innerHTML = targetLabel + items.map(p => `
     <button class="cost-quick-item" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
       <span class="qi-name">${p.name}</span>
       <span class="qi-price">${formatKRW(p.price)}</span>
