@@ -363,11 +363,6 @@
     .canvas-tmpl-sub { font-size: 10px; color: #9aabbc; margin-top: 1px; }
 
     .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; }
-    .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; }
-    .canvas-wrap .canvas-container { position: relative; border-radius: 14px; border: 1px solid #dde3ec; box-shadow: 0 4px 16px rgba(18,34,54,.07); overflow: hidden; max-width: 100%; max-height: 100%; }
-    .canvas-wrap canvas { display: block; cursor: crosshair; }
-    #bgCanvas  { position: absolute; top: 0; left: 0; background: #ffffff; pointer-events: none; }
-    #mainCanvas { position: relative; background: transparent; }
     .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; flex-shrink: 0; }
     .tool-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
     .tool-btn:hover:not(.active) { background: var(--bg); }
@@ -442,7 +437,12 @@
     .screen.active { display: flex; flex-direction: column; }
 
     /* ── 치료상담 화면 ── */
-    .treat-body { display: grid; grid-template-columns: 180px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
+    .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
+    .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; min-width: 0; min-height: 0; overflow: hidden; }
+    .canvas-wrap .canvas-container { position: relative; border-radius: 14px; border: 1px solid #dde3ec; box-shadow: 0 4px 16px rgba(18,34,54,.07); overflow: hidden; max-width: 100%; max-height: 100%; }
+    .canvas-wrap canvas { display: block; cursor: crosshair; max-width: 100%; }
+    #bgCanvas  { position: absolute; top: 0; left: 0; background: #ffffff; pointer-events: none; }
+    #mainCanvas { position: relative; background: transparent; }
 
     /* ── 비용상담 화면 ── */
     /* ── 비용상담 새 레이아웃 ── */
@@ -565,23 +565,20 @@
     .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
 
-    /* 태블릿 세로 / 소형 태블릿 (834px 미만) */
+    /* 태블릿 세로 / 소형 (834px 미만) */
     @media (max-width: 834px) {
-      /* 네비게이션 */
       .app-nav { padding: 0 10px; gap: 6px; height: 48px; }
       .nav-brand-name { font-size: 13px; }
       .nav-tab { padding: 5px 10px; font-size: 12px; }
       .nav-pt-search { min-width: 120px; max-width: 150px; }
 
-      /* 치료 상담 - 사이드바 숨기고 하단 시트로 */
+      /* 치료 상담 - 사이드바 숨김 */
       .treat-body { grid-template-columns: 0 1fr 40px; }
       .canvas-sidebar { display: none; }
       .canvas-toolbar { padding: 4px; gap: 3px; }
       .tool-btn { width: 28px; height: 28px; font-size: 13px; }
       .color-swatch { width: 18px; height: 18px; }
       .lw-btn { width: 28px; height: 18px; }
-
-      /* 비용 상담 - 이미 flex column이라 별도 처리 불필요 */
 
       /* 환자정보 */
       .patient-screen-body { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
@@ -590,6 +587,18 @@
       .pt-reg-modal { max-width: 95vw; }
       .cat-mgmt-modal { max-width: 95vw; max-height: 92vh; }
       .cat-mgmt-body { grid-template-columns: 180px 1fr; }
+    }
+
+    /* 세로모드 / 소형 (600px 미만) */
+    @media (max-width: 600px) {
+      .treat-body { grid-template-columns: 0 1fr 36px; }
+      .canvas-toolbar { padding: 2px; gap: 2px; }
+      .tool-btn { width: 26px; height: 26px; font-size: 12px; }
+      .color-swatch { width: 16px; height: 16px; }
+      .lw-btn { width: 26px; height: 16px; }
+      .nav-tabs { gap: 0; padding: 2px; }
+      .nav-tab { padding: 5px 7px; font-size: 11px; }
+      .nav-pt-search { min-width: 90px; max-width: 120px; }
     }
 
     /* 소형 태블릿 세로 (768px 미만) */
@@ -3602,9 +3611,28 @@ function syncCatBars() {
   }
 }
 
-// 화면 회전 시 재처리
+// 화면 회전 / 창 크기 변경 시 재처리
+let _resizeTimer = null;
 window.addEventListener('resize', () => {
-  if (isTabletPortrait()) syncCatBars();
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    syncCatBars();
+    // 치료상담 탭 활성 시 캔버스 재초기화
+    if (AppState.currentTab === 'consult') {
+      const strokes = [...CanvasState.strokes];
+      const templateUrl = currentBgUrl;
+      initCanvas();
+      // 드로잉 데이터 복원
+      CanvasState.strokes = strokes;
+      rebuildBakedCanvas();
+      renderCanvas();
+      // 배경 복원
+      if (templateUrl) {
+        currentBgUrl = templateUrl;
+        applyBgOpacity(bgOpacity);
+      }
+    }
+  }, 200);
 });
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
