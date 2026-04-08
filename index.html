@@ -5165,74 +5165,55 @@ async function savePatient() {
 
 function resetPatientForm() {
   AppState.patientFormMode = 'new';
-  document.getElementById('patientPanelTitle').textContent = '환자 정보';
-  document.getElementById('patientPanelSub').textContent = '신규 환자 정보를 입력하세요.';
-  document.getElementById('savePatientBtn').textContent = '저장';
-  document.getElementById('patientChartInput').value = '';
-  document.getElementById('patientNameInput').value = '';
-  document.getElementById('patientMobileInput').value = '';
-  document.getElementById('patientBirthInput').value = '';
-  document.getElementById('patientMemoInput').value = '';
-  document.getElementById('patientStatusInput').value = '초기 상담';
-  const btn = document.getElementById('birthDisplayBtn');
-  btn.classList.add('empty');
-  document.getElementById('birthDisplayText').textContent = '생년월일 선택';
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('patientChartInput', '');
+  setVal('patientNameInput', '');
+  setVal('patientMobileInput', '');
+  setVal('patientBirthInput', '');
+  setVal('patientMemoInput', '');
+  const sel = document.getElementById('patientStatusInput');
+  if (sel) sel.value = '초기 상담';
   AppState.birthYear = null; AppState.birthMonth = null; AppState.birthDay = null;
   AppState.snsType = null; AppState.snsId = '';
   AppState.gender = null;
-  document.getElementById('snsPreviewArea').style.display = 'none';
-  const normalGenderStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
-  document.getElementById('genderMaleBtn').style.cssText = normalGenderStyle;
-  document.getElementById('genderFemaleBtn').style.cssText = normalGenderStyle;
   AppState.currentPatientTags = [];
   renderTagChips();
   AppState.selectedPatientId = null;
   setSavePatientBtnState(false);
+  renderSelectedPatient();
 }
 
-/* ── 환자 정보 폼에 데이터 채우기 (수정 모드) ── */
+/* ── 환자 정보 뷰 채우기 ── */
 function fillPatientForm(p) {
   AppState.patientFormMode = 'edit';
-  document.getElementById('patientPanelTitle').textContent = '환자 정보';
-  document.getElementById('patientPanelSub').textContent = '정보를 수정한 뒤 저장 버튼을 눌러주세요.';
-  document.getElementById('savePatientBtn').textContent = '저장';
-  document.getElementById('patientChartInput').value = p.chart_number || '';
-  document.getElementById('patientNameInput').value = p.name || '';
-  document.getElementById('patientMobileInput').value = p.mobile || '';
-  document.getElementById('patientMemoInput').value = p.memo || '';
-  document.getElementById('patientStatusInput').value = p.status || '초기 상담';
 
-  // 생년월일
+  // hidden input 호환용 (savePatient 등에서 사용)
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('patientNameInput',  p.name);
+  setVal('patientMobileInput', p.mobile);
+  setVal('patientChartInput',  p.chart_number);
+  setVal('patientMemoInput',   p.memo);
+  setVal('patientBirthInput',  p.birth_date);
+  const sel = document.getElementById('patientStatusInput');
+  if (sel) sel.value = p.status || '초기 상담';
+
+  // 생년월일 파싱 (드럼롤 호환용)
   if (p.birth_date) {
-    document.getElementById('patientBirthInput').value = p.birth_date;
     const [y, m, d] = p.birth_date.split('-');
     AppState.birthYear = Number(y); AppState.birthMonth = Number(m); AppState.birthDay = Number(d);
-    const btn = document.getElementById('birthDisplayBtn');
-    btn.classList.remove('empty');
-    document.getElementById('birthDisplayText').textContent = `${y}.${m}.${d}`;
   } else {
-    document.getElementById('birthDisplayBtn').classList.add('empty');
-    document.getElementById('birthDisplayText').textContent = '생년월일 선택';
     AppState.birthYear = null; AppState.birthMonth = null; AppState.birthDay = null;
   }
 
-  // 성별
+  // 성별 / SNS 상태 보관
   AppState.gender = p.gender || null;
-  const activeStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--primary);background:var(--primary-soft);font-weight:800;font-size:14px;cursor:pointer;color:var(--primary);';
-  const normalStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
-  document.getElementById('genderMaleBtn').style.cssText = p.gender === '남' ? activeStyle : normalStyle;
-  document.getElementById('genderFemaleBtn').style.cssText = p.gender === '여' ? activeStyle : normalStyle;
-
-  // SNS
   AppState.snsType = p.sns_type || null;
   AppState.snsId = p.sns_id || '';
-  if (p.sns_type && p.sns_id) {
-    document.getElementById('snsPreviewText').textContent = `${p.sns_type} · ${p.sns_id}`;
-    document.getElementById('snsPreviewArea').style.display = 'block';
-  } else {
-    document.getElementById('snsPreviewArea').style.display = 'none';
-  }
+
   setSavePatientBtnState(false);
+
+  // 뷰 렌더
+  renderSelectedPatient();
 }
 
 /* ── Gemini AI 요약 ── */
