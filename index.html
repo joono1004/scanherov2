@@ -1908,7 +1908,8 @@ function showToast(msg, type = '') {
 
 /* ── 저장 버튼 활성/비활성 제어 ── */
 function setSavePatientBtnState(enabled) {
-  document.getElementById('savePatientBtn').disabled = !enabled;
+  const btn = document.getElementById('savePatientBtn');
+  if (btn) btn.disabled = !enabled;
 }
 
 function checkPatientFormDirty() {
@@ -1966,10 +1967,12 @@ function setGender(val) {
   AppState.gender = val;
   const maleBtn  = document.getElementById('genderMaleBtn');
   const femaleBtn = document.getElementById('genderFemaleBtn');
-  const activeStyle  = 'padding:10px 12px;border-radius:14px;border:1px solid var(--primary);background:var(--primary-soft);font-weight:800;font-size:14px;cursor:pointer;color:var(--primary);';
-  const normalStyle  = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
-  maleBtn.style.cssText  = val === '남' ? activeStyle : normalStyle;
-  femaleBtn.style.cssText = val === '여' ? activeStyle : normalStyle;
+  if (maleBtn && femaleBtn) {
+    const activeStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--primary);background:var(--primary-soft);font-weight:800;font-size:14px;cursor:pointer;color:var(--primary);';
+    const normalStyle = 'padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;';
+    maleBtn.style.cssText  = val === '남' ? activeStyle : normalStyle;
+    femaleBtn.style.cssText = val === '여' ? activeStyle : normalStyle;
+  }
   checkPatientFormDirty();
 }
 
@@ -2051,7 +2054,8 @@ function confirmBirth() {
     document.getElementById('patientBirthInput').value = str;
     const btn = document.getElementById('birthDisplayBtn');
     if (btn) btn.classList.remove('empty');
-    document.getElementById('birthDisplayText').textContent = display;
+    const bdTxt = document.getElementById('birthDisplayText');
+    if (bdTxt) bdTxt.textContent = display;
     checkPatientFormDirty();
   }
   closeBirthModal();
