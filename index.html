@@ -3879,20 +3879,9 @@ function renderCompare() {
     const col = document.getElementById(colId);
     if (!col) return;
     const { subtotal, discountAmt, total } = calcQuote(q);
-    const isActive = activeQuoteIdx === qi;
     const colorCls = qi === 0 ? '#185FA5' : '#3B6D11';
-    const activeBg = isActive ? (qi === 0 ? '#E6F1FB' : '#EAF3DE') : 'transparent';
 
-    col.innerHTML = `<div class="compare-col-label" data-qi="${qi}" style="color:${colorCls};border-bottom:2px solid ${colorCls};padding-bottom:6px;margin-bottom:6px;cursor:pointer;background:${activeBg};border-radius:6px 6px 0 0;padding:6px 4px 6px;display:flex;align-items:center;justify-content:space-between;">
-      <span>${q.label}</span>
-      ${isActive ? `<span style="font-size:10px;background:${colorCls};color:#fff;padding:2px 6px;border-radius:10px;">입력 중</span>` : `<span style="font-size:10px;color:${colorCls};opacity:.6;">탭하여 선택</span>`}
-    </div>`;
-
-    // 컬럼 헤더 클릭 → 활성 견적 전환
-    col.querySelector('[data-qi]')?.addEventListener('click', () => {
-      activeQuoteIdx = qi;
-      renderCostAll();
-    });
+    col.innerHTML = `<div class="compare-col-label" style="color:${colorCls};border-bottom:1.5px solid ${colorCls};padding-bottom:4px;margin-bottom:6px;">${q.label}</div>`;
 
     if (!q.items.length) {
       col.innerHTML += `<div style="font-size:12px;color:var(--sub);padding:8px 0;">항목을 선택하세요</div>`;
@@ -3909,10 +3898,10 @@ function renderCompare() {
             <span>${item.qty}</span>
             <button onclick="changeCostItemQtyQ(${qi},${item.id},+1)">+</button>
           </div>
-          <div class="cost-item-price" style="font-size:12px;" data-qi="${qi}" data-id="${item.id}" title="클릭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+          <div class="cost-item-price" style="font-size:12px;" title="클릭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
           <button class="cost-item-del" onclick="removeCostItemQ(${qi},${item.id})">✕</button>`;
 
-        // 동일 버튼 (견적A → 견적B 복사) - DOM으로 직접 추가
+        // 동일 버튼 (견적A → 견적B 복사)
         if (qi === 0) {
           const copyBtn = document.createElement('button');
           copyBtn.className = 'cost-item-copy-btn';
@@ -3924,56 +3913,58 @@ function renderCompare() {
             quotes[1].items.push(copied);
             renderCostAll();
           });
-          // ✕ 버튼 앞에 삽입
-          const delBtn = rowDiv.querySelector('.cost-item-del');
-          rowDiv.insertBefore(copyBtn, delBtn);
+          rowDiv.insertBefore(copyBtn, rowDiv.querySelector('.cost-item-del'));
         }
 
         // 이름 편집 (추가항목만)
         if (isCustom) {
           const nameEl = rowDiv.querySelector('.cost-item-name');
-              function startNameEditQ() {
+          function startNameEditQ() {
             const input = document.createElement('input');
             input.type = 'text'; input.className = 'cost-item-name-edit';
             input.value = item.name === '추가항목' ? '' : item.name;
             input.placeholder = '추가항목';
             nameEl.replaceWith(input); input.focus();
-            function commitName() { item.name = input.value.trim() || '추가항목'; renderCostAll(); }
+            let committed = false;
+            function commitName() { if (committed) return; committed = true; item.name = input.value.trim() || '추가항목'; renderCostAll(); }
             input.addEventListener('blur', commitName);
-            input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') renderCostAll(); });
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { committed = true; renderCostAll(); } });
           }
           nameEl.addEventListener('click', startNameEditQ);
           nameEl.addEventListener('touchend', e => { e.preventDefault(); startNameEditQ(); });
         }
 
+        // 가격 편집
         const priceEl = rowDiv.querySelector('.cost-item-price');
-            function startEditQ() {
+        function startEditQ() {
           const input = document.createElement('input');
           input.type = 'number'; input.className = 'cost-item-price-edit';
           input.value = item.unitPrice; input.min = 0;
           priceEl.replaceWith(input); input.focus(); input.select();
-          function commit() { item.unitPrice = Math.max(0, Number(input.value) || 0); renderCostAll(); }
+          let committed = false;
+          function commit() { if (committed) return; committed = true; item.unitPrice = Math.max(0, Number(input.value) || 0); renderCostAll(); }
           input.addEventListener('blur', commit);
-          input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') renderCostAll(); });
+          input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { committed = true; renderCostAll(); } });
         }
-        priceEl.addEventListener('touchend', () => {
-          startEditQ();
-        });
         priceEl.addEventListener('click', startEditQ);
+        priceEl.addEventListener('touchend', e => { e.preventDefault(); startEditQ(); });
+
         col.appendChild(rowDiv);
       });
     }
 
-    // 각 견적 할인 버튼
     // + 항목 추가 버튼
     const addBtn2 = document.createElement('button');
     addBtn2.className = 'cost-add-item-btn';
     addBtn2.textContent = '+ 항목 추가';
     addBtn2.addEventListener('click', () => addInlineItem(qi));
     col.appendChild(addBtn2);
+
+    // 하단 금액 업데이트
     const subtotalEl = document.getElementById(qi === 0 ? 'compareSubtotalA' : 'compareSubtotalB');
-    const infoEl = document.getElementById(qi === 0 ? 'compareDiscountInfoA' : 'compareDiscountInfoB');
-    const btnsEl = document.getElementById(qi === 0 ? 'compareDiscountBtnsA' : 'compareDiscountBtnsB');
+    const totalEl    = document.getElementById(qi === 0 ? 'compareTotalA'    : 'compareTotalB');
+    const infoEl     = document.getElementById(qi === 0 ? 'compareDiscountInfoA' : 'compareDiscountInfoB');
+    const btnsEl     = document.getElementById(qi === 0 ? 'compareDiscountBtnsA' : 'compareDiscountBtnsB');
 
     if (subtotalEl) {
       subtotalEl.textContent = formatKRW(subtotal);
@@ -3988,22 +3979,6 @@ function renderCompare() {
       ).join('');
     }
   });
-
-  // 차액
-  if (quotes.length >= 2) {
-    const tA = calcQuote(quotes[0]).total;
-    const tB = calcQuote(quotes[1]).total;
-    const diff = Math.abs(tA - tB);
-    const cheaper = tA < tB ? '견적 A' : '견적 B';
-    const labelEl = document.getElementById('compareDiffLabel');
-    const valEl = document.getElementById('compareDiffVal');
-    if (labelEl) labelEl.textContent = diff > 0 ? `${cheaper}가 더 저렴해요` : '두 견적이 동일해요';
-    if (labelEl) labelEl.style.color = '';
-    if (valEl) {
-      valEl.textContent = diff > 0 ? `${formatKRW(diff)} 차이` : '';
-      valEl.style.color = tA < tB ? '#185FA5' : '#3B6D11';
-    }
-  }
 }
 
 /* ── 항목 추가/삭제/수량 ── */
