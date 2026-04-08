@@ -513,7 +513,6 @@
 
     /* 기본: 데스크탑/태블릿 가로 (834px 이상) */
     .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
-    .cost-screen-body { display: grid; grid-template-columns: 180px 1fr; flex: 1; overflow: hidden; min-height: 0; }
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
 
     /* 태블릿 세로 / 소형 태블릿 (834px 미만) */
@@ -532,10 +531,7 @@
       .color-swatch { width: 18px; height: 18px; }
       .lw-btn { width: 28px; height: 18px; }
 
-      /* 비용 상담 */
-      .cost-screen-body { grid-template-columns: 1fr; }
-      .cost-sidebar { display: none; }
-      .cost-main { padding: 12px; }
+      /* 비용 상담 - 이미 flex column이라 별도 처리 불필요 */
 
       /* 환자정보 */
       .patient-screen-body { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
