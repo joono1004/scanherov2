@@ -445,12 +445,50 @@
     .treat-body { display: grid; grid-template-columns: 180px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
 
     /* ── 비용상담 화면 ── */
-    .cost-screen-body { display: grid; grid-template-columns: 200px 1fr; flex: 1; overflow: hidden; min-height: 0; }
-    .cost-sidebar { background: #fff; border-right: 1px solid var(--line); padding: 14px; overflow-y: auto; }
-    .cost-main { padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
-    .cost-cat { padding: 8px 11px; border-radius: 10px; font-size: 13px; font-weight: 800; color: var(--sub); border: none; background: transparent; text-align: left; cursor: pointer; width: 100%; transition: .15s; }
-    .cost-cat.active { background: var(--dark); color: #fff; }
-    .cost-cat:hover:not(.active) { background: var(--primary-soft); color: var(--primary); }
+    /* ── 비용상담 새 레이아웃 ── */
+    .cost-screen-body { display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0; background: var(--bg); }
+
+    /* 카테고리 탭 + 항목 버튼 */
+    .cost-quick-area { flex-shrink: 0; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .cost-quick-cats { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+    .cost-quick-cats::-webkit-scrollbar { display: none; }
+    .cost-quick-cat { padding: 10px 18px; border: none; border-bottom: 3px solid transparent; background: transparent; font-size: 13px; font-weight: 800; cursor: pointer; color: var(--sub); white-space: nowrap; transition: .15s; flex-shrink: 0; }
+    .cost-quick-cat.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .cost-quick-items { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 16px; min-height: 64px; align-content: flex-start; }
+    .cost-quick-item { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--panel); cursor: pointer; transition: .15s; }
+    .cost-quick-item:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .cost-quick-item:active { transform: scale(.93); }
+    .cost-quick-item .qi-name { font-size: 13px; font-weight: 800; color: var(--text); }
+    .cost-quick-item .qi-price { font-size: 11px; color: var(--sub); font-weight: 700; }
+
+    /* 선택 항목 목록 */
+    .cost-items-area { flex: 1; overflow-y: auto; padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .cost-empty { text-align: center; padding: 30px 0; font-size: 13px; color: var(--sub); }
+    .cost-item-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
+    .cost-item-name { flex: 1; font-size: 14px; font-weight: 800; color: var(--text); }
+    .cost-item-qty { display: flex; align-items: center; gap: 6px; }
+    .cost-item-qty button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+    .cost-item-qty span { min-width: 22px; text-align: center; font-size: 14px; font-weight: 800; }
+    .cost-item-price { font-size: 14px; font-weight: 900; color: var(--text); min-width: 90px; text-align: right; }
+    .cost-item-del { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: #ccc; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: .15s; }
+    .cost-item-del:hover { color: #e24b4a; background: #fff5f5; }
+
+    /* 금액 요약 (하단 고정) */
+    .cost-summary-area { flex-shrink: 0; border-top: 1px solid var(--line); background: var(--panel); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .cost-subtotal-row { display: flex; justify-content: space-between; align-items: center; }
+    .cost-subtotal-label { font-size: 13px; color: var(--sub); font-weight: 700; }
+    .cost-subtotal-val { font-size: 18px; font-weight: 900; color: var(--text); }
+    .cost-subtotal-val.has-discount { text-decoration: line-through; color: var(--sub); font-size: 14px; }
+    .cost-discount-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .cost-discount-label { font-size: 13px; color: var(--sub); flex-shrink: 0; font-weight: 700; }
+    .cost-discount-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cost-discount-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg); font-size: 12px; font-weight: 800; cursor: pointer; transition: .15s; color: var(--sub); }
+    .cost-discount-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cost-total-box { background: var(--dark); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .cost-total-left { display: flex; flex-direction: column; gap: 2px; }
+    .cost-total-label { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 700; }
+    .cost-total-discount-badge { font-size: 11px; color: #fbbf24; font-weight: 800; }
+    .cost-total-val { font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -1.5px; line-height: 1; }
 
     /* ── 환자정보 화면 ── */
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
@@ -932,98 +970,52 @@
 
   <!-- ══ 화면 2: 비용 상담 ══ -->
   <div class="screen" id="screen-cost">
-
-    <!-- 태블릿 세로용 단가 카테고리 가로 바 -->
-    <div class="canvas-cat-bar" id="costCatBar" style="display:none;"></div>
-
     <div class="cost-screen-body">
 
-      <!-- 좌: 단가표 카테고리 -->
-      <div class="cost-sidebar">
-        <span class="canvas-sidebar-label">치료 항목</span>
-        <div style="display:flex;flex-direction:column;gap:3px;" id="costCatList"></div>
-        <div style="margin-top:14px;">
-          <span class="canvas-sidebar-label">빠른 추가</span>
-          <div id="costPresetList" style="display:flex;flex-direction:column;gap:5px;"></div>
+      <!-- 상단: 빠른 항목 선택 -->
+      <div class="cost-quick-area">
+        <div class="cost-quick-cats" id="costQuickCats"></div>
+        <div class="cost-quick-items" id="costQuickItems">
+          <span style="font-size:12px;color:var(--sub);padding:10px 0;">단가표를 설정하면 여기에 표시됩니다</span>
         </div>
       </div>
 
-      <!-- 우: 견적 작성 -->
-      <div class="cost-main">
-        <!-- 헤더 -->
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h2 style="font-size:18px;font-weight:900;margin:0;">비용 상담</h2>
-        </div>
+      <!-- 중간: 견적 목록 -->
+      <div class="cost-items-area" id="costItemsArea">
+        <div class="cost-empty" id="costEmptyMsg">항목을 선택하면 여기에 추가됩니다</div>
+      </div>
 
-        <!-- 직접 입력 -->
-        <div class="direct-input-row hidden" id="costDirectInputRow">
-          <input id="costDirectItemName" placeholder="항목명" style="flex:1.5;" />
-          <input id="costDirectItemPrice" type="number" placeholder="단가" style="flex:1;" />
-          <button class="primary-btn" id="costDirectItemConfirm" style="padding:9px 12px;border-radius:12px;font-size:13px;">추가</button>
+      <!-- 하단: 금액 요약 -->
+      <div class="cost-summary-area">
+        <!-- 소계 (할인 전) -->
+        <div class="cost-subtotal-row">
+          <span class="cost-subtotal-label">소계</span>
+          <span class="cost-subtotal-val" id="costSubtotal">0원</span>
         </div>
-
-        <!-- 단가표 피커 -->
-        <div class="price-picker hidden" id="costPricePicker">
-          <div class="price-picker-cats" id="costPricePickerCats"></div>
-          <div class="price-picker-items" id="costPricePickerItems"></div>
-        </div>
-
-        <!-- 견적 테이블 -->
-        <div style="border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;">
-          <table class="estimate-table">
-            <thead>
-              <tr>
-                <th style="width:40%;">항목</th>
-                <th style="width:25%;text-align:right;">단가</th>
-                <th style="width:20%;text-align:center;">수량</th>
-                <th style="width:15%;"></th>
-              </tr>
-            </thead>
-            <tbody id="estimateTableBody">
-              <tr><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">좌측 항목을 클릭하거나 직접 입력해주세요</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 추가 버튼 -->
-        <div style="display:flex;gap:8px;">
-          <button class="soft-btn" id="openPricePickerBtn" style="padding:8px 14px;border-radius:10px;font-size:13px;">+ 단가표에서 추가</button>
-          <button class="ghost-btn" id="addDirectItemBtn" style="padding:8px 14px;border-radius:10px;font-size:13px;">+ 직접 입력</button>
-        </div>
-
-        <!-- 합계 -->
-        <div class="estimate-summary">
-          <div class="estimate-summary-row">
-            <span style="color:var(--sub);">소계</span>
-            <span id="estimateSubtotal" style="font-weight:900;">0원</span>
+        <!-- 할인 선택 -->
+        <div class="cost-discount-row">
+          <span class="cost-discount-label">할인</span>
+          <div class="cost-discount-btns">
+            <button class="cost-discount-btn active" data-discount="0">없음</button>
+            <button class="cost-discount-btn" data-discount="5">5%</button>
+            <button class="cost-discount-btn" data-discount="10">10%</button>
+            <button class="cost-discount-btn" data-discount="15">15%</button>
+            <button class="cost-discount-btn" data-discount="20">20%</button>
+            <button class="cost-discount-btn" data-discount="custom">직접입력</button>
           </div>
-          <div class="estimate-summary-row">
-            <span style="color:var(--sub);">할인</span>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span>-</span>
-              <input class="discount-input" id="discountInput" type="number" min="0" step="10000" value="0" />
-              <span>원</span>
-            </div>
-          </div>
-          <div class="estimate-summary-row total">
-            <span>최종 견적</span>
-            <span id="estimateTotal">0원</span>
-          </div>
+          <input id="costDiscountCustom" type="number" placeholder="%" min="0" max="100"
+            style="width:60px;display:none;border-radius:8px;border:1px solid var(--line);padding:4px 8px;font-size:13px;font-weight:800;" />
         </div>
-
-        <!-- 다음 액션 -->
-        <div style="display:flex;gap:8px;align-items:flex-end;">
-          <div style="flex:1;">
-            <label class="label" for="consultPlanInput">다음 액션</label>
-            <select id="consultPlanInput">
-              <option value="재상담 예정">재상담 예정</option>
-              <option value="견적 발송 예정">견적 발송 예정</option>
-              <option value="당일 결정 가능">당일 결정 가능</option>
-              <option value="치료 예약 유도">치료 예약 유도</option>
-            </select>
+        <!-- 최종 금액 (크게) -->
+        <div class="cost-total-box">
+          <div class="cost-total-left">
+            <span class="cost-total-label">최종 견적</span>
+            <span class="cost-total-discount-badge" id="costDiscountBadge" style="display:none;"></span>
           </div>
+          <span class="cost-total-val" id="costTotal">0원</span>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -3627,41 +3619,163 @@ function updateCatDropdownLabel() {
   document.getElementById('catDropdownBtn')?.classList.remove('open');
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   비용상담 새 렌더링
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let costDiscountRate = 0; // 현재 할인율 (%)
+
 function renderCostScreen() {
-  // 좌측 카테고리 목록
   const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
-  const catList = document.getElementById('costCatList');
-  if (!catList) return;
-  catList.innerHTML = cats.map((c, i) => `
-    <button class="cost-cat${i===0?' active':''}" data-cat="${c}">${c}</button>
-  `).join('');
-  catList.querySelectorAll('.cost-cat').forEach(btn => {
+  const catsEl = document.getElementById('costQuickCats');
+  if (!catsEl) return;
+
+  catsEl.innerHTML = cats.map((c, i) =>
+    `<button class="cost-quick-cat${i===0?' active':''}" data-cat="${c}">${c}</button>`
+  ).join('');
+
+  catsEl.querySelectorAll('.cost-quick-cat').forEach(btn => {
     btn.addEventListener('click', () => {
-      catList.querySelectorAll('.cost-cat').forEach(b => b.classList.remove('active'));
+      catsEl.querySelectorAll('.cost-quick-cat').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderCostPresets(btn.dataset.cat);
+      renderCostQuickItems(btn.dataset.cat);
     });
   });
-  if (cats.length) renderCostPresets(cats[0]);
+
+  if (cats.length) renderCostQuickItems(cats[0]);
+
+  // 할인 버튼 이벤트
+  document.querySelectorAll('.cost-discount-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cost-discount-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const custom = document.getElementById('costDiscountCustom');
+      if (btn.dataset.discount === 'custom') {
+        custom.style.display = 'block';
+        custom.focus();
+        costDiscountRate = Number(custom.value) || 0;
+      } else {
+        custom.style.display = 'none';
+        costDiscountRate = Number(btn.dataset.discount);
+      }
+      renderCostSummary();
+    });
+  });
+
+  document.getElementById('costDiscountCustom')?.addEventListener('input', e => {
+    costDiscountRate = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+    renderCostSummary();
+  });
+
+  renderCostItems();
+  renderCostSummary();
 }
 
-function renderCostPresets(cat) {
+function renderCostQuickItems(cat) {
   const items = AppState.pricePresets.filter(p => p.category === cat);
-  const list = document.getElementById('costPresetList');
-  if (!list) return;
-  list.innerHTML = items.map(p => `
-    <div class="price-picker-item" style="cursor:pointer;"
-      data-preset-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
-      <span class="item-name">${p.name}</span>
-      <span class="item-price">${formatKRW(p.price)}</span>
-    </div>
+  const el = document.getElementById('costQuickItems');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<span style="font-size:12px;color:var(--sub);padding:10px 0;">항목이 없습니다</span>';
+    return;
+  }
+  el.innerHTML = items.map(p => `
+    <button class="cost-quick-item" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
+      <span class="qi-name">${p.name}</span>
+      <span class="qi-price">${formatKRW(p.price)}</span>
+    </button>
   `).join('');
-  list.querySelectorAll('.price-picker-item').forEach(el => {
-    el.addEventListener('click', () => addEstimateItem({
-      presetId: el.dataset.presetId, name: el.dataset.name,
-      unitPrice: Number(el.dataset.price), unit: el.dataset.unit, qty: 1
-    }));
+  el.querySelectorAll('.cost-quick-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addCostItem({ presetId: btn.dataset.id, name: btn.dataset.name, unitPrice: Number(btn.dataset.price), unit: btn.dataset.unit, qty: 1 });
+    });
   });
+}
+
+function addCostItem(item) {
+  // 같은 항목이면 수량 증가
+  const existing = AppState.estimateItems.find(i => i.presetId && i.presetId === item.presetId);
+  if (existing) { existing.qty += 1; }
+  else { AppState.estimateItems.push({ id: Date.now(), ...item }); }
+  renderCostItems();
+  renderCostSummary();
+}
+
+function removeCostItem(id) {
+  AppState.estimateItems = AppState.estimateItems.filter(i => i.id !== id);
+  renderCostItems();
+  renderCostSummary();
+}
+
+function changeCostItemQty(id, delta) {
+  const item = AppState.estimateItems.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCostItems();
+  renderCostSummary();
+}
+
+function renderCostItems() {
+  const area = document.getElementById('costItemsArea');
+  const emptyMsg = document.getElementById('costEmptyMsg');
+  if (!area) return;
+  const items = AppState.estimateItems;
+
+  // 기존 항목 행만 제거 (emptyMsg 유지)
+  area.querySelectorAll('.cost-item-row').forEach(el => el.remove());
+
+  if (!items.length) {
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    return;
+  }
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'cost-item-row';
+    row.dataset.id = item.id;
+    row.innerHTML = `
+      <div class="cost-item-name">${item.name}</div>
+      <div class="cost-item-qty">
+        <button onclick="changeCostItemQty(${item.id}, -1)">−</button>
+        <span>${item.qty}</span>
+        <button onclick="changeCostItemQty(${item.id}, +1)">+</button>
+      </div>
+      <div class="cost-item-price">${formatKRW(item.unitPrice * item.qty)}</div>
+      <button class="cost-item-del" onclick="removeCostItem(${item.id})">✕</button>
+    `;
+    area.appendChild(row);
+  });
+}
+
+function renderCostSummary() {
+  const subtotal = AppState.estimateItems.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+  const discountAmt = Math.round(subtotal * costDiscountRate / 100);
+  const total = subtotal - discountAmt;
+
+  const subtotalEl = document.getElementById('costSubtotal');
+  const totalEl = document.getElementById('costTotal');
+  const badgeEl = document.getElementById('costDiscountBadge');
+
+  // 소계: 할인 있으면 취소선
+  if (subtotalEl) {
+    subtotalEl.textContent = formatKRW(subtotal);
+    subtotalEl.className = costDiscountRate > 0 ? 'cost-subtotal-val has-discount' : 'cost-subtotal-val';
+  }
+
+  // 할인 배지
+  if (badgeEl) {
+    if (costDiscountRate > 0 && subtotal > 0) {
+      badgeEl.textContent = `${costDiscountRate}% 할인 적용 (-${formatKRW(discountAmt)})`;
+      badgeEl.style.display = 'block';
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+
+  // 최종 금액 (크게)
+  if (totalEl) totalEl.textContent = formatKRW(total);
+
+  updateEstimateSummary();
 }
 
 /* ── 치과명 업데이트 (네비게이션) ── */
