@@ -3561,13 +3561,25 @@ function syncCatBars() {
   const topBar = document.getElementById('canvasCatBar');
   if (!topBar) return;
 
-  // DB 카테고리가 있으면 topBar에 동기화
+  // DB 카테고리 우선, 없으면 기존 사이드바 버튼에서 추출
   const dbCats = document.getElementById('catDropdownList')?._dbCats;
+  const sidebarCats = document.getElementById('canvasCatList');
+
+  let catButtons = '';
   if (dbCats && dbCats.length) {
-    topBar.innerHTML = dbCats.map((cat, i) =>
+    catButtons = dbCats.map((cat, i) =>
       `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat="${cat.name}" data-cat-id="${cat.id}">${cat.name}</button>`
     ).join('');
+  } else if (sidebarCats) {
+    // 사이드바에서 카테고리 목록 복사
+    catButtons = Array.from(sidebarCats.querySelectorAll('.canvas-cat'))
+      .map((btn, i) =>
+        `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat="${btn.dataset.cat}" ${btn.dataset.catId ? `data-cat-id="${btn.dataset.catId}"` : ''}>${btn.textContent}</button>`
+      ).join('');
   }
+
+  if (!catButtons) return;
+  topBar.innerHTML = catButtons;
 
   topBar.querySelectorAll('.canvas-cat').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3575,7 +3587,6 @@ function syncCatBars() {
       btn.classList.add('active');
       CanvasState.currentCat = btn.dataset.cat;
       CanvasState.currentTmpl = 0;
-      // DB 카테고리 방식
       if (btn.dataset.catId && dbCats) {
         const cat = dbCats.find(c => c.id === btn.dataset.catId);
         if (cat) { renderCanvasTmplListFromDB(cat); return; }
@@ -3618,6 +3629,10 @@ function switchScreen(name) {
   document.querySelectorAll('.screen').forEach(s =>
     s.classList.toggle('active', s.id === `screen-${name}`));
   if (name === 'patient') loadConsultations();
+  if (name === 'consult') {
+    AppState.currentTab = 'consult';
+    syncCatBars();
+  }
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4721,7 +4736,11 @@ async function showMainApp(user) {
   resetPatientForm();
   renderPatientCount(); renderPatientList(); renderSelectedPatient();
   renderSttState(); renderEstimateTable(); setConsultTab('history');
-  setTimeout(() => { initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); bindOpacityControls(); renderCostScreen(); loadCanvasCategories(); syncCatBars(); }, 100);
+  setTimeout(async () => {
+    initCanvas(); bindCanvasEvents(); bindCanvasTopbar(); bindOpacityControls(); renderCostScreen();
+    await loadCanvasCategories();
+    syncCatBars();
+  }, 100);
 }
 
 async function loadUserProfile() {
