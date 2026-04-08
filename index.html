@@ -499,6 +499,10 @@
     /* 가격 인라인 편집 */
     .cost-item-price-edit { border: none; border-bottom: 1.5px solid var(--primary); outline: none; font-size: 14px; font-weight: 900; text-align: right; width: 110px; background: transparent; color: var(--primary); }
 
+    /* + 항목 추가 버튼 */
+    .cost-add-item-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1.5px dashed var(--line); background: transparent; color: var(--sub); font-size: 13px; font-weight: 800; cursor: pointer; transition: .15s; text-align: center; margin-top: 2px; }
+    .cost-add-item-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
     /* 견적 탭 + 버튼 */
     .quote-tabs { display: flex; border-bottom: 0.5px solid var(--line); background: var(--panel); flex-shrink: 0; }
     .quote-tab { flex: 1; padding: 10px 8px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border: none; background: transparent; color: var(--sub); border-bottom: 2.5px solid transparent; transition: .15s; }
@@ -3818,6 +3822,13 @@ function renderCostItems() {
 
     area.appendChild(row);
   });
+
+  // + 항목 추가 버튼
+  const addItemBtn = document.createElement('button');
+  addItemBtn.className = 'cost-add-item-btn';
+  addItemBtn.textContent = '+ 항목 추가';
+  addItemBtn.addEventListener('click', () => window.openDirectInput?.());
+  area.appendChild(addItemBtn);
 }
 
 function renderCostSummary() {
@@ -3890,7 +3901,16 @@ function renderCompare() {
     }
 
     // 각 견적 할인 버튼
-    const totalEl = document.getElementById(qi === 0 ? 'compareTotalA' : 'compareTotalB');
+    // + 항목 추가 버튼
+    const addBtn2 = document.createElement('button');
+    addBtn2.className = 'cost-add-item-btn';
+    addBtn2.textContent = '+ 항목 추가';
+    addBtn2.addEventListener('click', () => {
+      activeQuoteIdx = qi;
+      renderQuoteTabs();
+      window.openDirectInput?.();
+    });
+    col.appendChild(addBtn2);
     const subtotalEl = document.getElementById(qi === 0 ? 'compareSubtotalA' : 'compareSubtotalB');
     const infoEl = document.getElementById(qi === 0 ? 'compareDiscountInfoA' : 'compareDiscountInfoB');
     const btnsEl = document.getElementById(qi === 0 ? 'compareDiscountBtnsA' : 'compareDiscountBtnsB');
@@ -4083,8 +4103,7 @@ function renderQuoteTabs() {
     const active = activeQuoteIdx === i ? colorCls : '';
     const del = quotes.length > 1 ? `<span class="quote-tab-del" data-del="${i}">✕</span>` : '';
     return `<button class="quote-tab ${active}" data-quote="${i}">${q.label}${del}</button>`;
-  }).join('') + addBtn +
-  `<button class="quote-tab-add" id="directInputToggleBtn" title="항목 직접 추가" style="border-left:0.5px solid var(--line);font-size:16px;">✎</button>`;
+  }).join('') + addBtn;
 
   // 탭 클릭
   tabs.querySelectorAll('.quote-tab[data-quote]').forEach(btn => {
@@ -4114,13 +4133,6 @@ function renderQuoteTabs() {
     activeQuoteIdx = 1;
     renderQuoteTabs();
     renderCostAll();
-  });
-
-  // ✎ 직접입력 토글
-  document.getElementById('directInputToggleBtn')?.addEventListener('click', () => {
-    const row = document.getElementById('directInputRow');
-    if (row.style.display === 'none') window.openDirectInput?.();
-    else row.style.display = 'none';
   });
 }
 
