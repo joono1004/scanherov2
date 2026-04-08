@@ -2037,6 +2037,7 @@ const CanvasState = {
   // 드로잉 상태
   drawing: false,
   startX: 0, startY: 0,
+  viewerMode: false,    // 뷰어모드: true면 드로잉 비활성
 
   // 성능 최적화: 완성된 획들을 구운 오프스크린 캔버스
   bakedCanvas: null,
@@ -2349,6 +2350,7 @@ function bindCanvasEvents() {
   }
 
   function onDown(e) {
+    if (CanvasState.viewerMode) return; // 뷰어모드에서 드로잉 차단
     const { x, y } = getPos(e);
     CanvasState.drawing = true;
     CanvasState.startX = x;
@@ -2412,7 +2414,7 @@ function bindCanvasEvents() {
     onUp();
   }, { passive: false });
 
-  // 툴 버튼
+  // 툴 버튼 (클릭 시 뷰어모드 해제)
   document.querySelectorAll('[data-tool]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
@@ -2420,6 +2422,8 @@ function bindCanvasEvents() {
       CanvasState.tool = btn.dataset.tool;
       canvas.style.cursor = CanvasState.tool === 'eraser' ? 'cell'
         : CanvasState.tool === 'text' ? 'text' : 'crosshair';
+      // 뷰어모드 해제
+      if (CanvasState.viewerMode) setViewerMode(false);
     });
   });
 
@@ -2886,16 +2890,93 @@ async function loadPrevConsultThumbs() {
     thumbs.innerHTML = data.map(c => {
       const date = new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
       return `
-        <div class="prev-thumb" onclick="window.open('${c.canvas_image_url}','_blank')" title="${c.title || '상담 이미지'} - 클릭하면 크게 보기">
+        <div class="prev-thumb" data-consult-id="${c.id}" title="${c.title || '상담'} - 클릭하면 캔버스에서 보기">
           <img src="${c.canvas_image_url}" alt="이전 상담" loading="lazy" />
           <div class="prev-thumb-info">
             <div class="prev-thumb-date">${date}</div>
           </div>
         </div>`;
     }).join('');
+
+    // 썸네일 클릭 → 캔버스에 이전 상담 로드
+    thumbs.querySelectorAll('.prev-thumb[data-consult-id]').forEach(el => {
+      el.addEventListener('click', async () => {
+        const consultId = el.dataset.consultId;
+        thumbs.querySelectorAll('.prev-thumb').forEach(t => t.style.outline = '');
+        el.style.outline = '2px solid var(--primary)';
+        await loadConsultToCanvas(consultId);
+      });
+    });
   } catch(e) {
     console.warn('이전 상담 썸네일 로드 실패:', e.message);
     section.style.display = 'none';
+  }
+}
+
+/* ── 이전 상담을 캔버스에 로드 (뷰어모드) ── */
+async function loadConsultToCanvas(consultId) {
+  if (!AppState.connected || !consultId) return;
+  showToast('이전 상담을 불러오는 중...', '');
+
+  try {
+    const { data, error } = await AppState.supabase
+      .from('consultations')
+      .select('drawing_data, canvas_image_url, title')
+      .eq('id', consultId).single();
+
+    if (error) throw error;
+
+    clearCanvas();
+
+    if (data?.drawing_data) {
+      // 벡터 드로잉 데이터 복원
+      const saved = JSON.parse(data.drawing_data);
+      if (saved.templateUrl) {
+        currentBgUrl = saved.templateUrl;
+        applyBgOpacity(bgOpacity);
+      }
+      CanvasState.strokes = saved.strokes || [];
+      rebuildBakedCanvas();
+      renderCanvas();
+    } else if (data?.canvas_image_url) {
+      // 구버전 (이미지만 있는 경우) → 배경에 이미지 표시
+      currentBgUrl = data.canvas_image_url;
+      applyBgOpacity(1.0); // 선명하게
+    }
+
+    // 뷰어모드 활성화
+    setViewerMode(true);
+    showToast(`"${data?.title || '이전 상담'}" 불러왔습니다. 펜을 선택하면 드로잉할 수 있어요.`, 'success');
+
+  } catch(e) {
+    console.error('이전 상담 로드 실패:', e);
+    showToast('불러오기 실패: ' + e.message, 'warn');
+  }
+}
+
+/* ── 뷰어모드: 드로잉 비활성화 / 해제 ── */
+function setViewerMode(on) {
+  CanvasState.viewerMode = on;
+  const canvas = document.getElementById('mainCanvas');
+  if (!canvas) return;
+
+  if (on) {
+    canvas.style.cursor = 'default';
+    // 툴 버튼 비활성 표시
+    document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+    // 뷰어모드 안내 배지 표시
+    let badge = document.getElementById('viewerBadge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'viewerBadge';
+      badge.style.cssText = 'position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(18,34,54,.7);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;pointer-events:none;z-index:10;white-space:nowrap;';
+      badge.textContent = '👁 뷰어 모드 — 펜을 선택하면 드로잉 가능';
+      document.querySelector('.canvas-container')?.appendChild(badge);
+    }
+    badge.style.display = 'block';
+  } else {
+    canvas.style.cursor = 'crosshair';
+    document.getElementById('viewerBadge')?.remove();
   }
 }
 
@@ -3297,12 +3378,14 @@ function renderCanvasTmplListFromDB(cat) {
     el.addEventListener('click', () => {
       list.querySelectorAll('.canvas-tmpl').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
+      clearCanvas(); // 이전 드로잉 초기화
       const imgUrl = el.dataset.img;
       if (imgUrl) drawImageTemplateOnCanvas(imgUrl);
       else drawTemplateOnCanvas({ type: 'blank' });
     });
   });
   // 첫 번째 자동 적용
+  clearCanvas();
   if (allTmpls[0]?.image_url) drawImageTemplateOnCanvas(allTmpls[0].image_url);
   else drawTemplateOnCanvas({ type: 'blank' });
 }
