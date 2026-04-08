@@ -3765,49 +3765,49 @@ function renderCostAll() {
 /* ── 단일 모드 ── */
 function renderCostItems() {
   const area = document.getElementById('costItemsArea');
-  const emptyMsg = document.getElementById('costEmptyMsg');
   if (!area) return;
   const items = getActiveQuote().items;
-  area.querySelectorAll('.cost-item-row').forEach(el => el.remove());
-  if (!items.length) { if (emptyMsg) emptyMsg.style.display = 'block'; return; }
-  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  // 완전 초기화 (emptyMsg 포함 모두 제거)
+  area.innerHTML = '';
+
+  if (!items.length) {
+    area.innerHTML = `<div class="cost-empty" id="costEmptyMsg">항목을 선택하거나 아래 버튼으로 직접 추가하세요</div>`;
+  }
+
   items.forEach(item => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    row.dataset.id = item.id;
-
     const isCustom = !!item.isCustom;
-
     row.innerHTML = `
-      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" data-id="${item.id}" title="${isCustom ? '두 번 탭하면 이름 수정' : ''}">${item.name}</div>
+      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" title="${isCustom ? '두 번 탭하면 이름 수정' : ''}">${item.name}</div>
       <div class="cost-item-qty">
         <button onclick="changeCostItemQty(${item.id},-1)">−</button>
         <span>${item.qty}</span>
         <button onclick="changeCostItemQty(${item.id},+1)">+</button>
       </div>
-      <div class="cost-item-price" data-id="${item.id}" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+      <div class="cost-item-price" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
       <button class="cost-item-del" onclick="removeCostItem(${item.id})">✕</button>`;
 
-    // 이름 더블클릭 편집 (추가항목만)
     if (isCustom) {
       const nameEl = row.querySelector('.cost-item-name');
       let nameTapTimer = null;
       function startNameEdit() {
         const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'cost-item-name-edit';
+        input.type = 'text'; input.className = 'cost-item-name-edit';
         input.value = item.name === '추가항목' ? '' : item.name;
         input.placeholder = '추가항목';
-        nameEl.replaceWith(input);
-        input.focus(); input.select();
+        nameEl.replaceWith(input); input.focus(); input.select();
+        let committed = false;
         function commitName() {
+          if (committed) return; committed = true;
           item.name = input.value.trim() || '추가항목';
           renderCostAll();
         }
         input.addEventListener('blur', commitName);
         input.addEventListener('keydown', e => {
           if (e.key === 'Enter') input.blur();
-          if (e.key === 'Escape') renderCostAll();
+          if (e.key === 'Escape') { committed = true; renderCostAll(); }
         });
       }
       nameEl.addEventListener('dblclick', startNameEdit);
@@ -3817,20 +3817,23 @@ function renderCostItems() {
       });
     }
 
-    // 가격 더블클릭 편집
     const priceEl = row.querySelector('.cost-item-price');
     let tapTimer = null;
     function startEdit() {
       const input = document.createElement('input');
-      input.type = 'number';
-      input.className = 'cost-item-price-edit';
+      input.type = 'number'; input.className = 'cost-item-price-edit';
       input.value = item.unitPrice; input.min = 0;
       priceEl.replaceWith(input); input.focus(); input.select();
-      function commit() { item.unitPrice = Math.max(0, Number(input.value) || 0); renderCostAll(); }
+      let committed = false;
+      function commit() {
+        if (committed) return; committed = true;
+        item.unitPrice = Math.max(0, Number(input.value) || 0);
+        renderCostAll();
+      }
       input.addEventListener('blur', commit);
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') input.blur();
-        if (e.key === 'Escape') renderCostAll();
+        if (e.key === 'Escape') { committed = true; renderCostAll(); }
       });
     }
     priceEl.addEventListener('touchend', () => {
@@ -3842,7 +3845,7 @@ function renderCostItems() {
     area.appendChild(row);
   });
 
-  // + 항목 추가 버튼
+  // + 항목 추가 버튼 (항상 하나만)
   const addItemBtn = document.createElement('button');
   addItemBtn.className = 'cost-add-item-btn';
   addItemBtn.textContent = '+ 항목 추가';
@@ -4090,7 +4093,9 @@ function addInlineItem(qi) {
       input.placeholder = '추가항목';
       lastNameEl.replaceWith(input);
       input.focus();
+      let committed = false;
       function commitName() {
+        if (committed) return; committed = true;
         newItem.name = input.value.trim() || '추가항목';
         renderCostAll();
       }
