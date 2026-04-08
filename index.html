@@ -563,8 +563,6 @@
 
     /* ── 상담 시작 버튼 ── */
 
-    /* ── 치료상담 화면 ── */
-    .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
 
     /* 태블릿 세로 / 좁은 화면 (834px 미만) */
@@ -683,14 +681,6 @@
     .canvas-cat-bar { display: none; background: var(--panel); border-bottom: 1px solid var(--line); padding: 6px 10px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; gap: 6px; scrollbar-width: none; }
     .canvas-cat-bar::-webkit-scrollbar { display: none; }
     .canvas-cat-bar .canvas-cat { display: inline-flex; margin-right: 4px; }
-
-    @media (max-width: 834px) {
-      .canvas-cat-bar { display: flex; }
-    }
-
-    /* 캔버스 하단바 태블릿 */
-    @media (max-width: 834px) {
-    }
 
     /* ━━━ 상담 시작 버튼 ━━━ */
     .start-consult-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; background: var(--dark); color: #fff; border: none; cursor: pointer; white-space: nowrap; }
@@ -4701,25 +4691,6 @@ function updateEstimateSummary() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    직접 입력
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function toggleDirectInput() {
-  AppState.directInputOpen = !AppState.directInputOpen;
-  document.getElementById('costDirectInputRow')?.classList.toggle('hidden', !AppState.directInputOpen);
-  AppState.pricePickerOpen = false;
-  document.getElementById('costPricePicker')?.classList.add('hidden');
-  if (AppState.directInputOpen) document.getElementById('costDirectItemName')?.focus();
-}
-
-function addDirectItem() {
-  const name = document.getElementById('costDirectItemName')?.value.trim();
-  const price = Number(document.getElementById('costDirectItemPrice')?.value || 0);
-  if (!name) { alert('항목명을 입력해주세요.'); return; }
-  addEstimateItem({ presetId: null, name, unitPrice: price, unit: '', qty: 1 });
-  document.getElementById('costDirectItemName').value = '';
-  document.getElementById('costDirectItemPrice').value = '';
-  document.getElementById('costDirectInputRow')?.classList.add('hidden');
-  AppState.directInputOpen = false;
-}
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    상담 저장 (견적 항목 포함)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -5311,7 +5282,7 @@ async function saveConsultation() {
     stt_raw:AppState.sttRaw||null,
     stt_summary:AppState.sttSummary||null,
     estimated_total:total,
-    next_action:document.getElementById('consultPlanInput').value
+    next_action: document.getElementById('consultPlanInput')?.value || '재상담 예정'
   };
 
   try {
