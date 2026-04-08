@@ -362,7 +362,7 @@
     .canvas-tmpl-name { font-size: 12px; font-weight: 800; color: var(--text); }
     .canvas-tmpl-sub { font-size: 10px; color: #9aabbc; margin-top: 1px; }
 
-    .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; overflow: hidden; flex: 1; }
+    .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; overflow: hidden; flex: 1; position: relative; }
     .canvas-toolbar { display: flex; flex-direction: column; align-items: center; padding: 8px 4px; gap: 4px; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; overflow-x: hidden; flex-shrink: 0; width: 46px; scrollbar-width: none; }
     .canvas-toolbar::-webkit-scrollbar { display: none; }
     .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; flex-shrink: 0; }
@@ -565,10 +565,33 @@
 
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
 
-    /* 태블릿 세로: 캔버스 위 카테고리 바 (기본 숨김, 834px 이하에서 표시) */
-    .canvas-cat-bar { display: none; background: var(--panel); border-bottom: 1px solid var(--line); padding: 6px 10px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; gap: 6px; scrollbar-width: none; }
-    .canvas-cat-bar::-webkit-scrollbar { display: none; }
-    .canvas-cat-bar .canvas-cat { display: inline-flex; margin-right: 4px; }
+    /* ── 좁은 화면 상단바 ── */
+    .canvas-cat-bar { display: none; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0 8px; flex-shrink: 0; align-items: center; gap: 0; height: 44px; overflow: hidden; }
+
+    /* 카테고리 드롭다운 버튼 */
+    .mob-cat-btn { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--dark); color: #fff; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    .mob-cat-btn svg { opacity: .7; transition: transform .2s; }
+    .mob-cat-btn.open svg { transform: rotate(180deg); }
+
+    /* 카테고리 드롭다운 메뉴 */
+    .mob-cat-dropdown { position: absolute; top: calc(100% + 4px); left: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(18,34,54,.13); z-index: 200; padding: 4px; min-width: 120px; }
+    .mob-cat-dropdown.hidden { display: none; }
+    .mob-cat-dropdown .canvas-cat { padding: 8px 12px; border-radius: 7px; font-size: 13px; font-weight: 800; color: var(--text); border: none; background: transparent; text-align: left; cursor: pointer; width: 100%; display: block; }
+    .mob-cat-dropdown .canvas-cat.active { background: var(--dark); color: #fff; }
+    .mob-cat-dropdown .canvas-cat:hover:not(.active) { background: var(--primary-soft); color: var(--primary); }
+
+    /* 템플릿 가로스크롤 */
+    .mob-tmpl-scroll { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; flex: 1; padding: 0 8px; align-items: center; scrollbar-width: none; height: 100%; }
+    .mob-tmpl-scroll::-webkit-scrollbar { display: none; }
+    .mob-tmpl-scroll .canvas-tmpl { flex-shrink: 0; margin-bottom: 0; padding: 4px 8px; min-width: 70px; }
+    .mob-tmpl-scroll .canvas-tmpl-name { font-size: 11px; }
+    .mob-tmpl-scroll .canvas-tmpl-sub { font-size: 9px; }
+
+    /* 하단 이전상담 바 */
+    .mob-prev-bar { background: var(--panel); border-top: 1px solid var(--line); padding: 6px 8px; flex-shrink: 0; }
+    .mob-prev-scroll { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+    .mob-prev-scroll::-webkit-scrollbar { display: none; }
+    .mob-prev-scroll .prev-thumb { width: 72px; flex-shrink: 0; margin-bottom: 0; }
 
     /* 태블릿 세로 / 좁은 화면 (834px 미만) */
     @media (max-width: 834px) {
@@ -910,15 +933,35 @@
 
       </div><!-- /canvas-sidebar -->
 
-      <!-- 중앙: 카테고리바(세로모드) + 캔버스 -->
+      <!-- 중앙: 좁은화면 레이아웃 + 캔버스 -->
       <div class="canvas-center">
-        <div class="canvas-cat-bar" id="canvasCatBar"></div>
+
+        <!-- 상단바: [카테고리▼] [템플릿1] [템플릿2]... 가로스크롤 -->
+        <div class="canvas-cat-bar" id="canvasCatBar">
+          <div style="position:relative;flex-shrink:0;">
+            <button class="mob-cat-btn" id="mobCatBtn">
+              <span id="mobCatLabel">카테고리</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <!-- 카테고리 드롭다운 -->
+            <div class="mob-cat-dropdown hidden" id="mobCatDropdown"></div>
+          </div>
+          <!-- 템플릿 가로스크롤 -->
+          <div class="mob-tmpl-scroll" id="mobTmplScroll"></div>
+        </div>
+
         <div class="canvas-wrap">
           <div class="canvas-container">
             <canvas id="bgCanvas"></canvas>
             <canvas id="mainCanvas"></canvas>
           </div>
         </div>
+
+        <!-- 하단 이전상담 가로스크롤 -->
+        <div class="mob-prev-bar" id="mobPrevBar" style="display:none;">
+          <div class="mob-prev-scroll" id="mobPrevScroll"></div>
+        </div>
+
       </div>
 
       <!-- 우: 툴바 -->
@@ -2997,6 +3040,8 @@ async function loadPrevConsultThumbs() {
     console.warn('이전 상담 썸네일 로드 실패:', e.message);
     section.style.display = 'none';
   }
+  // 좁은 화면 패널도 동기화
+  syncMobPrevThumbs?.();
 }
 
 /* ── 이전 상담을 캔버스에 로드 (뷰어모드) ── */
@@ -3558,40 +3603,93 @@ function loadSavedTheme() {
 function isTabletPortrait() { return window.innerWidth <= 834; }
 
 function syncCatBars() {
-  const topBar = document.getElementById('canvasCatBar');
-  if (!topBar) return;
+  const mobCatBtn      = document.getElementById('mobCatBtn');
+  const mobCatDropdown = document.getElementById('mobCatDropdown');
+  const mobTmplScroll  = document.getElementById('mobTmplScroll');
+  if (!mobCatBtn || !mobCatDropdown || !mobTmplScroll) return;
 
-  // DB 카테고리 우선, 없으면 기존 사이드바 버튼에서 추출
   const dbCats = document.getElementById('catDropdownList')?._dbCats;
-  const sidebarCats = document.getElementById('canvasCatList');
+  if (!dbCats || !dbCats.length) return;
 
-  let catButtons = '';
-  if (dbCats && dbCats.length) {
-    catButtons = dbCats.map((cat, i) =>
-      `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat="${cat.name}" data-cat-id="${cat.id}">${cat.name}</button>`
-    ).join('');
-  } else if (sidebarCats) {
-    // 사이드바에서 카테고리 목록 복사
-    catButtons = Array.from(sidebarCats.querySelectorAll('.canvas-cat'))
-      .map((btn, i) =>
-        `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat="${btn.dataset.cat}" ${btn.dataset.catId ? `data-cat-id="${btn.dataset.catId}"` : ''}>${btn.textContent}</button>`
-      ).join('');
+  // ── 카테고리 드롭다운 메뉴 렌더 ──
+  mobCatDropdown.innerHTML = dbCats.map((cat, i) =>
+    `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat-id="${cat.id}" data-cat="${cat.name}">${cat.name}</button>`
+  ).join('');
+
+  // 첫 카테고리 라벨 + 템플릿 초기 렌더
+  document.getElementById('mobCatLabel').textContent = dbCats[0].name;
+  renderMobTmpls(dbCats[0]);
+
+  // 카테고리 선택
+  mobCatDropdown.querySelectorAll('.canvas-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mobCatDropdown.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('mobCatLabel').textContent = btn.dataset.cat;
+      mobCatDropdown.classList.add('hidden');
+      mobCatBtn.classList.remove('open');
+      const cat = dbCats.find(c => c.id === btn.dataset.catId);
+      if (cat) renderMobTmpls(cat);
+    });
+  });
+
+  // 드롭다운 토글
+  mobCatBtn.onclick = (e) => {
+    e.stopPropagation();
+    mobCatDropdown.classList.toggle('hidden');
+    mobCatBtn.classList.toggle('open', !mobCatDropdown.classList.contains('hidden'));
+  };
+
+  // 외부 클릭 시 닫기 (한번만 등록)
+  if (!mobCatBtn._outsideClick) {
+    mobCatBtn._outsideClick = true;
+    document.addEventListener('click', (e) => {
+      if (!mobCatDropdown.contains(e.target) && e.target !== mobCatBtn) {
+        mobCatDropdown.classList.add('hidden');
+        mobCatBtn.classList.remove('open');
+      }
+    });
   }
 
-  if (!catButtons) return;
-  topBar.innerHTML = catButtons;
+  syncMobPrevThumbs();
+}
 
-  topBar.querySelectorAll('.canvas-cat').forEach(btn => {
-    btn.addEventListener('click', () => {
-      topBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      CanvasState.currentCat = btn.dataset.cat;
-      CanvasState.currentTmpl = 0;
-      if (btn.dataset.catId && dbCats) {
-        const cat = dbCats.find(c => c.id === btn.dataset.catId);
-        if (cat) { renderCanvasTmplListFromDB(cat); return; }
-      }
-      renderCanvasTmplList();
+function renderMobTmpls(cat) {
+  const container = document.getElementById('mobTmplScroll');
+  if (!container) return;
+  const tmpls = [
+    ...(cat.canvas_templates || []).filter(t => t.is_active).sort((a,b) => a.display_order - b.display_order),
+    { id: 'blank', name: '빈 노트', image_url: null }
+  ];
+  container.innerHTML = tmpls.map((t, i) => `
+    <div class="canvas-tmpl${i === 0 ? ' active' : ''}" data-img="${t.image_url || ''}">
+      <div class="canvas-tmpl-name">${t.name}</div>
+      <div class="canvas-tmpl-sub">${t.image_url ? '이미지' : '자유'}</div>
+    </div>`).join('');
+  container.querySelectorAll('.canvas-tmpl').forEach(el => {
+    el.addEventListener('click', () => {
+      container.querySelectorAll('.canvas-tmpl').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      clearCanvas();
+      if (el.dataset.img) drawImageTemplateOnCanvas(el.dataset.img);
+      else drawTemplateOnCanvas({ type: 'blank' });
+      // 사이드바도 동기화
+      renderCanvasTmplListFromDB(cat);
+    });
+  });
+}
+
+function syncMobPrevThumbs() {
+  const bar    = document.getElementById('mobPrevBar');
+  const scroll = document.getElementById('mobPrevScroll');
+  if (!bar || !scroll) return;
+  const orig = document.getElementById('prevConsultThumbs');
+  if (!orig || !orig.children.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  scroll.innerHTML = orig.innerHTML;
+  scroll.querySelectorAll('.prev-thumb[data-consult-id]').forEach(el => {
+    el.addEventListener('click', async () => {
+      await loadConsultToCanvas(el.dataset.consultId);
     });
   });
 }
