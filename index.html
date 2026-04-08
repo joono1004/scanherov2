@@ -3791,7 +3791,6 @@ function renderCostItems() {
 
     if (isCustom) {
       const nameEl = row.querySelector('.cost-item-name');
-      let nameTapTimer = null;
       function startNameEdit() {
         const input = document.createElement('input');
         input.type = 'text'; input.className = 'cost-item-name-edit';
@@ -3810,15 +3809,11 @@ function renderCostItems() {
           if (e.key === 'Escape') { committed = true; renderCostAll(); }
         });
       }
-      nameEl.addEventListener('dblclick', startNameEdit);
-      nameEl.addEventListener('touchend', () => {
-        if (nameTapTimer) { clearTimeout(nameTapTimer); nameTapTimer = null; startNameEdit(); }
-        else { nameTapTimer = setTimeout(() => { nameTapTimer = null; }, 300); }
-      });
+      nameEl.addEventListener('click', startNameEdit);
+      nameEl.addEventListener('touchend', e => { e.preventDefault(); startNameEdit(); });
     }
 
     const priceEl = row.querySelector('.cost-item-price');
-    let tapTimer = null;
     function startEdit() {
       const input = document.createElement('input');
       input.type = 'number'; input.className = 'cost-item-price-edit';
@@ -3836,11 +3831,8 @@ function renderCostItems() {
         if (e.key === 'Escape') { committed = true; renderCostAll(); }
       });
     }
-    priceEl.addEventListener('touchend', () => {
-      if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; startEdit(); }
-      else { tapTimer = setTimeout(() => { tapTimer = null; }, 300); }
-    });
-    priceEl.addEventListener('dblclick', startEdit);
+    priceEl.addEventListener('click', startEdit);
+    priceEl.addEventListener('touchend', e => { e.preventDefault(); startEdit(); });
 
     area.appendChild(row);
   });
@@ -3906,8 +3898,7 @@ function renderCompare() {
         // 이름 편집 (추가항목만)
         if (isCustom) {
           const nameEl = rowDiv.querySelector('.cost-item-name');
-          let nameTapTimer = null;
-          function startNameEditQ() {
+              function startNameEditQ() {
             const input = document.createElement('input');
             input.type = 'text'; input.className = 'cost-item-name-edit';
             input.value = item.name === '추가항목' ? '' : item.name;
@@ -3917,16 +3908,12 @@ function renderCompare() {
             input.addEventListener('blur', commitName);
             input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') renderCostAll(); });
           }
-          nameEl.addEventListener('dblclick', startNameEditQ);
-          nameEl.addEventListener('touchend', () => {
-            if (nameTapTimer) { clearTimeout(nameTapTimer); nameTapTimer = null; startNameEditQ(); }
-            else { nameTapTimer = setTimeout(() => { nameTapTimer = null; }, 300); }
-          });
+          nameEl.addEventListener('click', startNameEditQ);
+          nameEl.addEventListener('touchend', e => { e.preventDefault(); startNameEditQ(); });
         }
 
         const priceEl = rowDiv.querySelector('.cost-item-price');
-        let tapTimer = null;
-        function startEditQ() {
+            function startEditQ() {
           const input = document.createElement('input');
           input.type = 'number'; input.className = 'cost-item-price-edit';
           input.value = item.unitPrice; input.min = 0;
@@ -3936,10 +3923,9 @@ function renderCompare() {
           input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') renderCostAll(); });
         }
         priceEl.addEventListener('touchend', () => {
-          if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; startEditQ(); }
-          else { tapTimer = setTimeout(() => { tapTimer = null; }, 300); }
+          startEditQ();
         });
-        priceEl.addEventListener('dblclick', startEditQ);
+        priceEl.addEventListener('click', startEditQ);
         col.appendChild(rowDiv);
       });
     }
