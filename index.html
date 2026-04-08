@@ -2025,15 +2025,171 @@ async function addUserTag(category, value) {
    캔버스 드로잉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const CanvasState = {
+  // 툴 상태
   tool: 'pen', color: '#122236', lw: 2,
-  drawing: false, startX: 0, startY: 0, snapshot: null,
-  history: [], historyMax: 30,
   currentCat: '임플란트', currentTmpl: 0,
-  isRecording: false,
-  // 베지어 곡선용
-  penPts: [],       // [{x, y, t}] 포인트 누적
-  lastLw: 2,        // pressure 보간용 현재 굵기
+
+  // 벡터 드로잉 데이터
+  strokes: [],          // 완성된 stroke 객체 배열
+  currentStroke: null,  // 현재 그리는 중인 stroke
+  undoStack: [],        // undo용 strokes 스냅샷 배열
+
+  // 드로잉 상태
+  drawing: false,
+  startX: 0, startY: 0,
+
+  // 성능 최적화: 완성된 획들을 구운 오프스크린 캔버스
+  bakedCanvas: null,
 };
+
+/* ── stroke 객체 구조 ──
+{
+  id: number,
+  tool: 'pen'|'line'|'circle'|'rect'|'arrow'|'text'|'eraser',
+  color: string, lw: number,
+  points: [{x, y, t}],   // pen / eraser 전용
+  x1, y1, x2, y2,        // 도형 전용
+  text: string, x, y     // 텍스트 전용
+}
+*/
+
+/* ── 단일 stroke 렌더 ── */
+function drawStroke(ctx, stroke) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (stroke.tool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+    ctx.lineWidth = stroke.lw * 8;
+    const pts = stroke.points || [];
+    if (pts.length < 2) {
+      ctx.beginPath();
+      ctx.arc(pts[0]?.x||0, pts[0]?.y||0, stroke.lw*4, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,1)';
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+
+  ctx.strokeStyle = stroke.color;
+  ctx.lineWidth = stroke.lw;
+
+  switch (stroke.tool) {
+    case 'pen': {
+      const pts = stroke.points || [];
+      if (pts.length === 1) {
+        ctx.beginPath();
+        ctx.arc(pts[0].x, pts[0].y, stroke.lw / 2, 0, Math.PI * 2);
+        ctx.fillStyle = stroke.color;
+        ctx.fill();
+      } else {
+        for (let i = 1; i < pts.length - 1; i++) {
+          const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
+          const dt = Math.max(p2.t - p1.t, 1);
+          const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          const speed = dist / dt;
+          const lw = Math.max(stroke.lw * 0.4, Math.min(stroke.lw * 1.6, stroke.lw - speed * 6));
+          const mx1 = (p0.x + p1.x) / 2, my1 = (p0.y + p1.y) / 2;
+          const mx2 = (p1.x + p2.x) / 2, my2 = (p1.y + p2.y) / 2;
+          ctx.beginPath();
+          ctx.moveTo(mx1, my1);
+          ctx.quadraticCurveTo(p1.x, p1.y, mx2, my2);
+          ctx.lineWidth = lw;
+          ctx.stroke();
+        }
+      }
+      break;
+    }
+    case 'line':
+      ctx.beginPath();
+      ctx.moveTo(stroke.x1, stroke.y1);
+      ctx.lineTo(stroke.x2, stroke.y2);
+      ctx.stroke();
+      break;
+    case 'circle':
+      ctx.beginPath();
+      ctx.ellipse(
+        (stroke.x1 + stroke.x2) / 2, (stroke.y1 + stroke.y2) / 2,
+        Math.abs(stroke.x2 - stroke.x1) / 2, Math.abs(stroke.y2 - stroke.y1) / 2,
+        0, 0, Math.PI * 2
+      );
+      ctx.stroke();
+      break;
+    case 'rect':
+      ctx.strokeRect(stroke.x1, stroke.y1, stroke.x2 - stroke.x1, stroke.y2 - stroke.y1);
+      break;
+    case 'arrow': {
+      ctx.beginPath();
+      ctx.moveTo(stroke.x1, stroke.y1);
+      ctx.lineTo(stroke.x2, stroke.y2);
+      ctx.stroke();
+      const ang = Math.atan2(stroke.y2 - stroke.y1, stroke.x2 - stroke.x1);
+      const hl = Math.max(16, stroke.lw * 5);
+      ctx.beginPath();
+      ctx.moveTo(stroke.x2, stroke.y2);
+      ctx.lineTo(stroke.x2 - hl * Math.cos(ang - 0.4), stroke.y2 - hl * Math.sin(ang - 0.4));
+      ctx.lineTo(stroke.x2 - hl * Math.cos(ang + 0.4), stroke.y2 - hl * Math.sin(ang + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = stroke.color;
+      ctx.fill();
+      break;
+    }
+    case 'text':
+      ctx.fillStyle = stroke.color;
+      ctx.font = `${stroke.lw * 6 + 10}px Arial`;
+      ctx.fillText(stroke.text || '', stroke.x, stroke.y);
+      break;
+  }
+  ctx.restore();
+}
+
+/* ── bakedCanvas에 모든 strokes 재렌더 ── */
+function rebuildBakedCanvas() {
+  const bc = CanvasState.bakedCanvas;
+  if (!bc) return;
+  const ctx = bc.getContext('2d');
+  ctx.clearRect(0, 0, bc.width, bc.height);
+  CanvasState.strokes.forEach(s => drawStroke(ctx, s));
+}
+
+/* ── mainCanvas 렌더 (baked + 현재 stroke) ── */
+function renderCanvas() {
+  const r = getCanvasCtx();
+  if (!r) return;
+  r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
+  if (CanvasState.bakedCanvas) {
+    r.ctx.drawImage(CanvasState.bakedCanvas, 0, 0);
+  }
+  if (CanvasState.currentStroke) {
+    drawStroke(r.ctx, CanvasState.currentStroke);
+  }
+}
+
+/* ── stroke 확정 (bakedCanvas에 굽기) ── */
+function commitStroke(stroke) {
+  if (!stroke) return;
+  // 의미있는 stroke만 저장
+  if (stroke.tool === 'pen' && (!stroke.points || stroke.points.length < 1)) return;
+
+  CanvasState.strokes.push(stroke);
+  // undo 스냅샷 저장
+  CanvasState.undoStack.push(CanvasState.strokes.length);
+
+  // bakedCanvas에 바로 그리기 (전체 재렌더 없이)
+  const bc = CanvasState.bakedCanvas;
+  if (bc) drawStroke(bc.getContext('2d'), stroke);
+
+  CanvasState.currentStroke = null;
+  renderCanvas();
+}
 
 function getBgCtx() {
   const canvas = document.getElementById('bgCanvas');
@@ -2051,52 +2207,48 @@ function initCanvas() {
   const cw = w > 0 ? w : 700;
   const ch = h > 0 ? h : 480;
 
-  // 두 캔버스 동일 크기
   canvas.width = bgCanvas.width = cw;
   canvas.height = bgCanvas.height = ch;
-
-  // 컨테이너 크기 명시
   wrap.style.width = cw + 'px';
   wrap.style.height = ch + 'px';
 
-  // 배경 캔버스: 흰색
+  // 배경 캔버스 흰색
   const bgCtx = bgCanvas.getContext('2d');
   bgCtx.fillStyle = '#fff';
   bgCtx.fillRect(0, 0, cw, ch);
 
-  // 드로잉 캔버스: 투명
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, cw, ch);
+  // 오프스크린 bakedCanvas 생성
+  const bc = document.createElement('canvas');
+  bc.width = cw; bc.height = ch;
+  CanvasState.bakedCanvas = bc;
 
-  saveCanvasHistory(canvas);
+  // 벡터 상태 초기화
+  CanvasState.strokes = [];
+  CanvasState.undoStack = [];
+  CanvasState.currentStroke = null;
+  CanvasState.drawing = false;
+
+  renderCanvas();
   renderCanvasTmplList();
 }
 
-function getCanvasCtx() {
-  const canvas = document.getElementById('mainCanvas');
-  return canvas ? { canvas, ctx: canvas.getContext('2d') } : null;
-}
-
-function saveCanvasHistory(canvas) {
-  const ctx = canvas.getContext('2d');
-  CanvasState.history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-  if (CanvasState.history.length > CanvasState.historyMax) CanvasState.history.shift();
-}
+function saveCanvasHistory() {} // 하위 호환용 (빈 함수)
 
 function undoCanvas() {
-  if (CanvasState.history.length <= 1) return;
-  CanvasState.history.pop();
-  const r = getCanvasCtx();
-  if (!r) return;
-  r.ctx.putImageData(CanvasState.history[CanvasState.history.length - 1], 0, 0);
+  if (CanvasState.strokes.length === 0) return;
+  CanvasState.strokes.pop();
+  CanvasState.undoStack.pop();
+  rebuildBakedCanvas();
+  renderCanvas();
 }
 
 function clearCanvas() {
-  // 드로잉 레이어만 지움 (배경 이미지 유지)
-  const r = getCanvasCtx();
-  if (!r) return;
-  r.ctx.clearRect(0, 0, r.canvas.width, r.canvas.height);
-  saveCanvasHistory(r.canvas);
+  CanvasState.strokes = [];
+  CanvasState.undoStack = [];
+  CanvasState.currentStroke = null;
+  const bc = CanvasState.bakedCanvas;
+  if (bc) bc.getContext('2d').clearRect(0, 0, bc.width, bc.height);
+  renderCanvas();
 }
 
 function drawTemplateOnCanvas(tmplData) {
@@ -2185,139 +2337,80 @@ function renderCanvasTmplList() {
 function bindCanvasEvents() {
   const canvas = document.getElementById('mainCanvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
 
-  canvas.addEventListener('mousedown', e => {
-    CanvasState.drawing = true;
+  function getPos(e) {
     const r = canvas.getBoundingClientRect();
     const scaleX = canvas.width / r.width;
     const scaleY = canvas.height / r.height;
-    const x = (e.clientX - r.left) * scaleX;
-    const y = (e.clientY - r.top) * scaleY;
-    CanvasState.startX = x; CanvasState.startY = y;
-    CanvasState.snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    return {
+      x: (e.clientX - r.left) * scaleX,
+      y: (e.clientY - r.top) * scaleY
+    };
+  }
 
-    if (CanvasState.tool === 'pen') {
-      CanvasState.penPts = [{ x, y, t: Date.now() }];
-      CanvasState.lastLw = CanvasState.lw;
-    } else if (CanvasState.tool === 'eraser') {
-      CanvasState.penPts = [{ x, y, t: Date.now() }]; // 경로 추적용
-    } else if (CanvasState.tool === 'text') {
+  function onDown(e) {
+    const { x, y } = getPos(e);
+    CanvasState.drawing = true;
+    CanvasState.startX = x;
+    CanvasState.startY = y;
+
+    if (CanvasState.tool === 'text') {
       const text = prompt('텍스트 입력:');
       if (text) {
-        ctx.fillStyle = CanvasState.color;
-        ctx.font = `${CanvasState.lw * 6 + 10}px Arial`;
-        ctx.fillText(text, x, y);
-        saveCanvasHistory(canvas);
+        commitStroke({ id: Date.now(), tool: 'text', color: CanvasState.color, lw: CanvasState.lw, text, x, y });
       }
       CanvasState.drawing = false;
+      return;
     }
-  });
 
-  canvas.addEventListener('mousemove', e => {
-    if (!CanvasState.drawing) return;
-    const r = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / r.width;
-    const scaleY = canvas.height / r.height;
-    const x = (e.clientX - r.left) * scaleX;
-    const y = (e.clientY - r.top) * scaleY;
-
-    if (CanvasState.tool === 'pen') {
-      // ── 베지어 곡선 + Pressure 시뮬레이션 ──
-      const now = Date.now();
-      CanvasState.penPts.push({ x, y, t: now });
-      const pts = CanvasState.penPts;
-      if (pts.length < 3) return;
-
-      const len = pts.length;
-      const p0 = pts[len - 3], p1 = pts[len - 2], p2 = pts[len - 1];
-
-      // 속도 → 선 굵기 (빠를수록 얇게, 느릴수록 굵게)
-      const dt = Math.max(p2.t - p1.t, 1);
-      const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      const speed = dist / dt;
-      const baseLw = CanvasState.lw;
-      const targetLw = Math.max(baseLw * 0.4, Math.min(baseLw * 1.6, baseLw - speed * 6));
-      CanvasState.lastLw = CanvasState.lastLw * 0.6 + targetLw * 0.4; // 부드러운 전환
-
-      // 중간점을 컨트롤 포인트로 한 2차 베지어 곡선
-      const mx1 = (p0.x + p1.x) / 2;
-      const my1 = (p0.y + p1.y) / 2;
-      const mx2 = (p1.x + p2.x) / 2;
-      const my2 = (p1.y + p2.y) / 2;
-
-      ctx.beginPath();
-      ctx.moveTo(mx1, my1);
-      ctx.quadraticCurveTo(p1.x, p1.y, mx2, my2);
-      ctx.strokeStyle = CanvasState.color;
-      ctx.lineWidth = CanvasState.lastLw;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-
-    } else if (CanvasState.tool === 'eraser') {
-      // 이전 포인트와 현재 포인트 사이를 clearRect로 지움 → 배경 완전 보존
-      CanvasState.penPts.push({ x, y, t: Date.now() });
-      const pts = CanvasState.penPts;
-      const eraserSize = 16 + CanvasState.lw * 4;
-      const half = eraserSize / 2;
-      // 두 점 사이 경로를 따라 clearRect 반복 (끊김 없이)
-      if (pts.length >= 2) {
-        const prev = pts[pts.length - 2];
-        const steps = Math.max(1, Math.ceil(Math.hypot(x - prev.x, y - prev.y) / (half / 2)));
-        for (let i = 0; i <= steps; i++) {
-          const tx = prev.x + (x - prev.x) * (i / steps);
-          const ty = prev.y + (y - prev.y) * (i / steps);
-          ctx.clearRect(tx - half, ty - half, eraserSize, eraserSize);
-        }
-      }
-
-    } else {
-      // 도형/화살표: snapshot으로 되돌리고 다시 그리기
-      ctx.putImageData(CanvasState.snapshot, 0, 0);
-      ctx.strokeStyle = CanvasState.color;
-      ctx.lineWidth = CanvasState.lw;
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      ctx.beginPath();
-      if (CanvasState.tool === 'line') {
-        ctx.moveTo(CanvasState.startX, CanvasState.startY); ctx.lineTo(x, y); ctx.stroke();
-      } else if (CanvasState.tool === 'circle') {
-        ctx.ellipse((CanvasState.startX+x)/2, (CanvasState.startY+y)/2, Math.abs(x-CanvasState.startX)/2, Math.abs(y-CanvasState.startY)/2, 0, 0, Math.PI*2); ctx.stroke();
-      } else if (CanvasState.tool === 'rect') {
-        ctx.strokeRect(CanvasState.startX, CanvasState.startY, x-CanvasState.startX, y-CanvasState.startY);
-      } else if (CanvasState.tool === 'arrow') {
-        ctx.moveTo(CanvasState.startX, CanvasState.startY); ctx.lineTo(x, y); ctx.stroke();
-        const ang = Math.atan2(y-CanvasState.startY, x-CanvasState.startX);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x - 16*Math.cos(ang-0.4), y - 16*Math.sin(ang-0.4));
-        ctx.lineTo(x - 16*Math.cos(ang+0.4), y - 16*Math.sin(ang+0.4));
-        ctx.closePath(); ctx.fillStyle = CanvasState.color; ctx.fill();
-      }
-    }
-  });
-
-  canvas.addEventListener('mouseup', () => {
-    if (!CanvasState.drawing) return;
-    CanvasState.drawing = false;
-    CanvasState.penPts = [];
-    saveCanvasHistory(canvas);
-  });
-  canvas.addEventListener('mouseleave', () => {
-    if (!CanvasState.drawing) return;
-    CanvasState.drawing = false;
-    CanvasState.penPts = [];
-    saveCanvasHistory(canvas);
-  });
-
-  // 터치 지원 (좌표 스케일 보정 포함)
-  function toMouseEvt(type, touch, canvas) {
-    const r = canvas.getBoundingClientRect();
-    return new MouseEvent(type, { clientX: touch.clientX, clientY: touch.clientY, bubbles: true });
+    CanvasState.currentStroke = {
+      id: Date.now(),
+      tool: CanvasState.tool,
+      color: CanvasState.color,
+      lw: CanvasState.lw,
+      points: (CanvasState.tool === 'pen' || CanvasState.tool === 'eraser')
+        ? [{ x, y, t: Date.now() }] : [],
+      x1: x, y1: y, x2: x, y2: y,
+    };
   }
-  canvas.addEventListener('touchstart', e => { e.preventDefault(); toMouseEvt('mousedown', e.touches[0], canvas); canvas.dispatchEvent(toMouseEvt('mousedown', e.touches[0], canvas)); }, {passive:false});
-  canvas.addEventListener('touchmove',  e => { e.preventDefault(); canvas.dispatchEvent(toMouseEvt('mousemove',  e.touches[0], canvas)); }, {passive:false});
-  canvas.addEventListener('touchend',   e => { e.preventDefault(); canvas.dispatchEvent(new MouseEvent('mouseup')); }, {passive:false});
+
+  function onMove(e) {
+    if (!CanvasState.drawing || !CanvasState.currentStroke) return;
+    const { x, y } = getPos(e);
+    const s = CanvasState.currentStroke;
+
+    if (s.tool === 'pen' || s.tool === 'eraser') {
+      s.points.push({ x, y, t: Date.now() });
+    } else {
+      s.x2 = x; s.y2 = y;
+    }
+    renderCanvas();
+  }
+
+  function onUp() {
+    if (!CanvasState.drawing) return;
+    CanvasState.drawing = false;
+    commitStroke(CanvasState.currentStroke);
+  }
+
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onUp);
+  canvas.addEventListener('mouseleave', onUp);
+
+  // 터치 지원
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    onDown(e.touches[0]);
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    onMove(e.touches[0]);
+  }, { passive: false });
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    onUp();
+  }, { passive: false });
 
   // 툴 버튼
   document.querySelectorAll('[data-tool]').forEach(btn => {
@@ -2325,7 +2418,8 @@ function bindCanvasEvents() {
       document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       CanvasState.tool = btn.dataset.tool;
-      canvas.style.cursor = CanvasState.tool === 'eraser' ? 'cell' : CanvasState.tool === 'text' ? 'text' : 'crosshair';
+      canvas.style.cursor = CanvasState.tool === 'eraser' ? 'cell'
+        : CanvasState.tool === 'text' ? 'text' : 'crosshair';
     });
   });
 
@@ -2333,7 +2427,8 @@ function bindCanvasEvents() {
   document.querySelectorAll('.color-swatch').forEach(dot => {
     dot.addEventListener('click', () => {
       document.querySelectorAll('.color-swatch').forEach(d => d.classList.remove('active'));
-      dot.classList.add('active'); CanvasState.color = dot.dataset.color;
+      dot.classList.add('active');
+      CanvasState.color = dot.dataset.color;
     });
   });
 
@@ -2343,7 +2438,6 @@ function bindCanvasEvents() {
       document.querySelectorAll('[data-lw]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       CanvasState.lw = Number(btn.dataset.lw);
-      // 툴팁 닫기
       document.getElementById('lwTooltip')?.classList.remove('show');
       document.getElementById('lwTooltipBtn')?.classList.remove('active');
     });
@@ -2446,27 +2540,41 @@ function bindCanvasEvents() {
       const path = `${sessionKey}.jpg`;
 
       // 업로드에 타임아웃 적용
-      const { error } = await Promise.race([
+      const uploadResult = await Promise.race([
         AppState.supabase.storage
           .from('dental-canvas')
           .upload(path, blob, { contentType: 'image/jpeg', upsert: true }),
         timeout(15000)
       ]);
-      if (error) throw new Error(`Storage 오류: ${error.message}`);
+
+      console.log('Storage 업로드 결과:', JSON.stringify(uploadResult));
+
+      if (uploadResult.error) {
+        throw new Error(`Storage 오류: ${uploadResult.error.message} (${uploadResult.error.statusCode})`);
+      }
+      if (!uploadResult.data) {
+        throw new Error('Storage 업로드 실패: 응답 데이터 없음');
+      }
 
       const { data: urlData } = AppState.supabase.storage
         .from('dental-canvas').getPublicUrl(path);
       AppState.savedCanvasUrl = urlData?.publicUrl || null;
 
-      // consultation 레코드에 canvas_image_url 즉시 저장 (환자 이동해도 유지)
-      if (AppState.savedCanvasUrl && patient) {
-        // 현재 세션에 이미 저장된 consultation이 있으면 업데이트, 없으면 생성
-        if (AppState.currentConsultId) {
-          await AppState.supabase.from('consultations')
+      if (!AppState.savedCanvasUrl) throw new Error('URL 생성 실패');
+
+      console.log('저장된 URL:', AppState.savedCanvasUrl);
+
+      // consultation 레코드에 canvas_image_url 즉시 저장
+      if (patient) {
+        let consultId = AppState.currentConsultId;
+        if (consultId) {
+          const { error: updateErr } = await AppState.supabase
+            .from('consultations')
             .update({ canvas_image_url: AppState.savedCanvasUrl })
-            .eq('id', AppState.currentConsultId);
+            .eq('id', consultId);
+          if (updateErr) console.warn('consultation 업데이트 실패:', updateErr.message);
         } else {
-          const { data: newConsult } = await AppState.supabase
+          const { data: newConsult, error: insertErr } = await AppState.supabase
             .from('consultations')
             .insert({
               user_id: AppState.currentUser.id,
@@ -2476,8 +2584,11 @@ function bindCanvasEvents() {
               diagnosis_note: '-',
             })
             .select('id').single();
-          if (newConsult?.id) AppState.currentConsultId = newConsult.id;
+          if (insertErr) console.warn('consultation 생성 실패:', insertErr.message);
+          else if (newConsult?.id) { consultId = newConsult.id; AppState.currentConsultId = consultId; }
         }
+        // strokes JSON 저장 (벡터 드로잉 데이터)
+        if (consultId) await saveStrokesToDB(consultId);
       }
 
       showPreviewThumb(merged.toDataURL('image/jpeg', 0.5));
@@ -2659,6 +2770,11 @@ function bindOpacityControls() {
 }
 
 // 두 레이어를 합성한 최종 캔버스 반환
+function getCanvasCtx() {
+  const canvas = document.getElementById('mainCanvas');
+  return canvas ? { canvas, ctx: canvas.getContext('2d') } : null;
+}
+
 function getMergedCanvas() {
   const bg = document.getElementById('bgCanvas');
   const fg = document.getElementById('mainCanvas');
@@ -2671,6 +2787,40 @@ function getMergedCanvas() {
   ctx.drawImage(bg, 0, 0);
   ctx.drawImage(fg, 0, 0);
   return merged;
+}
+
+/* ── strokes JSON DB 저장 ── */
+async function saveStrokesToDB(consultId) {
+  if (!AppState.connected || !consultId) return;
+  const strokesJson = JSON.stringify({
+    templateUrl: currentBgUrl || null,
+    strokes: CanvasState.strokes,
+    canvasWidth: document.getElementById('mainCanvas')?.width,
+    canvasHeight: document.getElementById('mainCanvas')?.height,
+  });
+  await AppState.supabase.from('consultations')
+    .update({ drawing_data: strokesJson })
+    .eq('id', consultId);
+}
+
+/* ── strokes JSON DB에서 불러와 복원 ── */
+async function loadStrokesFromDB(consultId) {
+  if (!AppState.connected || !consultId) return;
+  const { data } = await AppState.supabase.from('consultations')
+    .select('drawing_data, canvas_image_url')
+    .eq('id', consultId).single();
+  if (!data?.drawing_data) return;
+  try {
+    const saved = JSON.parse(data.drawing_data);
+    CanvasState.strokes = saved.strokes || [];
+    // 배경 이미지 복원
+    if (saved.templateUrl) {
+      currentBgUrl = saved.templateUrl;
+      applyBgOpacity(bgOpacity);
+    }
+    rebuildBakedCanvas();
+    renderCanvas();
+  } catch(e) { console.warn('드로잉 데이터 복원 실패:', e); }
 }
 const RecordState = {
   mediaRecorder: null,
@@ -2712,7 +2862,11 @@ async function loadPrevConsultThumbs() {
   if (!section || !thumbs) return;
 
   const patient = getSelectedPatient();
-  if (!patient) { section.style.display = 'none'; return; }
+  // 환자 바뀌면 항상 기존 썸네일 초기화
+  thumbs.innerHTML = '';
+  section.style.display = 'none';
+
+  if (!patient) return;
   if (!AppState.connected) return;
 
   try {
@@ -3451,6 +3605,12 @@ function updateCanvasPatientName() {
       navInput.value = '';
     }
   }
+  // 환자 변경 시 이전 상담 썸네일 즉시 초기화 후 새로 로드
+  const thumbs = document.getElementById('prevConsultThumbs');
+  const section = document.getElementById('prevConsultSection');
+  if (thumbs) thumbs.innerHTML = '';
+  if (section) section.style.display = 'none';
+
   // 이전 상담 썸네일 갱신
   loadPrevConsultThumbs();
 }
