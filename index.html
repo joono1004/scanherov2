@@ -543,6 +543,15 @@
     .compare-discount-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg); font-size: 12px; font-weight: 800; cursor: pointer; transition: .15s; color: var(--sub); }
     .compare-discount-btn.active-a { background: var(--primary); color: #fff; border-color: var(--primary); }
     .compare-discount-btn.active-b { background: #3B6D11; color: #fff; border-color: #3B6D11; }
+    /* ── 환자정보 뷰 (읽기 전용) ── */
+    .pt-info-name { font-size: 20px; font-weight: 900; color: var(--text); }
+    .pt-info-chart { font-size: 13px; color: var(--sub); margin-left: 8px; font-weight: 700; }
+    .pt-info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .pt-info-cell { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
+    .pt-info-label { font-size: 10px; font-weight: 800; color: var(--sub); margin-bottom: 3px; letter-spacing: .04em; }
+    .pt-info-val { font-size: 13px; font-weight: 800; color: var(--text); }
+    .pt-info-memo { font-size: 13px; color: var(--text); background: var(--bg); border-radius: 10px; padding: 8px 10px; min-height: 40px; line-height: 1.6; white-space: pre-wrap; }
+
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
 
     /* ── 이전 상담 썸네일 ── */
@@ -1160,121 +1169,110 @@
   <div class="screen" id="screen-patient">
     <div class="patient-screen-body">
 
-      <!-- 좌: 환자 등록/수정 -->
+      <!-- 좌: 환자 정보 (뷰 전용) -->
       <div class="panel" style="height:fit-content;">
         <div class="panel-inner">
+
+          <!-- 헤더 -->
           <div class="panel-title">
             <div style="width:100%">
               <div class="panel-title-row">
-                <h2 style="margin:0;font-size:20px;" id="patientPanelTitle">환자 정보</h2>
-                <div style="display:flex;gap:8px;align-items:center;">
-                  <button class="soft-btn" id="resetPatientFormBtn" style="padding:5px 12px;border-radius:10px;font-size:12px;font-weight:800;">+ 환자 등록</button>
-                  <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
-                </div>
-              </div>
-              <p style="margin:6px 0 0;font-size:13px;color:var(--sub);" id="patientPanelSub">환자 목록에서 환자를 선택하거나 신규 등록하세요.</p>
-            </div>
-          </div>
-          <div id="connectionStatus" class="sr-only"></div>
-
-          <div class="field">
-            <div style="display:flex;gap:8px;">
-              <div style="flex:1.2;display:flex;flex-direction:column;">
-                <label class="label">환자명 <span style="color:#e24b4a">*</span></label>
-                <input id="patientNameInput" placeholder="예: 김민수" />
-              </div>
-              <div style="flex:1;display:flex;flex-direction:column;">
-                <label class="label">차트번호</label>
-                <input id="patientChartInput" placeholder="전자차트 연동" />
+                <h2 style="margin:0;font-size:18px;font-weight:900;">환자 정보</h2>
+                <div class="today-chip" id="todayConsultChip">오늘 상담 0명</div>
               </div>
             </div>
           </div>
 
-          <div class="field">
-            <div style="display:flex;gap:8px;">
-              <div style="flex:1;display:flex;flex-direction:column;">
-                <label class="label">휴대전화 <span style="color:#e24b4a">*</span></label>
-                <input id="patientMobileInput" placeholder="010-1234-5678" />
-              </div>
-              <div style="display:flex;flex-direction:column;flex-shrink:0;">
-                <label class="label" style="visibility:hidden;">x</label>
-                <button id="snsAddBtn" type="button" style="width:44px;height:44px;border-radius:14px;border:1px solid #B8860B;background:#FEE500;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-                  <svg width="26" height="24" viewBox="0 0 40 36" fill="none"><path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/></svg>
-                </button>
-              </div>
-              <div style="display:flex;flex-direction:column;flex-shrink:0;">
-                <label class="label">성별</label>
-                <div style="display:flex;gap:4px;">
-                  <button type="button" id="genderMaleBtn" onclick="setGender('남')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">남</button>
-                  <button type="button" id="genderFemaleBtn" onclick="setGender('여')" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:14px;cursor:pointer;">여</button>
-                </div>
-              </div>
-            </div>
-            <div id="snsPreviewArea" style="margin-top:6px;display:none;">
-              <div class="sns-preview" id="snsPreviewText"></div>
-            </div>
+          <!-- 환자 없을 때 안내 -->
+          <div id="ptInfoEmpty" style="font-size:13px;color:var(--sub);padding:8px 0;">
+            환자를 선택하면 정보가 표시됩니다.
           </div>
 
-          <div class="field">
-            <div style="display:flex;gap:8px;">
-              <div style="flex:1;display:flex;flex-direction:column;">
-                <label class="label">생년월일</label>
-                <button class="birth-display empty" id="birthDisplayBtn" type="button">
-                  <span id="birthDisplayText">생년월일 선택</span>
-                  <span style="color:#9aabbc;font-size:16px;">📅</span>
-                </button>
-                <input type="hidden" id="patientBirthInput" />
+          <!-- 환자 정보 뷰 -->
+          <div id="ptInfoView" style="display:none;">
+
+            <!-- 환자명 + 차트번호 -->
+            <div class="pt-info-row" style="margin-bottom:10px;">
+              <span class="pt-info-name" id="ptViewName">-</span>
+              <span class="pt-info-chart" id="ptViewChart"></span>
+            </div>
+
+            <!-- 휴대전화 / SNS / 성별 -->
+            <div class="pt-info-grid">
+              <div class="pt-info-cell">
+                <div class="pt-info-label">휴대전화</div>
+                <div class="pt-info-val" id="ptViewMobile">-</div>
               </div>
-              <div style="flex:1;display:flex;flex-direction:column;">
-                <label class="label">상담 상태</label>
-                <select id="patientStatusInput">
-                  <option value="초기 상담">초기 상담</option>
-                  <option value="고민 중">고민 중</option>
-                  <option value="재내원 예정">재내원 예정</option>
-                  <option value="당일 결정 가능">당일 결정 가능</option>
-                </select>
+              <div class="pt-info-cell">
+                <div class="pt-info-label">SNS</div>
+                <div class="pt-info-val" id="ptViewSns">-</div>
+              </div>
+              <div class="pt-info-cell">
+                <div class="pt-info-label">성별</div>
+                <div class="pt-info-val" id="ptViewGender">-</div>
               </div>
             </div>
-          </div>
 
-          <div class="field">
-            <label class="label">메모</label>
-            <textarea id="patientMemoInput" placeholder="상담 전 참고사항, 특이사항 등" style="min-height:60px;"></textarea>
-          </div>
-
-          <div class="field">
-            <label class="label">분석 태그</label>
-            <div style="margin-bottom:8px;"><div class="tag-list" id="tagChipList"><span style="font-size:12px;color:#b0bec5;">상담 저장 후 AI 태그가 자동 생성됩니다.</span></div></div>
-            <button class="add-tag-btn" id="addTagBtn" type="button">+ 태그 직접 추가</button>
-            <div class="tag-picker hidden" id="tagPicker">
-              <div class="tag-picker-cats" id="tagPickerCats"></div>
-              <div class="tag-picker-vals" id="tagPickerVals"></div>
+            <!-- 생년월일 / 환자구분 -->
+            <div class="pt-info-grid">
+              <div class="pt-info-cell">
+                <div class="pt-info-label">생년월일</div>
+                <div class="pt-info-val" id="ptViewBirth">-</div>
+              </div>
+              <div class="pt-info-cell">
+                <div class="pt-info-label">환자구분</div>
+                <div class="pt-info-val" id="ptViewStatus">-</div>
+              </div>
             </div>
+
+            <!-- 상담상태 / 최근 상담금액 -->
+            <div class="pt-info-grid">
+              <div class="pt-info-cell">
+                <div class="pt-info-label">상담상태</div>
+                <div class="pt-info-val" id="ptViewConsultStatus">-</div>
+              </div>
+              <div class="pt-info-cell">
+                <div class="pt-info-label">최근 상담금액</div>
+                <div class="pt-info-val" id="ptViewLastTotal">-</div>
+              </div>
+            </div>
+
+            <!-- 메모 -->
+            <div class="pt-info-cell" style="margin-top:6px;">
+              <div class="pt-info-label">메모</div>
+              <div class="pt-info-memo" id="ptViewMemo">-</div>
+            </div>
+
+            <!-- 분석 태그 -->
+            <div style="margin-top:10px;">
+              <div class="pt-info-label" style="margin-bottom:6px;">분석 태그</div>
+              <div class="tag-list" id="tagChipList">
+                <span style="font-size:12px;color:#b0bec5;">상담 저장 후 AI 태그가 자동 생성됩니다.</span>
+              </div>
+              <button class="add-tag-btn" id="addTagBtn" type="button" style="margin-top:6px;">+ 태그 직접 추가</button>
+              <div class="tag-picker hidden" id="tagPicker">
+                <div class="tag-picker-cats" id="tagPickerCats"></div>
+                <div class="tag-picker-vals" id="tagPickerVals"></div>
+              </div>
+            </div>
+
+          </div><!-- /ptInfoView -->
+
+          <!-- 숨김 처리된 input들 (JS 호환용) -->
+          <div style="display:none;">
+            <input id="patientNameInput" /><input id="patientChartInput" />
+            <input id="patientMobileInput" /><input id="patientBirthInput" type="hidden" />
+            <select id="patientStatusInput"></select>
+            <textarea id="patientMemoInput"></textarea>
+            <div id="snsPreviewArea"><div id="snsPreviewText"></div></div>
           </div>
 
-          <div class="button-row">
-            <button class="primary-btn" id="savePatientBtn" style="flex:1;" disabled>저장</button>
-          </div>
         </div>
       </div>
 
       <!-- 우: 상담내역 -->
       <div class="panel" style="height:fit-content;">
         <div class="panel-inner">
-
-          <!-- 선택 환자 요약 -->
-          <div class="summary-box" id="selectedPatientBox" style="margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-              <div>
-                <div class="summary-name" id="selectedPatientName">환자를 선택하세요</div>
-                <div class="summary-sub" id="selectedPatientSub">환자 목록에서 선택하거나 신규 등록하세요.</div>
-              </div>
-            </div>
-            <div class="summary-grid" style="margin-top:10px;">
-              <div class="info-box"><div class="label">상담 상태</div><div class="value" id="selectedPatientStatus">-</div></div>
-              <div class="info-box"><div class="label">최근 총액</div><div class="value" id="selectedPatientLastTotal">-</div></div>
-            </div>
-          </div>
 
           <!-- 상담내역 탭 -->
           <div class="consult-tabs">
@@ -1842,19 +1840,51 @@ function bindPatientListClick() {
 /* ── 선택 환자 요약 ── */
 function renderSelectedPatient() {
   const p = getSelectedPatient();
+  const emptyEl = document.getElementById('ptInfoEmpty');
+  const viewEl  = document.getElementById('ptInfoView');
+
   if (!p) {
-    document.getElementById('selectedPatientName').textContent = '환자를 선택하세요';
-    document.getElementById('selectedPatientSub').textContent = '환자 목록에서 선택 후 상담을 진행할 수 있습니다.';
-    document.getElementById('selectedPatientStatus').textContent = '-';
-    document.getElementById('selectedPatientLastTotal').textContent = '-';
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (viewEl)  viewEl.style.display  = 'none';
+    // 우측 패널 호환용 (제거됐지만 null 체크)
+    document.getElementById('selectedPatientStatus')?.textContent && null;
     updateStartConsultBtn();
     return;
   }
-  document.getElementById('selectedPatientName').textContent = p.name||'-';
-  document.getElementById('selectedPatientSub').innerHTML =
-    `${p.mobile||'-'}${p.sns_type?' · '+p.sns_type+' '+p.sns_id:''} · ${p.birth_date||'-'}<br>${p.memo||'메모 없음'}`;
-  document.getElementById('selectedPatientStatus').textContent = p.status||'-';
-  document.getElementById('selectedPatientLastTotal').textContent = formatKRW(p.last_total||0);
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (viewEl)  viewEl.style.display  = 'block';
+
+  // 환자명 + 차트번호
+  const nameEl = document.getElementById('ptViewName');
+  if (nameEl) nameEl.textContent = p.name || '-';
+  const chartEl = document.getElementById('ptViewChart');
+  if (chartEl) chartEl.textContent = p.chart_number ? `(${p.chart_number})` : '';
+
+  // 휴대전화 / SNS / 성별
+  const mobileEl = document.getElementById('ptViewMobile');
+  if (mobileEl) mobileEl.textContent = p.mobile || '-';
+  const snsEl = document.getElementById('ptViewSns');
+  if (snsEl) snsEl.textContent = p.sns_type ? `${p.sns_type} ${p.sns_id||''}` : '-';
+  const genderEl = document.getElementById('ptViewGender');
+  if (genderEl) genderEl.textContent = p.gender || '-';
+
+  // 생년월일 / 환자구분
+  const birthEl = document.getElementById('ptViewBirth');
+  if (birthEl) birthEl.textContent = p.birth_date || '-';
+  const statusEl = document.getElementById('ptViewStatus');
+  if (statusEl) statusEl.textContent = p.status || '-';
+
+  // 상담상태 / 최근 상담금액
+  const cStatusEl = document.getElementById('ptViewConsultStatus');
+  if (cStatusEl) cStatusEl.textContent = p.status || '-';
+  const lastTotalEl = document.getElementById('ptViewLastTotal');
+  if (lastTotalEl) lastTotalEl.textContent = formatKRW(p.last_total || 0);
+
+  // 메모
+  const memoEl = document.getElementById('ptViewMemo');
+  if (memoEl) memoEl.textContent = p.memo || '-';
+
   updateStartConsultBtn();
   updateCanvasPatientName();
 }
