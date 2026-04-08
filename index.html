@@ -2422,34 +2422,41 @@ function bindCanvasEvents() {
     const saveBtn = document.getElementById('canvasSaveBtn');
     if (saveBtn) { saveBtn.textContent = '⏳'; saveBtn.disabled = true; }
 
+    const timeout = ms => new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`시간 초과 (${ms/1000}초)`)), ms));
+
     try {
       const merged = getMergedCanvas();
       if (!merged) throw new Error('캔버스를 찾을 수 없습니다.');
 
-      const blob = await new Promise(resolve => merged.toBlob(resolve, 'image/jpeg', 0.8));
+      // toBlob에 타임아웃 적용
+      const blob = await Promise.race([
+        new Promise(resolve => merged.toBlob(resolve, 'image/jpeg', 0.8)),
+        timeout(5000)
+      ]);
       if (!blob) throw new Error('이미지 변환 실패');
 
       const patient = getSelectedPatient();
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const ptId = patient ? `_${patient.id.slice(0, 8)}` : '';
-      const sessionKey = AppState.canvasSaveKey || `${AppState.currentUser.id}/${date}${ptId}_${Date.now()}`;
+      const sessionKey = AppState.canvasSaveKey ||
+        `${AppState.currentUser.id}/${date}${ptId}_${Date.now()}`;
       AppState.canvasSaveKey = sessionKey;
       const path = `${sessionKey}.jpg`;
 
-      const uploadPromise = AppState.supabase.storage
-        .from('dental-canvas')
-        .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+      // 업로드에 타임아웃 적용
+      const { error } = await Promise.race([
+        AppState.supabase.storage
+          .from('dental-canvas')
+          .upload(path, blob, { contentType: 'image/jpeg', upsert: true }),
+        timeout(15000)
+      ]);
+      if (error) throw new Error(`Storage 오류: ${error.message}`);
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('업로드 시간 초과 (10초). Supabase Storage 권한을 확인해주세요.')), 10000));
-
-      const { error } = await Promise.race([uploadPromise, timeoutPromise]);
-      if (error) throw new Error(`Storage 오류: ${error.message} (${error.statusCode || ''})`);
-
-      const { data: urlData } = AppState.supabase.storage.from('dental-canvas').getPublicUrl(path);
+      const { data: urlData } = AppState.supabase.storage
+        .from('dental-canvas').getPublicUrl(path);
       AppState.savedCanvasUrl = urlData?.publicUrl || null;
 
-      // 저장 성공 → 썸네일 즉시 표시
       showPreviewThumb(merged.toDataURL('image/jpeg', 0.5));
       showToast('저장됐습니다. ✓', 'success');
     } catch(e) {
