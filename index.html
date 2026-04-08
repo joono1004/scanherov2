@@ -1006,11 +1006,8 @@
         </div>
       </div>
 
-      <!-- 견적 탭 -->
-      <div class="quote-tabs" id="quoteTabs">
-        <button class="quote-tab active-a" data-quote="0">견적 A</button>
-        <button class="quote-tab-add" id="quoteAddBtn" title="비교 견적 추가">＋</button>
-      </div>
+      <!-- 견적 탭 (JS에서 동적 렌더) -->
+      <div class="quote-tabs" id="quoteTabs"></div>
 
       <!-- 단일모드: 견적 목록 -->
       <div class="cost-items-area" id="costItemsArea">
@@ -3705,43 +3702,6 @@ function resetQuotes() {
 }
 
 /* ── 견적 탭 렌더 ── */
-function renderQuoteTabs() {
-  const tabs = document.getElementById('quoteTabs');
-  if (!tabs) return;
-  tabs.innerHTML = quotes.map((q, i) => {
-    const cls = isCompareMode()
-      ? (i === 0 ? 'active-a' : 'active-b')
-      : 'active-a';
-    const active = activeQuoteIdx === i ? cls : '';
-    return `<button class="quote-tab ${active}" data-quote="${i}">${q.label}${quotes.length > 1 ? `<span class="quote-tab-del" data-del="${i}">✕</span>` : ''}</button>`;
-  }).join('') +
-  (quotes.length < 2 ? `<button class="quote-tab-add" id="quoteAddBtn">＋</button>` : '');
-
-  tabs.querySelectorAll('.quote-tab[data-quote]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      if (e.target.dataset.del !== undefined) return;
-      activeQuoteIdx = Number(btn.dataset.quote);
-      renderQuoteTabs();
-      renderCostAll();
-    });
-  });
-  tabs.querySelectorAll('[data-del]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const idx = Number(btn.dataset.del);
-      quotes.splice(idx, 1);
-      if (activeQuoteIdx >= quotes.length) activeQuoteIdx = quotes.length - 1;
-      renderQuoteTabs();
-      renderCostAll();
-    });
-  });
-  document.getElementById('quoteAddBtn')?.addEventListener('click', () => {
-    quotes.push({ id: 'B', label: '견적 B', items: [], discountRate: 0 });
-    activeQuoteIdx = 1;
-    renderQuoteTabs();
-    renderCostAll();
-  });
-}
 
 /* ── 전체 렌더 ── */
 function renderCostAll() {
@@ -3956,6 +3916,74 @@ function renderCostScreen() {
   renderCostAll();
 }
 
+
+/* ── 빠른 항목 버튼 렌더 ── */
+function renderCostQuickItems(cat) {
+  const items = AppState.pricePresets.filter(p => p.category === cat);
+  const el = document.getElementById('costQuickItems');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<span style="font-size:12px;color:var(--sub);padding:10px 0;">항목이 없습니다</span>';
+    return;
+  }
+  el.innerHTML = items.map(p => `
+    <button class="cost-quick-item" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-unit="${p.unit}">
+      <span class="qi-name">${p.name}</span>
+      <span class="qi-price">${formatKRW(p.price)}</span>
+    </button>
+  `).join('');
+  el.querySelectorAll('.cost-quick-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addCostItem({ presetId: btn.dataset.id, name: btn.dataset.name, unitPrice: Number(btn.dataset.price), unit: btn.dataset.unit, qty: 1 });
+    });
+  });
+}
+
+/* ── 견적 탭 렌더 ── */
+function renderQuoteTabs() {
+  const tabs = document.getElementById('quoteTabs');
+  if (!tabs) return;
+
+  const addBtn = quotes.length < 2
+    ? `<button class="quote-tab-add" id="quoteAddBtn">＋</button>` : '';
+
+  tabs.innerHTML = quotes.map((q, i) => {
+    const colorCls = i === 0 ? 'active-a' : 'active-b';
+    const active = activeQuoteIdx === i ? colorCls : '';
+    const del = quotes.length > 1 ? `<span class="quote-tab-del" data-del="${i}">✕</span>` : '';
+    return `<button class="quote-tab ${active}" data-quote="${i}">${q.label}${del}</button>`;
+  }).join('') + addBtn;
+
+  // 탭 클릭
+  tabs.querySelectorAll('.quote-tab[data-quote]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      if (e.target.dataset.del !== undefined) return;
+      activeQuoteIdx = Number(btn.dataset.quote);
+      renderQuoteTabs();
+      renderCostAll();
+    });
+  });
+
+  // 삭제
+  tabs.querySelectorAll('[data-del]').forEach(span => {
+    span.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = Number(span.dataset.del);
+      quotes.splice(idx, 1);
+      if (activeQuoteIdx >= quotes.length) activeQuoteIdx = quotes.length - 1;
+      renderQuoteTabs();
+      renderCostAll();
+    });
+  });
+
+  // ＋ 버튼 (동적 생성된 것)
+  document.getElementById('quoteAddBtn')?.addEventListener('click', () => {
+    quotes.push({ id: 'B', label: '견적 B', items: [], discountRate: 0 });
+    activeQuoteIdx = 1;
+    renderQuoteTabs();
+    renderCostAll();
+  });
+}
 
 /* ── 치과명 업데이트 (네비게이션) ── */
 function updateCanvasPatientName() {
