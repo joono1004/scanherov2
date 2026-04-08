@@ -3783,7 +3783,7 @@ function renderCostItems() {
     row.className = 'cost-item-row';
     const isCustom = !!item.isCustom;
     row.innerHTML = `
-      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" title="${isCustom ? '클릭하면 이름 수정' : ''}">${item.name}</div>
+      <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" title="${isCustom ? '클릭하면 이름 수정' : ''}" style="${isCustom ? 'color:var(--primary);cursor:pointer;' : ''}">${item.name}</div>
       <div class="cost-item-qty">
         <button onclick="changeCostItemQty(${item.id},-1)">−</button>
         <span>${item.qty}</span>
@@ -3889,24 +3889,30 @@ function renderCompare() {
         rowDiv.style.cssText = 'font-size:12px;padding:7px 10px;';
         const isCustom = !!item.isCustom;
         rowDiv.innerHTML = `
-          <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" style="font-size:12px;">${item.name}</div>
+          <div class="cost-item-name${isCustom ? ' cost-item-name-custom' : ''}" style="font-size:12px;${isCustom ? 'color:var(--primary);' : ''}">${item.name}</div>
           <div class="cost-item-qty">
             <button onclick="changeCostItemQtyQ(${qi},${item.id},-1)">−</button>
             <span>${item.qty}</span>
             <button onclick="changeCostItemQtyQ(${qi},${item.id},+1)">+</button>
           </div>
           <div class="cost-item-price" style="font-size:12px;" data-qi="${qi}" data-id="${item.id}" title="클릭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
-          ${qi === 0 ? `<button class="cost-item-copy-btn" title="견적 B에 동일 항목 추가">동일</button>` : ''}
           <button class="cost-item-del" onclick="removeCostItemQ(${qi},${item.id})">✕</button>`;
 
-        // 동일 버튼 (견적A → 견적B 복사)
+        // 동일 버튼 (견적A → 견적B 복사) - DOM으로 직접 추가
         if (qi === 0) {
-          rowDiv.querySelector('.cost-item-copy-btn')?.addEventListener('click', () => {
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'cost-item-copy-btn';
+          copyBtn.textContent = '동일';
+          copyBtn.title = '견적 B에 동일 항목 추가';
+          copyBtn.addEventListener('click', () => {
             if (quotes.length < 2) return;
-            const copied = { id: Date.now(), name: item.name, unitPrice: item.unitPrice, qty: item.qty, unit: item.unit || '', presetId: item.presetId || null, isCustom: item.isCustom || false };
+            const copied = { id: Date.now(), name: item.name, unitPrice: item.unitPrice, qty: item.qty, unit: item.unit || '', presetId: null, isCustom: item.isCustom || false };
             quotes[1].items.push(copied);
             renderCostAll();
           });
+          // ✕ 버튼 앞에 삽입
+          const delBtn = rowDiv.querySelector('.cost-item-del');
+          rowDiv.insertBefore(copyBtn, delBtn);
         }
 
         // 이름 편집 (추가항목만)
