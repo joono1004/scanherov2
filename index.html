@@ -362,11 +362,13 @@
     .canvas-tmpl-name { font-size: 12px; font-weight: 800; color: var(--text); }
     .canvas-tmpl-sub { font-size: 10px; color: #9aabbc; margin-top: 1px; }
 
-    .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; }
+    .canvas-center { background: #f4f7fb; display: flex; flex-direction: column; min-height: 0; overflow: hidden; flex: 1; }
+    .canvas-toolbar { display: flex; flex-direction: column; align-items: center; padding: 8px 4px; gap: 4px; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; overflow-x: hidden; flex-shrink: 0; width: 46px; scrollbar-width: none; }
+    .canvas-toolbar::-webkit-scrollbar { display: none; }
     .tool-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: .15s; flex-shrink: 0; }
     .tool-btn.active { background: var(--primary-soft); border-color: #bfd3ff; }
     .tool-btn:hover:not(.active) { background: var(--bg); }
-    .tool-sep { width: 22px; height: 1px; background: var(--line); margin: 2px 0; flex-shrink: 0; }
+    .tool-sep { width: 28px; height: 1px; background: var(--line); margin: 2px 0; flex-shrink: 0; }
     .color-swatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: .15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .color-swatch::after { content: ''; width: 18px; height: 18px; border-radius: 50%; display: block; }
     .color-swatch[data-color="#122236"]::after { background: #122236; }
@@ -561,24 +563,26 @@
 
     /* ── 상담 시작 버튼 ── */
 
-    /* 기본: 데스크탑/태블릿 가로 (834px 이상) */
+    /* ── 치료상담 화면 ── */
     .treat-body { display: grid; grid-template-columns: 160px 1fr 46px; flex: 1; overflow: hidden; min-height: 0; }
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
 
-    /* 태블릿 세로 / 소형 (834px 미만) */
+    /* 태블릿 세로 / 좁은 화면 (834px 미만) */
     @media (max-width: 834px) {
       .app-nav { padding: 0 10px; gap: 6px; height: 48px; }
       .nav-brand-name { font-size: 13px; }
       .nav-tab { padding: 5px 10px; font-size: 12px; }
       .nav-pt-search { min-width: 120px; max-width: 150px; }
 
-      /* 치료 상담 - 사이드바 숨김 */
-      .treat-body { grid-template-columns: 0 1fr 40px; }
+      /* 치료상담 - 사이드바 숨기고 상단 카테고리바 표시 */
+      .treat-body { grid-template-columns: 1fr 40px; }
       .canvas-sidebar { display: none; }
-      .canvas-toolbar { padding: 4px; gap: 3px; }
+      .canvas-cat-bar { display: flex; }
+      .canvas-toolbar { width: 40px; padding: 6px 3px; gap: 3px; }
       .tool-btn { width: 28px; height: 28px; font-size: 13px; }
-      .color-swatch { width: 18px; height: 18px; }
-      .lw-btn { width: 28px; height: 18px; }
+      .color-swatch { width: 22px; height: 22px; }
+      .lw-btn { width: 28px; height: 22px; }
+      .tool-sep { width: 22px; }
 
       /* 환자정보 */
       .patient-screen-body { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
@@ -589,19 +593,20 @@
       .cat-mgmt-body { grid-template-columns: 180px 1fr; }
     }
 
-    /* 세로모드 / 소형 (600px 미만) */
+    /* 소형 (600px 미만) */
     @media (max-width: 600px) {
-      .treat-body { grid-template-columns: 0 1fr 36px; }
-      .canvas-toolbar { padding: 2px; gap: 2px; }
+      .treat-body { grid-template-columns: 1fr 36px; }
+      .canvas-toolbar { width: 36px; padding: 4px 2px; gap: 2px; }
       .tool-btn { width: 26px; height: 26px; font-size: 12px; }
-      .color-swatch { width: 16px; height: 16px; }
-      .lw-btn { width: 26px; height: 16px; }
+      .color-swatch { width: 20px; height: 20px; }
+      .lw-btn { width: 26px; height: 20px; }
+      .tool-sep { width: 20px; }
       .nav-tabs { gap: 0; padding: 2px; }
       .nav-tab { padding: 5px 7px; font-size: 11px; }
       .nav-pt-search { min-width: 90px; max-width: 120px; }
     }
 
-    /* 소형 태블릿 세로 (768px 미만) */
+    /* 768px 미만 */
     @media (max-width: 768px) {
       .nav-tabs { gap: 1px; }
       .nav-tab { padding: 5px 8px; font-size: 11px; }
@@ -891,15 +896,6 @@
   <div class="screen active" id="screen-treat">
 
     <!-- 태블릿 세로용 카테고리 가로 바 -->
-    <div class="canvas-cat-bar" id="canvasCatBar">
-      <button class="canvas-cat active" data-cat="임플란트">임플란트</button>
-      <button class="canvas-cat" data-cat="크라운">크라운</button>
-      <button class="canvas-cat" data-cat="교정">교정</button>
-      <button class="canvas-cat" data-cat="신경치료">신경치료</button>
-      <button class="canvas-cat" data-cat="미백">미백</button>
-      <button class="canvas-cat" data-cat="틀니">틀니</button>
-    </div>
-
     <div class="treat-body">
 
       <!-- 좌: 카테고리(드롭다운) + 템플릿 -->
@@ -924,8 +920,9 @@
 
       </div><!-- /canvas-sidebar -->
 
-      <!-- 중앙: 캔버스 -->
+      <!-- 중앙: 카테고리바(세로모드) + 캔버스 -->
       <div class="canvas-center">
+        <div class="canvas-cat-bar" id="canvasCatBar"></div>
         <div class="canvas-wrap">
           <div class="canvas-container">
             <canvas id="bgCanvas"></canvas>
@@ -3456,6 +3453,9 @@ async function loadCanvasCategories() {
   document.getElementById('catDropdownList')._dbCats = cats;
 
   renderCanvasTmplListFromDB(cats[0]);
+
+  // 상단 카테고리 바도 동기화
+  syncCatBars();
 }
 
 // ── DB 템플릿으로 캔버스 사이드바 렌더 ──
@@ -3568,47 +3568,31 @@ function loadSavedTheme() {
 function isTabletPortrait() { return window.innerWidth <= 834; }
 
 function syncCatBars() {
-  if (!isTabletPortrait()) return;
-
-  // 치료상담 가로 바 → 사이드바 카테고리 동기화
-  const sidebarCats = document.getElementById('canvasCatList');
   const topBar = document.getElementById('canvasCatBar');
-  if (sidebarCats && topBar) {
-    topBar.querySelectorAll('.canvas-cat').forEach(btn => {
-      btn.addEventListener('click', () => {
-        // 사이드바 카테고리도 같이 활성화
-        sidebarCats.querySelectorAll('.canvas-cat').forEach(b => {
-          b.classList.toggle('active', b.dataset.cat === btn.dataset.cat);
-        });
-        topBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        CanvasState.currentCat = btn.dataset.cat;
-        CanvasState.currentTmpl = 0;
-        renderCanvasTmplList();
-      });
-    });
+  if (!topBar) return;
+
+  // DB 카테고리가 있으면 topBar에 동기화
+  const dbCats = document.getElementById('catDropdownList')?._dbCats;
+  if (dbCats && dbCats.length) {
+    topBar.innerHTML = dbCats.map((cat, i) =>
+      `<button class="canvas-cat${i === 0 ? ' active' : ''}" data-cat="${cat.name}" data-cat-id="${cat.id}">${cat.name}</button>`
+    ).join('');
   }
 
-  // 비용상담 가로 바 표시
-  const costBar = document.getElementById('costCatBar');
-  if (costBar) {
-    costBar.style.display = 'flex';
-    const cats = [...new Set(AppState.pricePresets.map(p => p.category))];
-    costBar.innerHTML = cats.map((c, i) =>
-      `<button class="canvas-cat${i===0?' active':''}" data-cat="${c}" style="margin-right:4px;">${c}</button>`
-    ).join('');
-    costBar.querySelectorAll('.canvas-cat').forEach(btn => {
-      btn.addEventListener('click', () => {
-        costBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // 사이드바 카테고리도 동기화
-        document.getElementById('costCatList')?.querySelectorAll('.cost-cat').forEach(b => {
-          b.classList.toggle('active', b.dataset.cat === btn.dataset.cat);
-        });
-        renderCostPresets(btn.dataset.cat);
-      });
+  topBar.querySelectorAll('.canvas-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      topBar.querySelectorAll('.canvas-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      CanvasState.currentCat = btn.dataset.cat;
+      CanvasState.currentTmpl = 0;
+      // DB 카테고리 방식
+      if (btn.dataset.catId && dbCats) {
+        const cat = dbCats.find(c => c.id === btn.dataset.catId);
+        if (cat) { renderCanvasTmplListFromDB(cat); return; }
+      }
+      renderCanvasTmplList();
     });
-  }
+  });
 }
 
 // 화면 회전 / 창 크기 변경 시 재처리
