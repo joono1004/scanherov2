@@ -506,13 +506,9 @@
     .compare-col-label { font-size: 10px; font-weight: 800; color: var(--sub); padding: 4px 2px 6px; letter-spacing: .05em; }
 
     /* 비교 합계 */
-    .compare-upper { display: grid; grid-template-columns: 1fr 1fr; flex-shrink: 0; background: var(--panel); border-top: 1px solid var(--line); }
-    .compare-upper-col { padding: 10px 16px; }
-    .compare-upper-label { font-size: 11px; color: var(--sub); font-weight: 700; margin-bottom: 2px; }
-    .compare-subtotal { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-    .compare-subtotal.val-a { color: var(--primary); }
-    .compare-subtotal.val-b { color: #3B6D11; }
-    .compare-summary { display: grid; grid-template-columns: 1fr 1fr; flex-shrink: 0; background: var(--dark); }
+    .compare-summary-wrap { display: grid; grid-template-columns: 1fr 1fr; flex-shrink: 0; border-top: 1px solid var(--line); }
+    .compare-quote-summary { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--panel); }
+    .compare-diff { background: var(--panel); border-top: 1px solid var(--line); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
     .compare-summary-col { padding: 14px 18px; border-right: 0.5px solid rgba(255,255,255,.1); }
     .compare-summary-col:last-child { border-right: none; }
     .compare-total-label { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 4px; font-weight: 700; }
@@ -1058,35 +1054,51 @@
         </div>
       </div>
 
-      <!-- 하단: 금액 요약 (비교모드) -->
-      <!-- 소계 + 할인 (흰 배경) -->
-      <div class="compare-upper" id="compareUpperArea" style="display:none;">
-        <div class="compare-upper-col" style="border-right:0.5px solid var(--line);">
-          <div class="compare-upper-label">A 소계</div>
-          <div class="compare-subtotal val-a" id="compareSubtotalA">0원</div>
-          <div class="compare-discount-row" id="compareDiscountBtnsA"></div>
+      <!-- 하단: 금액 요약 (비교모드) - 단일 견적과 동일한 구조 x2 -->
+      <div class="compare-summary-wrap" id="compareSummaryArea" style="display:none;">
+
+        <!-- 견적 A -->
+        <div class="compare-quote-summary" style="border-right:1px solid var(--line);">
+          <div class="cost-subtotal-row">
+            <span class="cost-subtotal-label" style="color:var(--primary);font-weight:900;">견적 A 소계</span>
+            <span class="cost-subtotal-val" id="compareSubtotalA">0원</span>
+          </div>
+          <div class="cost-discount-row">
+            <span class="cost-discount-label">할인</span>
+            <div class="cost-discount-btns" id="compareDiscountBtnsA"></div>
+          </div>
+          <div class="cost-total-box" style="background:#1e3a5f;">
+            <div class="cost-total-left">
+              <span class="cost-total-label">견적 A 최종</span>
+              <span style="font-size:10px;color:rgba(255,255,255,.5);" id="compareDiscountInfoA"></span>
+            </div>
+            <span class="cost-total-val" id="compareTotalA">0원</span>
+          </div>
         </div>
-        <div class="compare-upper-col">
-          <div class="compare-upper-label">B 소계</div>
-          <div class="compare-subtotal val-b" id="compareSubtotalB">0원</div>
-          <div class="compare-discount-row" id="compareDiscountBtnsB"></div>
+
+        <!-- 견적 B -->
+        <div class="compare-quote-summary">
+          <div class="cost-subtotal-row">
+            <span class="cost-subtotal-label" style="color:#3B6D11;font-weight:900;">견적 B 소계</span>
+            <span class="cost-subtotal-val" id="compareSubtotalB">0원</span>
+          </div>
+          <div class="cost-discount-row">
+            <span class="cost-discount-label">할인</span>
+            <div class="cost-discount-btns" id="compareDiscountBtnsB"></div>
+          </div>
+          <div class="cost-total-box" style="background:#14532d;">
+            <div class="cost-total-left">
+              <span class="cost-total-label">견적 B 최종</span>
+              <span style="font-size:10px;color:rgba(255,255,255,.5);" id="compareDiscountInfoB"></span>
+            </div>
+            <span class="cost-total-val" id="compareTotalB">0원</span>
+          </div>
         </div>
+
       </div>
-      <!-- 최종금액 (검은 배경) -->
-      <div class="compare-summary" id="compareSummaryArea" style="display:none;">
-        <div class="compare-summary-col">
-          <div class="compare-total-label">견적 A 최종</div>
-          <div class="compare-discount-info" id="compareDiscountInfoA"></div>
-          <div class="compare-total-val val-a" id="compareTotalA">0원</div>
-        </div>
-        <div class="compare-summary-col">
-          <div class="compare-total-label">견적 B 최종</div>
-          <div class="compare-discount-info" id="compareDiscountInfoB"></div>
-          <div class="compare-total-val val-b" id="compareTotalB">0원</div>
-        </div>
-      </div>
+      <!-- 차액 -->
       <div class="compare-diff" id="compareDiff" style="display:none;">
-        <span style="font-size:12px;color:rgba(255,255,255,.5);" id="compareDiffLabel"></span>
+        <span style="font-size:12px;color:var(--sub);" id="compareDiffLabel"></span>
         <span style="font-size:14px;font-weight:900;" id="compareDiffVal"></span>
       </div>
 
@@ -3727,7 +3739,6 @@ function renderCostAll() {
     document.getElementById('costItemsArea').style.display = 'none';
     document.getElementById('compareCols').style.display = 'grid';
     document.getElementById('costSummaryArea').style.display = 'none';
-    document.getElementById('compareUpperArea').style.display = 'grid';
     document.getElementById('compareSummaryArea').style.display = 'grid';
     document.getElementById('compareDiff').style.display = 'flex';
     renderCompare();
@@ -3735,7 +3746,6 @@ function renderCostAll() {
     document.getElementById('costItemsArea').style.display = 'flex';
     document.getElementById('compareCols').style.display = 'none';
     document.getElementById('costSummaryArea').style.display = 'flex';
-    document.getElementById('compareUpperArea').style.display = 'none';
     document.getElementById('compareSummaryArea').style.display = 'none';
     document.getElementById('compareDiff').style.display = 'none';
     renderCostItems();
@@ -3822,9 +3832,11 @@ function renderCompare() {
 
     // 각 견적 할인 버튼
     const totalEl = document.getElementById(qi === 0 ? 'compareTotalA' : 'compareTotalB');
+    const subtotalEl = document.getElementById(qi === 0 ? 'compareSubtotalA' : 'compareSubtotalB');
     const infoEl = document.getElementById(qi === 0 ? 'compareDiscountInfoA' : 'compareDiscountInfoB');
     const btnsEl = document.getElementById(qi === 0 ? 'compareDiscountBtnsA' : 'compareDiscountBtnsB');
 
+    if (subtotalEl) subtotalEl.textContent = formatKRW(subtotal);
     if (totalEl) totalEl.textContent = formatKRW(total);
     if (infoEl) infoEl.textContent = q.discountRate > 0 ? `${q.discountRate}% 할인 (-${formatKRW(discountAmt)})` : '';
     if (btnsEl) {
@@ -3844,10 +3856,10 @@ function renderCompare() {
     const labelEl = document.getElementById('compareDiffLabel');
     const valEl = document.getElementById('compareDiffVal');
     if (labelEl) labelEl.textContent = diff > 0 ? `${cheaper}가 더 저렴해요` : '두 견적이 동일해요';
-    if (labelEl) labelEl.style.color = 'rgba(255,255,255,.5)';
+    if (labelEl) labelEl.style.color = '';
     if (valEl) {
       valEl.textContent = diff > 0 ? `${formatKRW(diff)} 차이` : '';
-      valEl.style.color = tA < tB ? '#7eb8ff' : '#86efac';
+      valEl.style.color = tA < tB ? '#185FA5' : '#3B6D11';
     }
   }
 }
