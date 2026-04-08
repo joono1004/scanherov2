@@ -1601,6 +1601,7 @@ const AppState = {
   currentTab: 'consult', recognition: null, isRecording: false,
   savedCanvasUrl: null,
   canvasSaveKey: null,
+  currentConsultId: null,  // 💾 저장으로 생성된 consultation ID
   sttRaw: '', sttRawFinal: '', sttSummary: '', sttDialogSeparated: '', lastInterimTranscript: '', aiLoading: false,
   birthYear: null, birthMonth: null, birthDay: null,
   snsType: null, snsId: '',
@@ -2457,6 +2458,28 @@ function bindCanvasEvents() {
         .from('dental-canvas').getPublicUrl(path);
       AppState.savedCanvasUrl = urlData?.publicUrl || null;
 
+      // consultation 레코드에 canvas_image_url 즉시 저장 (환자 이동해도 유지)
+      if (AppState.savedCanvasUrl && patient) {
+        // 현재 세션에 이미 저장된 consultation이 있으면 업데이트, 없으면 생성
+        if (AppState.currentConsultId) {
+          await AppState.supabase.from('consultations')
+            .update({ canvas_image_url: AppState.savedCanvasUrl })
+            .eq('id', AppState.currentConsultId);
+        } else {
+          const { data: newConsult } = await AppState.supabase
+            .from('consultations')
+            .insert({
+              user_id: AppState.currentUser.id,
+              patient_id: patient.id,
+              title: `${patient.name} 캔버스`,
+              canvas_image_url: AppState.savedCanvasUrl,
+              diagnosis_note: '-',
+            })
+            .select('id').single();
+          if (newConsult?.id) AppState.currentConsultId = newConsult.id;
+        }
+      }
+
       showPreviewThumb(merged.toDataURL('image/jpeg', 0.5));
       showToast('저장됐습니다. ✓', 'success');
     } catch(e) {
@@ -2820,8 +2843,17 @@ async function saveConsultOnEnd() {
         next_action: '재상담 예정',
         consult_date: new Date().toISOString().slice(0,10),
       };
-      const { error } = await AppState.supabase.from('consultations').insert(payload);
-      if (error) throw error;
+      // 💾로 이미 생성된 레코드가 있으면 update, 없으면 insert
+      if (AppState.currentConsultId) {
+        const { error } = await AppState.supabase.from('consultations')
+          .update(payload)
+          .eq('id', AppState.currentConsultId);
+        if (error) throw error;
+      } else {
+        const { error } = await AppState.supabase.from('consultations').insert(payload);
+        if (error) throw error;
+      }
+      AppState.currentConsultId = null;
       showToast('상담 기록이 저장됐습니다.', 'success');
       loadPrevConsultThumbs();
       await loadTodayConsultCount();
@@ -4479,7 +4511,7 @@ function resetConsultationForm() {
   const discEl = document.getElementById('discountInput'); if(discEl) discEl.value = '0';
   AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.sttSummary='';
   AppState.sttDialogSeparated=''; AppState.lastInterimTranscript='';
-  AppState.savedCanvasUrl = null; AppState.canvasSaveKey = null;
+  AppState.savedCanvasUrl = null; AppState.canvasSaveKey = null; AppState.currentConsultId = null;
   const rawEl = document.getElementById('sttRawInput');
   if(rawEl) { rawEl.value=''; rawEl.style.color=''; }
   AppState.estimateItems=[];
