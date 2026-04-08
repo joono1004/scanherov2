@@ -491,7 +491,15 @@
     .cost-total-discount-badge { font-size: 11px; color: #fbbf24; font-weight: 800; }
     .cost-total-val { font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -1.5px; line-height: 1; }
 
-    /* 견적 탭 */
+    /* 직접입력 행 */
+    .direct-input-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--primary-soft); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .direct-confirm-btn { padding: 6px 14px; border-radius: 8px; border: none; background: var(--primary); color: #fff; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .direct-cancel-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--sub); font-size: 12px; cursor: pointer; }
+
+    /* 가격 인라인 편집 */
+    .cost-item-price-edit { border: none; border-bottom: 1.5px solid var(--primary); outline: none; font-size: 14px; font-weight: 900; text-align: right; width: 110px; background: transparent; color: var(--primary); }
+
+    /* 견적 탭 + 버튼 */
     .quote-tabs { display: flex; border-bottom: 0.5px solid var(--line); background: var(--panel); flex-shrink: 0; }
     .quote-tab { flex: 1; padding: 10px 8px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border: none; background: transparent; color: var(--sub); border-bottom: 2.5px solid transparent; transition: .15s; }
     .quote-tab.active-a { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-soft); }
@@ -1012,9 +1020,17 @@
       <!-- 견적 탭 (JS에서 동적 렌더) -->
       <div class="quote-tabs" id="quoteTabs"></div>
 
+      <!-- 직접입력 행 -->
+      <div class="direct-input-row" id="directInputRow" style="display:none;">
+        <input id="directItemName" placeholder="항목명" autocomplete="off" style="flex:1;border:none;outline:none;font-size:13px;font-weight:700;background:transparent;color:var(--text);" />
+        <input id="directItemPrice" placeholder="금액" type="number" min="0" style="width:100px;border:none;outline:none;font-size:13px;font-weight:700;text-align:right;background:transparent;color:var(--text);" />
+        <button class="direct-confirm-btn" id="directConfirmBtn">추가</button>
+        <button class="direct-cancel-btn" id="directCancelBtn">✕</button>
+      </div>
+
       <!-- 단일모드: 견적 목록 -->
       <div class="cost-items-area" id="costItemsArea">
-        <div class="cost-empty" id="costEmptyMsg">항목을 선택하면 여기에 추가됩니다</div>
+        <div class="cost-empty" id="costEmptyMsg">항목을 선택하거나 ＋로 직접 추가하세요</div>
       </div>
 
       <!-- 비교모드: 2컬럼 (기본 숨김) -->
@@ -3767,8 +3783,39 @@ function renderCostItems() {
         <span>${item.qty}</span>
         <button onclick="changeCostItemQty(${item.id},+1)">+</button>
       </div>
-      <div class="cost-item-price">${formatKRW(item.unitPrice * item.qty)}</div>
+      <div class="cost-item-price" data-id="${item.id}" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
       <button class="cost-item-del" onclick="removeCostItem(${item.id})">✕</button>`;
+
+    // 가격 더블클릭 편집
+    const priceEl = row.querySelector('.cost-item-price');
+    let tapTimer = null;
+    function startEdit() {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'cost-item-price-edit';
+      input.value = item.unitPrice;
+      input.min = 0;
+      priceEl.replaceWith(input);
+      input.focus(); input.select();
+      function commit() {
+        const newPrice = Math.max(0, Number(input.value) || 0);
+        item.unitPrice = newPrice;
+        renderCostAll();
+      }
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { input.blur(); }
+        if (e.key === 'Escape') { renderCostAll(); }
+      });
+    }
+    // 터치: 더블탭
+    priceEl.addEventListener('touchend', () => {
+      if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; startEdit(); }
+      else { tapTimer = setTimeout(() => { tapTimer = null; }, 300); }
+    });
+    // 마우스: 더블클릭
+    priceEl.addEventListener('dblclick', startEdit);
+
     area.appendChild(row);
   });
 }
@@ -3809,17 +3856,36 @@ function renderCompare() {
       col.innerHTML += `<div style="font-size:12px;color:var(--sub);padding:8px 0;">항목을 선택하세요</div>`;
     } else {
       q.items.forEach(item => {
-        col.innerHTML += `
-          <div class="cost-item-row" style="font-size:12px;padding:7px 10px;">
-            <div class="cost-item-name" style="font-size:12px;">${item.name}</div>
-            <div class="cost-item-qty">
-              <button onclick="changeCostItemQtyQ(${qi},${item.id},-1)">−</button>
-              <span>${item.qty}</span>
-              <button onclick="changeCostItemQtyQ(${qi},${item.id},+1)">+</button>
-            </div>
-            <div class="cost-item-price" style="font-size:12px;">${formatKRW(item.unitPrice * item.qty)}</div>
-            <button class="cost-item-del" onclick="removeCostItemQ(${qi},${item.id})">✕</button>
-          </div>`;
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'cost-item-row';
+        rowDiv.style.cssText = 'font-size:12px;padding:7px 10px;';
+        rowDiv.innerHTML = `
+          <div class="cost-item-name" style="font-size:12px;">${item.name}</div>
+          <div class="cost-item-qty">
+            <button onclick="changeCostItemQtyQ(${qi},${item.id},-1)">−</button>
+            <span>${item.qty}</span>
+            <button onclick="changeCostItemQtyQ(${qi},${item.id},+1)">+</button>
+          </div>
+          <div class="cost-item-price" style="font-size:12px;" data-qi="${qi}" data-id="${item.id}" title="두 번 탭하면 금액 수정">${formatKRW(item.unitPrice * item.qty)}</div>
+          <button class="cost-item-del" onclick="removeCostItemQ(${qi},${item.id})">✕</button>`;
+
+        const priceEl = rowDiv.querySelector('.cost-item-price');
+        let tapTimer = null;
+        function startEditQ() {
+          const input = document.createElement('input');
+          input.type = 'number'; input.className = 'cost-item-price-edit';
+          input.value = item.unitPrice; input.min = 0;
+          priceEl.replaceWith(input); input.focus(); input.select();
+          function commit() { item.unitPrice = Math.max(0, Number(input.value) || 0); renderCostAll(); }
+          input.addEventListener('blur', commit);
+          input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') renderCostAll(); });
+        }
+        priceEl.addEventListener('touchend', () => {
+          if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; startEditQ(); }
+          else { tapTimer = setTimeout(() => { tapTimer = null; }, 300); }
+        });
+        priceEl.addEventListener('dblclick', startEditQ);
+        col.appendChild(rowDiv);
       });
     }
 
@@ -3940,9 +4006,45 @@ function renderCostScreen() {
     renderCostSummary();
   });
 
+  // 직접입력 버튼 (quote-tab-add 옆)
+  bindDirectInput();
+
   resetQuotes();
   renderQuoteTabs();
   renderCostAll();
+}
+
+function bindDirectInput() {
+  const row = document.getElementById('directInputRow');
+  const nameEl = document.getElementById('directItemName');
+  const priceEl = document.getElementById('directItemPrice');
+  const confirmBtn = document.getElementById('directConfirmBtn');
+  const cancelBtn = document.getElementById('directCancelBtn');
+  if (!row || !confirmBtn) return;
+
+  function openDirect() {
+    row.style.display = 'flex';
+    nameEl.value = ''; priceEl.value = '';
+    nameEl.focus();
+  }
+  function closeDirect() {
+    row.style.display = 'none';
+  }
+  function confirmDirect() {
+    const name = nameEl.value.trim();
+    const price = Number(priceEl.value) || 0;
+    if (!name) { nameEl.focus(); return; }
+    addCostItem({ presetId: null, name, unitPrice: price, unit: '', qty: 1 });
+    closeDirect();
+  }
+
+  // 외부에서 호출 가능하도록
+  window.openDirectInput = openDirect;
+
+  confirmBtn.addEventListener('click', confirmDirect);
+  cancelBtn.addEventListener('click', closeDirect);
+  nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') priceEl.focus(); });
+  priceEl.addEventListener('keydown', e => { if (e.key === 'Enter') confirmDirect(); if (e.key === 'Escape') closeDirect(); });
 }
 
 
@@ -3974,14 +4076,15 @@ function renderQuoteTabs() {
   if (!tabs) return;
 
   const addBtn = quotes.length < 2
-    ? `<button class="quote-tab-add" id="quoteAddBtn">＋</button>` : '';
+    ? `<button class="quote-tab-add" id="quoteAddBtn" title="비교 견적 추가">＋</button>` : '';
 
   tabs.innerHTML = quotes.map((q, i) => {
     const colorCls = i === 0 ? 'active-a' : 'active-b';
     const active = activeQuoteIdx === i ? colorCls : '';
     const del = quotes.length > 1 ? `<span class="quote-tab-del" data-del="${i}">✕</span>` : '';
     return `<button class="quote-tab ${active}" data-quote="${i}">${q.label}${del}</button>`;
-  }).join('') + addBtn;
+  }).join('') + addBtn +
+  `<button class="quote-tab-add" id="directInputToggleBtn" title="항목 직접 추가" style="border-left:0.5px solid var(--line);font-size:16px;">✎</button>`;
 
   // 탭 클릭
   tabs.querySelectorAll('.quote-tab[data-quote]').forEach(btn => {
@@ -4005,12 +4108,19 @@ function renderQuoteTabs() {
     });
   });
 
-  // ＋ 버튼 (동적 생성된 것)
+  // ＋ 비교 견적 버튼
   document.getElementById('quoteAddBtn')?.addEventListener('click', () => {
     quotes.push({ id: 'B', label: '견적 B', items: [], discountRate: 0 });
     activeQuoteIdx = 1;
     renderQuoteTabs();
     renderCostAll();
+  });
+
+  // ✎ 직접입력 토글
+  document.getElementById('directInputToggleBtn')?.addEventListener('click', () => {
+    const row = document.getElementById('directInputRow');
+    if (row.style.display === 'none') window.openDirectInput?.();
+    else row.style.display = 'none';
   });
 }
 
