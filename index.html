@@ -2436,9 +2436,14 @@ function bindCanvasEvents() {
       AppState.canvasSaveKey = sessionKey;
       const path = `${sessionKey}.jpg`;
 
-      const { error } = await AppState.supabase.storage
+      const uploadPromise = AppState.supabase.storage
         .from('dental-canvas')
         .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('업로드 시간 초과 (10초). Supabase Storage 권한을 확인해주세요.')), 10000));
+
+      const { error } = await Promise.race([uploadPromise, timeoutPromise]);
       if (error) throw new Error(`Storage 오류: ${error.message} (${error.statusCode || ''})`);
 
       const { data: urlData } = AppState.supabase.storage.from('dental-canvas').getPublicUrl(path);
