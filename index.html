@@ -546,11 +546,25 @@
     /* ── 환자정보 뷰 (읽기 전용) ── */
     .pt-info-name { font-size: 20px; font-weight: 900; color: var(--text); }
     .pt-info-chart { font-size: 13px; color: var(--sub); margin-left: 8px; font-weight: 700; }
-    .pt-info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .pt-info-row1 { display: flex; gap: 8px; align-items: stretch; }
     .pt-info-cell { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
     .pt-info-label { font-size: 10px; font-weight: 800; color: var(--sub); margin-bottom: 3px; letter-spacing: .04em; }
     .pt-info-val { font-size: 13px; font-weight: 800; color: var(--text); }
     .pt-info-memo { font-size: 13px; color: var(--text); background: var(--bg); border-radius: 10px; padding: 8px 10px; min-height: 40px; line-height: 1.6; white-space: pre-wrap; }
+
+    /* SNS 버튼 */
+    .pt-sns-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #B8860B; background: #FEE500; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: .15s; }
+    .pt-sns-btn.no-sns { opacity: 0.35; filter: grayscale(0.3); }
+    .pt-sns-btn:hover { opacity: 1 !important; }
+    .pt-sns-info { background: var(--bg); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+    .pt-sns-info.hidden { display: none; }
+
+    /* 성별 아이콘 */
+    .pt-gender-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+
+    /* 메모 편집 필드 */
+    .pt-memo-input { width: 100%; min-height: 70px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; background: var(--bg); color: var(--text); outline: none; transition: border-color .15s; }
+    .pt-memo-input:focus { border-color: var(--primary); background: var(--panel); }
 
     .patient-screen-body { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
 
@@ -1197,54 +1211,58 @@
               <span class="pt-info-chart" id="ptViewChart"></span>
             </div>
 
-            <!-- 휴대전화 / SNS / 성별 -->
-            <div class="pt-info-grid">
-              <div class="pt-info-cell">
+            <!-- 휴대전화(flex:1) / SNS아이콘 / 성별아이콘 -->
+            <div class="pt-info-row1" style="margin-bottom:8px;">
+              <div class="pt-info-cell" style="flex:1;min-width:0;">
                 <div class="pt-info-label">휴대전화</div>
-                <div class="pt-info-val" id="ptViewMobile">-</div>
+                <div class="pt-info-val" id="ptViewMobile" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">-</div>
               </div>
-              <div class="pt-info-cell">
-                <div class="pt-info-label">SNS</div>
-                <div class="pt-info-val" id="ptViewSns">-</div>
-              </div>
-              <div class="pt-info-cell">
-                <div class="pt-info-label">성별</div>
-                <div class="pt-info-val" id="ptViewGender">-</div>
-              </div>
+              <!-- SNS 아이콘 버튼 -->
+              <button class="pt-sns-btn" id="ptSnsBtn" title="SNS 정보">
+                <svg width="26" height="24" viewBox="0 0 40 36" fill="none"><path d="M20 0C8.954 0 0 6.716 0 15.006c0 5.258 3.338 9.876 8.388 12.608L6.25 35.5l8.794-5.856C16.307 29.878 18.13 30.012 20 30.012c11.046 0 20-6.716 20-15.006C40 6.716 31.046 0 20 0z" fill="#3B1E08"/></svg>
+              </button>
+              <!-- 성별 아이콘 -->
+              <div class="pt-gender-icon" id="ptViewGenderIcon" title="성별">👤</div>
             </div>
 
-            <!-- 생년월일 / 환자구분 -->
-            <div class="pt-info-grid">
-              <div class="pt-info-cell">
+            <!-- SNS 정보 표시 (클릭 시 토글) -->
+            <div class="pt-sns-info hidden" id="ptSnsInfo">
+              <div class="pt-info-label">SNS</div>
+              <div class="pt-info-val" id="ptViewSns">-</div>
+            </div>
+
+            <!-- 생년월일(flex:1) / 환자구분(10글자) -->
+            <div class="pt-info-row1" style="margin-bottom:8px;">
+              <div class="pt-info-cell" style="flex:1;min-width:0;">
                 <div class="pt-info-label">생년월일</div>
                 <div class="pt-info-val" id="ptViewBirth">-</div>
               </div>
-              <div class="pt-info-cell">
+              <div class="pt-info-cell" style="width:calc(10em + 20px);flex-shrink:0;">
                 <div class="pt-info-label">환자구분</div>
-                <div class="pt-info-val" id="ptViewStatus">-</div>
+                <div class="pt-info-val" id="ptViewPatientType">-</div>
               </div>
             </div>
 
-            <!-- 상담상태 / 최근 상담금액 -->
-            <div class="pt-info-grid">
-              <div class="pt-info-cell">
+            <!-- 상담상태(8글자) / 최근 상담금액(flex:1) -->
+            <div class="pt-info-row1" style="margin-bottom:8px;">
+              <div class="pt-info-cell" style="width:calc(8em + 20px);flex-shrink:0;">
                 <div class="pt-info-label">상담상태</div>
                 <div class="pt-info-val" id="ptViewConsultStatus">-</div>
               </div>
-              <div class="pt-info-cell">
+              <div class="pt-info-cell" style="flex:1;min-width:0;">
                 <div class="pt-info-label">최근 상담금액</div>
                 <div class="pt-info-val" id="ptViewLastTotal">-</div>
               </div>
             </div>
 
-            <!-- 메모 -->
-            <div class="pt-info-cell" style="margin-top:6px;">
-              <div class="pt-info-label">메모</div>
-              <div class="pt-info-memo" id="ptViewMemo">-</div>
+            <!-- 메모 (편집 가능) -->
+            <div style="margin-bottom:8px;">
+              <div class="pt-info-label" style="margin-bottom:4px;">메모</div>
+              <textarea id="ptViewMemoInput" class="pt-memo-input" placeholder="메모를 입력하세요..."></textarea>
             </div>
 
             <!-- 분석 태그 -->
-            <div style="margin-top:10px;">
+            <div>
               <div class="pt-info-label" style="margin-bottom:6px;">분석 태그</div>
               <div class="tag-list" id="tagChipList">
                 <span style="font-size:12px;color:#b0bec5;">상담 저장 후 AI 태그가 자동 생성됩니다.</span>
@@ -1846,8 +1864,6 @@ function renderSelectedPatient() {
   if (!p) {
     if (emptyEl) emptyEl.style.display = 'block';
     if (viewEl)  viewEl.style.display  = 'none';
-    // 우측 패널 호환용 (제거됐지만 null 체크)
-    document.getElementById('selectedPatientStatus')?.textContent && null;
     updateStartConsultBtn();
     return;
   }
@@ -1856,34 +1872,43 @@ function renderSelectedPatient() {
   if (viewEl)  viewEl.style.display  = 'block';
 
   // 환자명 + 차트번호
-  const nameEl = document.getElementById('ptViewName');
-  if (nameEl) nameEl.textContent = p.name || '-';
-  const chartEl = document.getElementById('ptViewChart');
-  if (chartEl) chartEl.textContent = p.chart_number ? `(${p.chart_number})` : '';
+  const el = id => document.getElementById(id);
+  if (el('ptViewName'))  el('ptViewName').textContent  = p.name || '-';
+  if (el('ptViewChart')) el('ptViewChart').textContent = p.chart_number ? `(${p.chart_number})` : '';
 
-  // 휴대전화 / SNS / 성별
-  const mobileEl = document.getElementById('ptViewMobile');
-  if (mobileEl) mobileEl.textContent = p.mobile || '-';
-  const snsEl = document.getElementById('ptViewSns');
-  if (snsEl) snsEl.textContent = p.sns_type ? `${p.sns_type} ${p.sns_id||''}` : '-';
-  const genderEl = document.getElementById('ptViewGender');
-  if (genderEl) genderEl.textContent = p.gender || '-';
+  // 휴대전화
+  if (el('ptViewMobile')) el('ptViewMobile').textContent = p.mobile || '-';
+
+  // SNS 버튼 상태
+  const snsBtn = el('ptSnsBtn');
+  const snsInfo = el('ptSnsInfo');
+  const snsVal  = el('ptViewSns');
+  if (snsBtn) {
+    const hasSns = !!(p.sns_type && p.sns_id);
+    snsBtn.classList.toggle('no-sns', !hasSns);
+    snsBtn.title = hasSns ? `${p.sns_type} · ${p.sns_id} (클릭하여 보기/수정)` : 'SNS 정보 없음 (클릭하여 등록)';
+    if (snsVal) snsVal.textContent = hasSns ? `${p.sns_type} · ${p.sns_id}` : '미등록';
+  }
+  if (snsInfo) snsInfo.classList.add('hidden'); // 초기엔 숨김
+
+  // 성별 아이콘
+  const genderIcon = el('ptViewGenderIcon');
+  if (genderIcon) {
+    genderIcon.textContent = p.gender === '남' ? '👨' : p.gender === '여' ? '👩' : '👤';
+    genderIcon.title = p.gender ? `성별: ${p.gender}` : '성별 미입력';
+  }
 
   // 생년월일 / 환자구분
-  const birthEl = document.getElementById('ptViewBirth');
-  if (birthEl) birthEl.textContent = p.birth_date || '-';
-  const statusEl = document.getElementById('ptViewStatus');
-  if (statusEl) statusEl.textContent = p.status || '-';
+  if (el('ptViewBirth'))       el('ptViewBirth').textContent       = p.birth_date || '-';
+  if (el('ptViewPatientType')) el('ptViewPatientType').textContent = p.patient_type || '-';
 
   // 상담상태 / 최근 상담금액
-  const cStatusEl = document.getElementById('ptViewConsultStatus');
-  if (cStatusEl) cStatusEl.textContent = p.status || '-';
-  const lastTotalEl = document.getElementById('ptViewLastTotal');
-  if (lastTotalEl) lastTotalEl.textContent = formatKRW(p.last_total || 0);
+  if (el('ptViewConsultStatus')) el('ptViewConsultStatus').textContent = p.status || '-';
+  if (el('ptViewLastTotal'))     el('ptViewLastTotal').textContent     = formatKRW(p.last_total || 0);
 
-  // 메모
-  const memoEl = document.getElementById('ptViewMemo');
-  if (memoEl) memoEl.textContent = p.memo || '-';
+  // 메모 편집 필드
+  const memoInput = el('ptViewMemoInput');
+  if (memoInput) memoInput.value = p.memo || '';
 
   updateStartConsultBtn();
   updateCanvasPatientName();
@@ -2086,12 +2111,25 @@ function confirmSns() {
   AppState.snsId = id;
 
   if (snsCallerContext === 'popup') {
-    // 환자등록 팝업용
     popSnsType = t; popSnsId = id;
     const previewArea = document.getElementById('popSnsPreviewArea');
     const previewText = document.getElementById('popSnsPreviewText');
     if (previewText) previewText.textContent = `${t} · ${id}`;
     if (previewArea) previewArea.style.display = 'block';
+  } else if (snsCallerContext === 'ptView') {
+    // 환자정보 뷰에서 SNS 수정 → DB 저장
+    AppState.snsType = t; AppState.snsId = id;
+    const p = getSelectedPatient();
+    if (p && AppState.connected) {
+      AppState.supabase.from('patients').update({ sns_type: t, sns_id: id }).eq('id', p.id).then(({ error }) => {
+        if (!error) {
+          const idx = AppState.patients.findIndex(pt => pt.id === p.id);
+          if (idx !== -1) { AppState.patients[idx].sns_type = t; AppState.patients[idx].sns_id = id; }
+          renderSelectedPatient();
+          showToast('SNS 정보가 저장됐습니다.', 'success');
+        }
+      });
+    }
   } else {
     // 기존 환자정보 폼용
     document.getElementById('snsPreviewText').textContent = `${t} · ${id}`;
@@ -5684,6 +5722,44 @@ function bindEvents() {
       AppState.snsType = btn.dataset.sns;
       updateSnsPreview();
     });
+  });
+
+  // 환자정보 뷰 - SNS 버튼 (토글 + 수정)
+  document.getElementById('ptSnsBtn')?.addEventListener('click', () => {
+    const snsInfo = document.getElementById('ptSnsInfo');
+    const p = getSelectedPatient();
+    if (!p) return;
+    if (snsInfo) snsInfo.classList.toggle('hidden');
+    // SNS 수정 모달 열기 (기존 정보 미리 채움)
+    openSnsModal('ptView');
+    if (p.sns_type) {
+      AppState.snsType = p.sns_type;
+      document.getElementById('snsIdInput').value = p.sns_id || '';
+      document.querySelectorAll('.sns-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.sns === p.sns_type);
+      });
+      updateSnsPreview();
+    }
+  });
+
+  // 환자정보 뷰 - 메모 blur 시 자동 저장
+  document.getElementById('ptViewMemoInput')?.addEventListener('blur', async () => {
+    const p = getSelectedPatient();
+    if (!p || !AppState.connected) return;
+    const newMemo = document.getElementById('ptViewMemoInput').value.trim();
+    if (newMemo === (p.memo || '')) return; // 변경 없으면 스킵
+    try {
+      const { error } = await AppState.supabase.from('patients')
+        .update({ memo: newMemo })
+        .eq('id', p.id);
+      if (error) throw error;
+      // 로컬 환자 데이터 업데이트
+      const idx = AppState.patients.findIndex(pt => pt.id === p.id);
+      if (idx !== -1) AppState.patients[idx].memo = newMemo;
+      showToast('메모가 저장됐습니다.', 'success');
+    } catch(e) {
+      showToast('메모 저장 실패: ' + e.message, 'warn');
+    }
   });
   document.getElementById('snsIdInput')?.addEventListener('input', updateSnsPreview);
   document.getElementById('snsModalOverlay')?.addEventListener('click', e=>{ if(e.target===document.getElementById('snsModalOverlay')) closeSnsModal(); });
