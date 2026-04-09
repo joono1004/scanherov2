@@ -1891,15 +1891,7 @@ function renderSelectedPatient() {
     snsBtn.title = hasSns ? `${p.sns_type} · ${p.sns_id} (클릭하여 보기/수정)` : 'SNS 정보 없음 (클릭하여 등록)';
     if (snsVal) snsVal.textContent = hasSns ? `${p.sns_type} · ${p.sns_id}` : '미등록';
   }
-  if (snsInfo) snsInfo.classList.add('hidden'); // 초기엔 숨김
-
-  // SNS 버튼 상태 (등록 여부에 따라 투명도)
-  const snsBtn = el('ptSnsBtn');
-  if (snsBtn) {
-    const hasSns = !!(p.sns_type && p.sns_id);
-    snsBtn.classList.toggle('no-sns', !hasSns);
-    snsBtn.title = hasSns ? `${p.sns_type} · ${p.sns_id}` : 'SNS 미등록';
-  }
+  if (snsInfo) snsInfo.classList.add('hidden');
 
   // 성별 아이콘
   const genderIcon = el('ptViewGenderIcon');
