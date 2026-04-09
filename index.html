@@ -1393,6 +1393,12 @@
               <button type="button" id="popGenderFemaleBtn" data-gender="여" style="padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:14px;cursor:pointer;">여</button>
             </div>
           </div>
+          <div style="display:flex;flex-direction:column;flex-shrink:0;">
+            <label class="label">환자구분</label>
+            <select id="popPatientTypeInput" style="height:44px;border-radius:14px;border:1px solid var(--line);background:var(--panel);font-size:13px;font-weight:800;padding:0 10px;cursor:pointer;color:var(--text);">
+              <option value="">-</option>
+            </select>
+          </div>
         </div>
         <div id="popSnsPreviewArea" style="margin-top:6px;display:none;">
           <div class="sns-preview" id="popSnsPreviewText"></div>
@@ -1767,6 +1773,7 @@ const AppState = {
   pricePickerCategory: null,
   pricePickerOpen: false,
   directInputOpen: false,
+  patientTypes: [],
 };
 
 const mockSttText = `원장: 현재 오른쪽 아래 어금니 손상이 진행되어 임플란트 또는 크라운 치료가 필요합니다.
@@ -1902,8 +1909,7 @@ function renderSelectedPatient() {
 
   // 생년월일 / 환자구분
   if (el('ptViewBirth')) el('ptViewBirth').textContent = p.birth_date || '-';
-  const ptTypeSel = el('ptViewPatientType');
-  if (ptTypeSel) ptTypeSel.value = p.patient_type || '';
+  renderPatientTypeSelect('ptViewPatientType', p.patient_type || '');
 
   // 상담상태 / 최근 상담금액
   const cStatusSel = el('ptViewConsultStatus');
@@ -2827,6 +2833,8 @@ function openPtRegPopup() {
   });
   const statusEl = document.getElementById('popPatientStatusInput');
   if (statusEl) statusEl.value = '초기 상담';
+  const typeEl = document.getElementById('popPatientTypeInput');
+  if (typeEl) typeEl.value = '';
   popGender = '';
   popSnsType = ''; popSnsId = '';
   const popBirthBtn = document.getElementById('popBirthDisplayBtn');
@@ -2874,6 +2882,7 @@ async function savePtRegPopup() {
     gender: popGender || null,
     birth_date: document.getElementById('popPatientBirthInput')?.value.trim() || null,
     status: document.getElementById('popPatientStatusInput')?.value || '초기 상담',
+    patient_type: document.getElementById('popPatientTypeInput')?.value || null,
     memo: document.getElementById('popPatientMemoInput')?.value.trim() || null,
     sns_type: popSnsType || null,
     sns_id: popSnsId || null,
@@ -4907,6 +4916,7 @@ async function showMainApp(user) {
   await loadPricePresets();
   await loadPatients();
   await loadTodayConsultCount();
+  await loadPatientTypes();
   resetPatientForm();
   renderPatientCount(); renderPatientList(); renderSelectedPatient();
   renderSttState(); renderEstimateTable(); setConsultTab('history');
@@ -5230,6 +5240,58 @@ function resetPatientForm() {
 }
 
 /* ── 환자정보 뷰 단일 필드 저장 ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   환자구분 로드 & 드롭박스 렌더
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadPatientTypes() {
+  if (!AppState.connected || !AppState.currentUser) return;
+  const { data } = await AppState.supabase
+    .from('patient_types')
+    .select('*')
+    .eq('user_id', AppState.currentUser.id)
+    .order('display_order');
+  AppState.patientTypes = data || [];
+  renderPatientTypeSelect('popPatientTypeInput');
+  renderPatientTypeSelect('ptViewPatientType');
+}
+
+function renderPatientTypeSelect(selectId, currentVal = '') {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const saved = currentVal || sel.value;
+
+  sel.innerHTML = '<option value="">-</option>' +
+    AppState.patientTypes.map(t =>
+      `<option value="${t.name}">${t.name}</option>`
+    ).join('') +
+    `<option value="__add__">＋ 항목 추가...</option>`;
+
+  if (saved && saved !== '__add__') sel.value = saved;
+
+  if (sel._ptTypeBound) return;
+  sel._ptTypeBound = true;
+
+  sel.addEventListener('change', async () => {
+    if (sel.value !== '__add__') return;
+    const prevVal = saved || '';
+    const name = prompt('추가할 환자구분 이름을 입력하세요:')?.trim();
+    if (!name) { sel.value = prevVal; return; }
+
+    const { error } = await AppState.supabase.from('patient_types').insert({
+      user_id: AppState.currentUser.id,
+      name,
+      display_order: AppState.patientTypes.length,
+    });
+    if (error) { showToast('추가 실패: ' + error.message, 'warn'); sel.value = prevVal; return; }
+
+    await loadPatientTypes();
+    sel.value = name;
+
+    if (selectId === 'ptViewPatientType') savePtField('patient_type', name);
+    showToast(`"${name}" 추가됐습니다.`, 'success');
+  });
+}
+
 async function savePtField(field, value) {
   const p = getSelectedPatient();
   if (!p || !AppState.connected) return;
