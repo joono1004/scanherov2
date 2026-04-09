@@ -192,7 +192,27 @@
     .status-line.ok { color: var(--success); }
     .status-line.warn { color: var(--warn); }
     .status-line.error { color: #b42318; }
-    .history-list { display: grid; gap: 12px; }
+    .history-list { display: grid; gap: 8px; }
+    .consult-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .consult-card-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; cursor: pointer; user-select: none; }
+    .consult-card-head:hover { background: var(--bg); }
+    .consult-date { font-size: 12px; font-weight: 800; color: var(--sub); white-space: nowrap; flex-shrink: 0; }
+    .consult-status-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .consult-status-badge.상담중 { background: #FEF3C7; color: #B45309; }
+    .consult-status-badge.확정   { background: #D1FAE5; color: #065F46; }
+    .consult-status-badge.보류   { background: #DBEAFE; color: #1E40AF; }
+    .consult-status-badge.취소   { background: #FEE2E2; color: #991B1B; }
+    .consult-type-badges { display: flex; gap: 4px; flex-shrink: 0; }
+    .consult-type-badge { font-size: 14px; line-height: 1; }
+    .consult-title { font-size: 13px; font-weight: 800; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .consult-chevron { font-size: 11px; color: var(--sub); flex-shrink: 0; transition: transform .2s; }
+    .consult-chevron.open { transform: rotate(90deg); }
+    .consult-card-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--line); }
+    .consult-card-body.open { display: block; }
+    .consult-body-grid { display: grid; grid-template-columns: 120px 1fr; gap: 12px; margin-top: 12px; }
+    .consult-thumb { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); cursor: pointer; }
+    .consult-thumb img { width: 100%; display: block; }
+    .consult-thumb-empty { width: 120px; height: 80px; background: var(--bg); border-radius: 10px; border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
     /* ── 환자 등록 신규 스타일 ── */
     .panel-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -5571,6 +5591,7 @@ async function saveConsultation() {
 async function loadConsultations() {
   const patient = getSelectedPatient();
   const list = document.getElementById('consultationHistoryList');
+  if (!list) return;
   if (!AppState.connected) { list.innerHTML = `<div class="status-line">연결 중...</div>`; return; }
 
   try {
@@ -5581,7 +5602,6 @@ async function loadConsultations() {
       .order('created_at', { ascending: false })
       .limit(30);
 
-    // 환자가 선택된 경우 해당 환자만, 없으면 오늘 전체 기록
     if (patient) {
       query = query.eq('patient_id', patient.id);
     } else {
@@ -5597,60 +5617,111 @@ async function loadConsultations() {
       return;
     }
 
-    list.innerHTML = data.map(item => {
-      const items = (item.consultation_items||[]).sort((a,b)=>a.display_order-b.display_order);
-      const itemsHtml = items.length ? `
-        <div style="margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;">
-          ${items.map(ci=>`
-            <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;">
-              <span>${ci.item_name} × ${ci.quantity}</span>
-              <span style="font-weight:800;color:var(--primary);">${formatKRW(ci.unit_price*ci.quantity)}</span>
-            </div>
-          `).join('')}
-          <div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--dark);color:#fff;font-weight:900;">
-            <span>최종 견적</span><span>${formatKRW(item.estimated_total||0)}</span>
-          </div>
-        </div>` : '';
+    list.innerHTML = data.map((item, idx) => {
+      const date = new Date(item.created_at).toLocaleDateString('ko-KR', { year:'2-digit', month:'2-digit', day:'2-digit' }).replace(/\. /g,'.').replace('.','');
 
-      const canvasHtml = item.canvas_image_url ? `
-        <div style="margin-top:10px;">
-          <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:6px;">🖊 상담 캔버스</div>
-          <img src="${item.canvas_image_url}" style="width:100%;border-radius:10px;border:1px solid var(--line);cursor:pointer;"
-            onclick="window.open('${item.canvas_image_url}','_blank')" title="클릭하면 크게 볼 수 있습니다" />
-        </div>` : '';
-
-      const sttHtml = item.stt_text ? `
-        <details style="margin-top:10px;">
-          <summary style="font-size:12px;font-weight:800;color:var(--sub);cursor:pointer;padding:6px 0;">📝 STT 원문 보기</summary>
-          <div style="margin-top:6px;padding:10px;background:#f8fbff;border-radius:10px;font-size:12px;color:var(--sub);line-height:1.7;white-space:pre-line;max-height:120px;overflow-y:auto;">${item.stt_text}</div>
-        </details>` : '';
-
-      const aiHtml = item.stt_summary ? `
-        <div style="margin-top:10px;padding:12px;border:1px solid #c4b5fd;border-radius:14px;background:#faf5ff;">
-          <div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:8px;">✦ AI 요약</div>
-          <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${item.stt_summary}</div>
-        </div>` : '';
-
-      const patientLabel = !patient && item.patient_id
-        ? `<span style="font-size:11px;background:var(--primary-soft);color:var(--primary);padding:3px 8px;border-radius:999px;font-weight:800;">${item.title?.split(' ')[0] || '환자'}</span>`
+      // 상담 상태 배지
+      const statusText = item.consult_status || '';
+      const statusBadge = statusText
+        ? `<span class="consult-status-badge ${statusText}">${statusText}</span>`
         : '';
 
-      return `
-        <article class="consultation-item">
-          <div class="consultation-item-head">
-            <div>
-              <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:16px;">${patientLabel}${item.title||'상담 기록'}</div>
-              <div class="consultation-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
-            </div>
-            <div class="status-badge">${item.next_action||''}</div>
+      // 타입 배지 (치료상담/비용상담)
+      const hasTreat = !!(item.canvas_image_url || item.drawing_data);
+      const hasCost  = !!(item.estimated_total && item.estimated_total > 0);
+      const typeBadges = `
+        <div class="consult-type-badges">
+          ${hasTreat ? `<span class="consult-type-badge" title="치료상담">🎨</span>` : ''}
+          ${hasCost  ? `<span class="consult-type-badge" title="비용상담">💰</span>` : ''}
+        </div>`;
+
+      // 펼쳐진 본문
+      const canvasHtml = item.canvas_image_url ? `
+        <div class="consult-thumb" onclick="window.open('${item.canvas_image_url}','_blank')">
+          <img src="${item.canvas_image_url}" alt="상담 이미지" loading="lazy" />
+        </div>` : `<div class="consult-thumb-empty">🎨</div>`;
+
+      const items = (item.consultation_items||[]).sort((a,b)=>a.display_order-b.display_order);
+      const costHtml = items.length ? `
+        <div style="margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden;">
+          ${items.map(ci=>`
+            <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px;">
+              <span>${ci.item_name} × ${ci.quantity}</span>
+              <span style="font-weight:800;color:var(--primary);">${formatKRW(ci.unit_price*ci.quantity)}</span>
+            </div>`).join('')}
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--dark);color:#fff;font-weight:900;font-size:13px;">
+            <span>최종 견적</span><span>${formatKRW(item.estimated_total||0)}</span>
           </div>
-          ${item.diagnosis_note && item.diagnosis_note!=='-' ? `<div class="consultation-note">${item.diagnosis_note}</div>` : ''}
-          ${canvasHtml}${itemsHtml}${sttHtml}${aiHtml}
-        </article>`;
+        </div>` : (hasCost ? `<div style="font-size:13px;font-weight:900;color:var(--text);margin-top:6px;">${formatKRW(item.estimated_total||0)}</div>` : '');
+
+      const aiHtml = item.stt_summary ? `
+        <div style="margin-top:10px;padding:10px 12px;border:1px solid #c4b5fd;border-radius:12px;background:#faf5ff;">
+          <div style="font-size:10px;font-weight:900;color:#7c3aed;margin-bottom:6px;">✦ AI 요약</div>
+          <div style="font-size:12px;color:#374151;white-space:pre-line;line-height:1.6;">${item.stt_summary}</div>
+        </div>` : '';
+
+      const memoHtml = item.diagnosis_note && item.diagnosis_note !== '-' ? `
+        <div style="margin-top:10px;font-size:12px;color:var(--sub);line-height:1.6;white-space:pre-line;">${item.diagnosis_note}</div>` : '';
+
+      // 상담 상태 변경 선택
+      const statusSelect = `
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--sub);font-weight:700;">상담상태</span>
+          <select class="pt-info-select" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12px;background:var(--bg);"
+            onchange="updateConsultStatus('${item.id}', this.value)">
+            <option value="" ${!statusText?'selected':''}>공백</option>
+            <option value="상담중" ${'상담중'===statusText?'selected':''}>상담중</option>
+            <option value="확정"   ${'확정'===statusText?'selected':''}>확정</option>
+            <option value="보류"   ${'보류'===statusText?'selected':''}>보류</option>
+            <option value="취소"   ${'취소'===statusText?'selected':''}>취소</option>
+          </select>
+        </div>`;
+
+      return `
+        <div class="consult-card" id="ccard-${idx}">
+          <div class="consult-card-head" onclick="toggleConsultCard(${idx})">
+            <span class="consult-date">${date}</span>
+            ${statusBadge}
+            ${typeBadges}
+            <span class="consult-title">${item.title || '상담 기록'}</span>
+            <span class="consult-chevron" id="cchev-${idx}">▶</span>
+          </div>
+          <div class="consult-card-body" id="cbody-${idx}">
+            <div class="consult-body-grid">
+              ${canvasHtml}
+              <div>
+                ${aiHtml}
+                ${memoHtml}
+                ${costHtml}
+              </div>
+            </div>
+            ${statusSelect}
+          </div>
+        </div>`;
     }).join('');
+
   } catch(e) {
     list.innerHTML = `<div class="status-line error">조회 실패: ${e.message}</div>`;
   }
+}
+
+function toggleConsultCard(idx) {
+  const body  = document.getElementById(`cbody-${idx}`);
+  const chev  = document.getElementById(`cchev-${idx}`);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  chev?.classList.toggle('open', isOpen);
+}
+
+async function updateConsultStatus(consultId, status) {
+  if (!AppState.connected) return;
+  const { error } = await AppState.supabase
+    .from('consultations')
+    .update({ consult_status: status })
+    .eq('id', consultId);
+  if (error) { showToast('상태 저장 실패: ' + error.message, 'warn'); return; }
+  showToast('상담 상태가 저장됐습니다.', 'success');
+  loadConsultations();
 }
 
 /* ── 이벤트 바인딩 ── */
