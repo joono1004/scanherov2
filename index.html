@@ -748,7 +748,9 @@
     .pt-reg-body { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
     .pt-reg-footer { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-shrink: 0; }
 
-    /* ━━━ 상담 시작 버튼 ━━━ */
+    .stt-live-box { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+    .stt-rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sub); flex-shrink: 0; }
+    .stt-rec-dot.recording { background: #dc2626; animation: recblink 1.2s infinite; }
     .start-consult-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; background: var(--dark); color: #fff; border: none; cursor: pointer; white-space: nowrap; }
     .start-consult-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .consult-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1317,7 +1319,7 @@
           <!-- 상담내역 탭 -->
           <div class="consult-tabs">
             <button class="consult-tab active" data-consult-tab="history">🗂 상담 이력</button>
-            <button class="consult-tab" data-consult-tab="memo">📋 메모 · AI 요약</button>
+            <button class="consult-tab" data-consult-tab="memo">📝 메모 · 요약</button>
           </div>
 
           <!-- 상담 이력 -->
@@ -1329,34 +1331,48 @@
 
           <!-- 메모 · AI 요약 -->
           <div class="consult-tab-section" id="ctab-memo">
-            <div class="field">
-              <label class="label" for="consultTitleInput">상담 제목</label>
-              <input id="consultTitleInput" placeholder="예: 임플란트 비교 상담" />
-            </div>
-            <div class="field">
-              <label class="label" for="consultDiagnosisInput">진단/설명 메모</label>
-              <textarea id="consultDiagnosisInput" placeholder="현재 상태, 설명한 치료 옵션, 환자 반응 등"></textarea>
-            </div>
-            <div class="stt-box">
-              <div class="stt-box-header"><div class="stt-badge">✦ Gemini AI 요약</div></div>
-              <div class="stt-status" id="sttStatusBox">STT 원문이 여기에 표시됩니다.</div>
-              <div class="field">
-                <label class="label">원본 STT 기록</label>
-                <textarea id="sttRawInput" placeholder="STT 원문" style="min-height:100px;"></textarea>
+
+            <!-- STT 실시간 상태 -->
+            <div class="stt-live-box" id="sttLiveBox">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="stt-rec-dot" id="sttRecDot"></div>
+                  <span style="font-size:12px;font-weight:800;color:var(--sub);" id="sttLiveLabel">상담 시작 전</span>
+                </div>
+                <button class="soft-btn" id="mockSttBtn" style="font-size:11px;padding:3px 8px;">시연용</button>
               </div>
-              <div class="button-row" style="margin-top:0;margin-bottom:12px;">
-                <button class="ai-btn" id="summarizeSttBtn">✦ AI로 상담 요약</button>
-                <button class="ghost-btn" id="applySttSummaryBtn">메모에 반영</button>
-                <button class="soft-btn" id="mockSttBtn">시연용 텍스트</button>
+              <div class="stt-status" id="sttStatusBox" style="font-size:12px;max-height:80px;overflow-y:auto;">STT 원문이 여기에 표시됩니다.</div>
+            </div>
+
+            <!-- 메모 작성 -->
+            <div style="margin-top:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <label class="label" style="margin:0;">메모</label>
+                <div style="display:flex;gap:6px;">
+                  <button class="ai-btn" id="summarizeSttBtn" style="font-size:11px;padding:4px 10px;">✦ AI 요약</button>
+                  <button class="ghost-btn" id="applySttSummaryBtn" style="font-size:11px;padding:4px 10px;">요약 반영</button>
+                </div>
               </div>
-              <div class="ai-summary-result" id="aiSummaryResult" style="display:none;">
-                <div class="ai-label">✦ Gemini AI 요약 결과</div>
-                <div class="ai-text" id="sttSummaryOutput"></div>
+              <textarea id="consultDiagnosisInput" placeholder="상담 내용을 메모하세요. AI 요약 결과를 반영하거나 직접 입력할 수 있습니다." style="min-height:120px;"></textarea>
+            </div>
+
+            <!-- AI 요약 결과 -->
+            <div class="ai-summary-result" id="aiSummaryResult" style="display:none;margin-top:10px;">
+              <div class="ai-label">✦ Gemini AI 요약 결과</div>
+              <div class="ai-text" id="sttSummaryOutput"></div>
+            </div>
+
+            <!-- STT 원본 접기/펼치기 -->
+            <div style="margin-top:10px;">
+              <button class="ghost-btn" id="toggleSttRawBtn" style="font-size:11px;width:100%;justify-content:space-between;">
+                <span>📄 STT 원본 보기</span><span id="sttRawChev">▶</span>
+              </button>
+              <div id="sttRawArea" style="display:none;margin-top:6px;">
+                <textarea id="sttRawInput" placeholder="STT 원문" style="min-height:100px;font-size:12px;color:var(--sub);"></textarea>
               </div>
             </div>
-            <div class="button-row">
-              <button class="ghost-btn" id="startSttBtn">🎙 녹음 시작</button>
-              <button class="ghost-btn" id="stopSttBtn">⏹ 녹음 중지</button>
+
+            <div class="button-row" style="margin-top:10px;">
               <button class="ghost-btn" id="resetConsultationBtn">초기화</button>
             </div>
           </div>
@@ -5465,9 +5481,29 @@ function setSttStatus(msg, type) {
 }
 
 function renderSttState() {
-  document.getElementById('sttRawInput').value = AppState.sttRaw;
-  if(!AppState.aiLoading) setSttStatus(
-    AppState.isRecording ? '🔴 녹음 중입니다.' : 'STT 녹음 후 Gemini AI가 상담 내용을 구조화된 메모로 정리해드립니다.',
+  const rawInput = document.getElementById('sttRawInput');
+  if (rawInput) rawInput.value = AppState.sttRaw;
+
+  const dot   = document.getElementById('sttRecDot');
+  const label = document.getElementById('sttLiveLabel');
+  const statusBox = document.getElementById('sttStatusBox');
+
+  if (AppState.isRecording) {
+    dot?.classList.add('recording');
+    if (label) label.textContent = '🔴 녹음 중';
+    if (statusBox) statusBox.textContent = AppState.sttRaw || '음성을 인식하는 중...';
+  } else if (SessionState.isActive) {
+    dot?.classList.remove('recording');
+    if (label) label.textContent = '⏸ 일시 중단';
+    if (statusBox) statusBox.textContent = AppState.sttRaw || '음성 대기 중...';
+  } else {
+    dot?.classList.remove('recording');
+    if (label) label.textContent = AppState.sttRaw ? '✅ 상담 완료' : '상담 시작 전';
+    if (statusBox) statusBox.textContent = AppState.sttRaw || 'STT 원문이 여기에 표시됩니다.';
+  }
+
+  if (!AppState.aiLoading) setSttStatus(
+    AppState.isRecording ? '🔴 녹음 중입니다.' : 'STT 녹음 후 Gemini AI가 상담 내용을 요약합니다.',
     AppState.isRecording ? 'recording' : ''
   );
 }
@@ -5484,32 +5520,82 @@ function appendUniqueFinal(base, add) {
 }
 
 function startBrowserStt() {
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR) { AppState.sttRaw=mockSttText; AppState.sttRawFinal=mockSttText; renderSttState(); alert('STT 미지원 브라우저입니다. 시연용 텍스트를 불러왔습니다.'); return; }
-  if(AppState.recognition) try{AppState.recognition.stop();}catch(e){}
-  const r=new SR(); r.lang='ko-KR'; r.continuous=true; r.interimResults=true;
-  AppState.recognition=r; AppState.isRecording=true; AppState.sttRaw=''; AppState.sttRawFinal=''; AppState.lastInterimTranscript='';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    AppState.sttRaw = mockSttText;
+    AppState.sttRawFinal = mockSttText;
+    renderSttState();
+    alert('STT 미지원 브라우저입니다. 시연용 텍스트를 불러왔습니다.');
+    return;
+  }
+
+  if (AppState.recognition) try { AppState.recognition.stop(); } catch(e) {}
+
+  const r = new SR();
+  r.lang = 'ko-KR';
+  r.continuous = true;
+  r.interimResults = true;
+  AppState.recognition = r;
+  AppState.isRecording = true;
+  // ★ 새 상담 시작 시에만 초기화 (재시작 시는 기존 누적 유지)
+  if (!SessionState.isActive) {
+    AppState.sttRaw = ''; AppState.sttRawFinal = '';
+  }
+  AppState.lastInterimTranscript = '';
   renderSttState();
-  r.onresult=e=>{
-    let interim='',final=AppState.sttRawFinal||'';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      const chunk=normalizeSpaces(e.results[i][0].transcript||'');
-      if(!chunk) continue;
-      e.results[i].isFinal?(final=appendUniqueFinal(final,chunk)):(interim=chunk);
+
+  r.onresult = e => {
+    let interim = '', final = AppState.sttRawFinal || '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const chunk = normalizeSpaces(e.results[i][0].transcript || '');
+      if (!chunk) continue;
+      e.results[i].isFinal
+        ? (final = appendUniqueFinal(final, chunk))
+        : (interim = chunk);
     }
-    if(interim===AppState.lastInterimTranscript) interim='';
-    AppState.lastInterimTranscript=interim; AppState.sttRawFinal=final;
-    AppState.sttRaw=normalizeSpaces([final,interim].filter(Boolean).join(' '));
+    if (interim === AppState.lastInterimTranscript) interim = '';
+    AppState.lastInterimTranscript = interim;
+    AppState.sttRawFinal = final;
+    AppState.sttRaw = normalizeSpaces([final, interim].filter(Boolean).join(' '));
     renderSttState();
   };
-  r.onend=()=>{AppState.isRecording=false;AppState.sttRaw=normalizeSpaces(AppState.sttRawFinal);renderSttState();};
-  r.onerror=()=>{AppState.isRecording=false;AppState.sttRaw=normalizeSpaces(AppState.sttRawFinal);renderSttState();};
-  r.start();
+
+  r.onend = () => {
+    // 상담 세션 중이면 자동 재시작
+    if (SessionState.isActive && AppState.isRecording !== false) {
+      try { r.start(); } catch(e) {
+        // 재시작 실패 시 새 인스턴스로 재시도
+        setTimeout(() => { if (SessionState.isActive) startBrowserStt(); }, 300);
+      }
+      return;
+    }
+    AppState.isRecording = false;
+    AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
+    renderSttState();
+  };
+
+  r.onerror = e => {
+    // 네트워크/권한 오류가 아니면 재시작 시도
+    if (SessionState.isActive && e.error !== 'not-allowed' && e.error !== 'service-not-allowed') {
+      setTimeout(() => { if (SessionState.isActive) startBrowserStt(); }, 500);
+      return;
+    }
+    AppState.isRecording = false;
+    AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
+    renderSttState();
+  };
+
+  try { r.start(); } catch(e) { console.warn('STT 시작 실패:', e); }
 }
 
 function stopBrowserStt() {
-  if(AppState.recognition) try{AppState.recognition.stop();}catch(e){}
-  AppState.isRecording=false; AppState.sttRaw=normalizeSpaces(AppState.sttRawFinal); renderSttState();
+  AppState.isRecording = false;
+  if (AppState.recognition) {
+    try { AppState.recognition.stop(); } catch(e) {}
+    AppState.recognition = null;
+  }
+  AppState.sttRaw = normalizeSpaces(AppState.sttRawFinal);
+  renderSttState();
 }
 
 function resetConsultationForm() {
@@ -5943,21 +6029,34 @@ function bindEvents() {
   // 상담
   document.getElementById('resetConsultationBtn')?.addEventListener('click', resetConsultationForm);
 
+  // STT 원본 토글
+  document.getElementById('toggleSttRawBtn')?.addEventListener('click', () => {
+    const area = document.getElementById('sttRawArea');
+    const chev = document.getElementById('sttRawChev');
+    if (!area) return;
+    const isOpen = area.style.display !== 'none';
+    area.style.display = isOpen ? 'none' : 'block';
+    if (chev) chev.textContent = isOpen ? '▶' : '▼';
+  });
+
   // STT
-  document.getElementById('startSttBtn')?.addEventListener('click', startBrowserStt);
-  document.getElementById('stopSttBtn')?.addEventListener('click', stopBrowserStt);
-  document.getElementById('mockSttBtn')?.addEventListener('click', ()=>{
-    AppState.sttRaw=mockSttText; AppState.sttRawFinal=mockSttText; AppState.lastInterimTranscript=''; renderSttState();
+  document.getElementById('mockSttBtn')?.addEventListener('click', () => {
+    AppState.sttRaw = mockSttText; AppState.sttRawFinal = mockSttText;
+    AppState.lastInterimTranscript = ''; renderSttState();
   });
-  document.getElementById('summarizeSttBtn')?.addEventListener('click', ()=>{
-    AppState.sttRaw=document.getElementById('sttRawInput').value;
-    summarizeWithClaude(AppState.sttRaw);
+  document.getElementById('summarizeSttBtn')?.addEventListener('click', () => {
+    const raw = document.getElementById('sttRawInput')?.value || AppState.sttRaw;
+    AppState.sttRaw = raw; summarizeWithClaude(raw);
   });
-  document.getElementById('applySttSummaryBtn')?.addEventListener('click', ()=>{
-    if(AppState.sttSummary.trim()) document.getElementById('consultDiagnosisInput').value=AppState.sttSummary;
-    else alert('먼저 AI 요약을 실행해주세요.');
+  document.getElementById('applySttSummaryBtn')?.addEventListener('click', () => {
+    if (AppState.sttSummary?.trim()) {
+      const memo = document.getElementById('consultDiagnosisInput');
+      if (memo) memo.value = AppState.sttSummary;
+    } else alert('먼저 AI 요약을 실행해주세요.');
   });
-  document.getElementById('sttRawInput')?.addEventListener('input', e=>{ AppState.sttRaw=e.target.value; AppState.sttRawFinal=e.target.value; });
+  document.getElementById('sttRawInput')?.addEventListener('input', e => {
+    AppState.sttRaw = e.target.value; AppState.sttRawFinal = e.target.value;
+  });
 }
 
 loadSavedTheme();
